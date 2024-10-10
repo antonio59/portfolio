@@ -34,14 +34,32 @@ const About = () => {
         </div>
         <div className="currently">
           <h3>Currently...</h3>
-          <ul>
-            <li><FaImage /> Collecting NFTs, <a href="#" className="nft-link">check out my collection here</a></li>
-            <li><FaBook /> Reading "Meditations" by Marcus Aurelius</li>
-            <li><FaHeadphones /> Listening to Symphony No. 2 in D major</li>
-            <li><FaMountain /> Learning to Climb</li>
-            <li><FaTv /> Watching Law & Order: SVU and Chicago PD</li>
-            <li><FaSeedling /> Watering my plants</li>
-          </ul>
+          <div className="currently-grid">
+            <div className="currently-item">
+              <FaImage />
+              <span>Collecting NFTs, <a href="#" className="nft-link">check out my collection here</a></span>
+            </div>
+            <div className="currently-item">
+              <FaBook />
+              <span>Reading "Meditations" by Marcus Aurelius</span>
+            </div>
+            <div className="currently-item">
+              <FaHeadphones />
+              <span>Listening to Symphony No. 2 in D major</span>
+            </div>
+            <div className="currently-item">
+              <FaMountain />
+              <span>Learning to Climb</span>
+            </div>
+            <div className="currently-item">
+              <FaTv />
+              <span>Watching Law & Order: SVU and Chicago PD</span>
+            </div>
+            <div className="currently-item">
+              <FaSeedling />
+              <span>Watering my plants</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
