@@ -1,0 +1,148 @@
+#hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 0;
+  background-color: var(--bg-color);
+}
+
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.intro {
+  font-size: 1.2rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+#hero h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+#hero h2 {
+  font-size: 1.8rem;
+  color: var(--secondary-color);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.description {
+  font-size: 1.3rem;
+  color: var(--text-color);
+  margin-bottom: 2rem;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.highlight {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.title-section {
+  margin-bottom: 2.5rem;
+}
+
+.cta-container {
+  margin-bottom: 2.5rem;
+}
+
+.icon-container {
+  display: flex;
+  gap: 2rem;
+}
+
+.icon-link {
+  color: var(--text-color);
+  transition: color 0.3s ease;
+  position: relative;
+}
+
+.icon-link:hover {
+  color: var(--primary-color);
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+/* Tooltip styles */
+.icon-link::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--primary-color);
+  color: var(--bg-color);
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.icon-link:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (max-width: 768px) {
+  #hero h1 {
+    font-size: 2.8rem;
+  }
+
+  #hero h2 {
+    font-size: 1.6rem;
+  }
+
+  .description {
+    font-size: 1.1rem;
+  }
+
+  .title-section {
+    margin-bottom: 2rem;
+  }
+
+  .cta-container {
+    margin-bottom: 2rem;
+  }
+
+  .icon-container {
+    gap: 1.5rem;
+  }
+}
+</boltArtifact>
+
+I've made the following changes to add tooltips to the icons:
+
+1. Updated the `Hero.jsx` file:
+   - Added a `className="icon-link"` to each icon link for styling purposes.
+   - Kept the `title` attribute on each link, which will be used for the tooltip content.
+
+2. Updated the `Hero.css` file:
+   - Added new CSS rules for the tooltips using the `::after` pseudo-element.
+   - The tooltips will appear above the icons when hovered over.
+   - Added transitions for smooth appearance and disappearance of the tooltips.
+   - Made the tooltips responsive by using `white-space: nowrap` to prevent text wrapping.
+
+These changes will create tooltips that appear when users hover over each icon in the hero section. The tooltips will display the text specified in the `title` attribute of each link.
+
+The tooltips have the following features:
+- They appear above the icons.
+- They have a background color matching the primary color of your site.
+- The text color contrasts with the background for readability.
+- They fade in and out smoothly when hovering over the icons.
+- They are centered above each icon.
+
+The development server is already running, so you should be able to see these changes reflected in your local development environment. You can now hover over each icon to see the tooltips appear.
+
+Is there anything else you'd like to adjust or any other elements you wan
