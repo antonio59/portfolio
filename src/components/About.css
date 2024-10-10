@@ -10,6 +10,7 @@
   border-radius: 50%;
   object-fit: cover;
   background-color: #2d3748;
+  flex-shrink: 0;
 }
 
 .about-text {
