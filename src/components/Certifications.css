@@ -1,0 +1,35 @@
+.certification-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.certification-card {
+  background-color: #1e293b;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.certification-card:hover {
+  transform: translateY(-5px);
+}
+
+.certification-card h3 {
+  font-size: 1.2rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.certification-card p {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .certification-grid {
+    grid-template-columns: 1fr;
+  }
+}
