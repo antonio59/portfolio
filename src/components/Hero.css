@@ -1,7 +1,167 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+#hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 0;
+}
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-})
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.hero-text {
+  text-align: center;
+  max-width: 600px;
+  margin-bottom: 2rem;
+}
+
+.hero-image {
+  margin-bottom: 2rem;
+}
+
+.image-placeholder {
+  width: 200px;
+  height: 200px;
+  background-color: #2d3748;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.intro {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: var(--primary-color);
+}
+
+h1 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(45deg, #38bdf8, #818cf8, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.highlight {
+  color: var(--primary-color);
+}
+
+.description {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+.cta-container {
+  margin-bottom: 1.5rem;
+}
+
+.icon-container {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.icon-link {
+  color: var(--text-color);
+  font-size: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.icon-link:hover {
+  color: var(--primary-color);
+}
+
+.scroll-prompt {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: bounce 2s infinite;
+}
+
+.scroll-icon {
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (min-width: 768px) {
+  .hero-content {
+    flex-direction: row;
+    text-align: left;
+    padding: 0 2rem;
+  }
+
+  .hero-text {
+    text-align: left;
+    margin-bottom: 0;
+    margin-right: 2rem;
+  }
+
+  .hero-image {
+    margin-bottom: 0;
+  }
+
+  .image-placeholder {
+    width: 300px;
+    height: 300px;
+  }
+
+  .intro {
+    font-size: 1.5rem;
+  }
+
+  h1 {
+    font-size: 4rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  .description {
+    font-size: 1.2rem;
+  }
+
+  .icon-container {
+    position: absolute;
+    bottom: 2rem;
+    left: 2rem;
+  }
+
+  .scroll-prompt {
+    bottom: 2rem;
+  }
+
+  .scroll-icon {
+    font-size: 2rem;
+  }
+}
