@@ -6,8 +6,8 @@
 }
 
 .profile-pic {
-  width: 300px;
-  height: 300px;
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
   object-fit: cover;
   background-color: #2d3748;
@@ -22,21 +22,27 @@
   margin-bottom: 1rem;
 }
 
+.read-more-container {
+  text-align: center;
+  margin-top: 1rem;
+}
+
 .btn-read-more {
   background: none;
   border: none;
   color: var(--primary-color);
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 1rem;
-  padding: 0;
-  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
 }
 
 .btn-read-more:hover {
-  text-decoration: underline;
+  background-color: rgba(56, 189, 248, 0.1);
 }
 
 .currently {
@@ -54,7 +60,7 @@
 
 .currently-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
 }
 
@@ -63,6 +69,9 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 1rem;
+  padding: 0.5rem;
+  background-color: #2d3748;
+  border-radius: 5px;
 }
 
 .currently-item svg {
