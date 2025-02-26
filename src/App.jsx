@@ -48,6 +48,7 @@ function App() {
             <Footer />
           </div>
         } />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
   );
