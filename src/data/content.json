@@ -1,0 +1,45 @@
+{
+  "hero": {
+    "title": "Welcome to My Portfolio",
+    "subtitle": "Software Developer",
+    "description": "Edit this description in the admin dashboard"
+  },
+  "about": {
+    "title": "About Me",
+    "description": "Edit your about section here",
+    "skills": ["JavaScript", "React", "Node.js"]
+  },
+  "experience": {
+    "title": "Experience",
+    "jobs": [
+      {
+        "title": "Software Developer",
+        "company": "Company Name",
+        "period": "2020 - Present",
+        "description": "Edit job description here"
+      }
+    ]
+  },
+  "projects": {
+    "title": "Projects",
+    "items": [
+      {
+        "title": "Project 1",
+        "description": "Edit project description here",
+        "technologies": ["React", "Node.js"],
+        "link": "https://github.com"
+      }
+    ]
+  },
+  "certifications": {
+    "title": "Certifications",
+    "items": [
+      {
+        "title": "Certification 1",
+        "issuer": "Issuing Organization",
+        "date": "2023",
+        "link": "https://certification-link.com"
+      }
+    ]
+  }
+}
