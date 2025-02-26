@@ -22,14 +22,10 @@
   },
   "projects": {
     "title": "Projects",
-    "items": [
-      {
-        "title": "Project 1",
-        "description": "Edit project description here",
-        "technologies": ["React", "Node.js"],
-        "link": "https://github.com"
-      }
-    ]
+    "developmentDescription": "A collection of software development projects showcasing technical expertise in web development, application design, and system architecture. These projects demonstrate hands-on coding skills and implementation of modern technologies.",
+    "generalDescription": "A portfolio of project management initiatives spanning various domains including system implementations, process improvements, and organizational transformations. These projects highlight leadership, strategic planning, and successful delivery of complex solutions.",
+    "developmentProjects": [],
+    "generalProjects": []
   },
   "certifications": {
     "title": "Certifications",

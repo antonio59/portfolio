@@ -5,10 +5,11 @@ import './Projects.css';
 const developmentProjects = [
   {
     title: "DLR Digital Tap Prototype",
-    description: "A digital tap in / tap out for use on the DLR train line. Try it out https://dlrdigitaltap.v0.build/",
+    description: "A digital tap in / tap out for use on the DLR train line.",
     technologies: ["React", "Node.js", "API Integration"],
     icon: <FaCode />,
-    live: "https://dlrdigitaltap.v0.build/"
+    live: "https://dlrdigitaltap.v0.build/",
+    demo: "/media/dlr-demo.html"
   },
   {
     title: "Personal Portfolio Website",
@@ -130,6 +131,11 @@ const Projects = () => {
                 </div>
               </div>
               <h3>{project.title}</h3>
+              {project.demo ? (
+                <div className="project-demo">
+                  <iframe src={project.demo} frameBorder="0" title={project.title} />
+                </div>
+              ) : null}
               <p>{project.description}</p>
               <div className="project-tags">
                 {project.technologies.map((tech, techIndex) => (

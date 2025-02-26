@@ -7,10 +7,13 @@ Welcome to my personal portfolio website! This project showcases my skills, expe
 - Responsive design
 - About Me section with a brief introduction
 - Experience timeline
-- Project showcase
+- Project showcase with categorized sections:
+  - Development Projects: Showcasing technical implementations and coding expertise
+  - General Projects: Highlighting project management and organizational initiatives
+- Category-specific descriptions for better context
 - Certifications list
 - Contact information
-- Admin dashboard for content management
+- Enhanced Admin dashboard for content management
 - Secure authentication system
 
 ## 🛠 Technologies Used

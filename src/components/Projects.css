@@ -75,6 +75,22 @@
   font-size: 0.8rem;
 }
 
+.project-demo {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  margin: 1rem 0;
+}
+
+.project-demo iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
 .show-more-container {
   display: flex;
   justify-content: center;
