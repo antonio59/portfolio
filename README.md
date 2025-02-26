@@ -10,6 +10,8 @@ Welcome to my personal portfolio website! This project showcases my skills, expe
 - Project showcase
 - Certifications list
 - Contact information
+- Admin dashboard for content management
+- Secure authentication system
 
 ## 🛠 Technologies Used
 
@@ -17,12 +19,40 @@ Welcome to my personal portfolio website! This project showcases my skills, expe
 - Vite
 - CSS3
 - React Icons
+- Firebase Authentication
+- Firebase Realtime Database
 
 ## 🏗 Project Structure
 
-- `src/components/`: Contains all React components
-- `src/`: Contains main App component and index files
-- `public/`: Static assets
+```
+├── src/
+│   ├── components/
+│   │   ├── About.jsx
+│   │   ├── Admin.jsx
+│   │   ├── Certifications.jsx
+│   │   ├── Experience.jsx
+│   │   ├── Footer.jsx
+│   │   ├── Header.jsx
+│   │   ├── Hero.jsx
+│   │   ├── Login.jsx
+│   │   └── Projects.jsx
+│   ├── data/
+│   │   └── content.json
+│   ├── App.jsx
+│   ├── firebase.js
+│   ├── main.jsx
+│   └── index.css
+├── public/
+│   └── _redirects
+└── package.json
+```
+
+## 🔐 Authentication
+
+The portfolio includes a secure admin dashboard protected by Firebase Authentication. This allows for:
+- Secure login system
+- Protected admin routes
+- Content management capabilities
 
 ## 🚦 Running the Project
 
@@ -40,11 +70,17 @@ To run the project in your local environment, follow these steps:
    ```
    npm install
    ```
-4. Run the development server:
+4. Set up Firebase:
+   - Create a Firebase project
+   - Enable Authentication
+   - Configure Realtime Database
+   - Add your Firebase configuration to `src/firebase.js`
+
+5. Run the development server:
    ```
    npm run dev
    ```
-5. Open your browser and visit `http://localhost:5173`
+6. Open your browser and visit `http://localhost:5173`
 
 ## 🔧 Building for Production
 
@@ -52,6 +88,13 @@ To create a production build, run:
 ```
 npm run build
 ```
+
+## 📤 Deployment
+
+The project is configured for deployment on Netlify with proper routing setup:
+- Automatic deployments from main branch
+- Configured `_redirects` file for SPA routing
+- Environment variables management through Netlify UI
 
 ## 📫 Contact
 
