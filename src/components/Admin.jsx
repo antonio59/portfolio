@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase';
 import contentData from '../data/content.json';
+import './Admin.css';
 
 const Admin = () => {
   const [content, setContent] = useState(contentData);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate('/login');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleChange = (section, field, value, index = null) => {
     setContent(prev => {
@@ -55,62 +70,7 @@ const Admin = () => {
         </div>
       </section>
 
-      {/* About Section */}
-      <section className="admin-section">
-        <h2>About Section</h2>
-        <div className="form-group">
-          <label>Title:</label>
-          <input
-            type="text"
-            value={content.about.title}
-            onChange={(e) => handleChange('about', 'title', e.target.value)}
-          />
-        </div>
-        <div className="form-group">
-          <label>Description:</label>
-          <textarea
-            value={content.about.description}
-            onChange={(e) => handleChange('about', 'description', e.target.value)}
-          />
-        </div>
-      </section>
-
-      {/* Experience Section */}
-      <section className="admin-section">
-        <h2>Experience Section</h2>
-        {content.experience.jobs.map((job, index) => (
-          <div key={index} className="form-group">
-            <h3>Job {index + 1}</h3>
-            <input
-              type="text"
-              value={job.title}
-              onChange={(e) => handleChange('experience', 'jobs', { ...job, title: e.target.value }, index)}
-              placeholder="Job Title"
-            />
-            <input
-              type="text"
-              value={job.company}
-              onChange={(e) => handleChange('experience', 'jobs', { ...job, company: e.target.value }, index)}
-              placeholder="Company"
-            />
-            <input
-              type="text"
-              value={job.period}
-              onChange={(e) => handleChange('experience', 'jobs', { ...job, period: e.target.value }, index)}
-              placeholder="Period"
-            />
-            <textarea
-              value={job.description}
-              onChange={(e) => handleChange('experience', 'jobs', { ...job, description: e.target.value }, index)}
-              placeholder="Description"
-            />
-          </div>
-        ))}
-      </section>
-
-      <button onClick={handleSave} className="save-button">
-        Save Changes
-      </button>
+      <button onClick={handleSave} className="save-button">Save Changes</button>
     </div>
   );
 };
