@@ -5,7 +5,7 @@
   justify-content: center;
   position: relative;
   overflow: hidden;
-  padding: 2rem 0;
+  padding: 4rem 0;
 }
 
 .hero-content {
@@ -15,46 +15,36 @@
   justify-content: center;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 2rem;
 }
 
 .hero-text {
   text-align: center;
-  max-width: 600px;
-  margin-bottom: 2rem;
-}
-
-.hero-image {
-  margin-bottom: 2rem;
-}
-
-.image-placeholder {
-  width: 200px;
-  height: 200px;
-  background-color: #2d3748;
-  border-radius: 50%;
-  margin: 0 auto;
+  max-width: 800px;
 }
 
 .intro {
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
   color: var(--primary-color);
+  letter-spacing: 0.05em;
 }
 
 h1 {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
+  font-size: 4.5rem;
+  margin-bottom: 1rem;
   background: linear-gradient(45deg, #38bdf8, #818cf8, #c084fc);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: -0.02em;
 }
 
 h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
   color: var(--text-color);
+  line-height: 1.4;
 }
 
 .highlight {
@@ -62,43 +52,51 @@ h2 {
 }
 
 .description {
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
   color: var(--text-color);
+  line-height: 1.6;
 }
 
 .cta-container {
-  margin-bottom: 1.5rem;
-}
-
-.icon-container {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
   margin-bottom: 2rem;
-}
-
-.icon-link {
-  color: var(--text-color);
-  font-size: 1.5rem;
-  transition: color 0.3s ease;
-}
-
-.icon-link:hover {
-  color: var(--primary-color);
 }
 
 .scroll-prompt {
   position: absolute;
-  bottom: 1rem;
+  bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
   animation: bounce 2s infinite;
+  opacity: 0.7;
+}
+
+.scroll-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .scroll-icon {
-  font-size: 1.5rem;
+  font-size: 2rem;
   color: var(--text-color);
+}
+
+.scroll-text {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+  margin-top: 0.5rem;
+  color: var(--text-color);
+}
+
+.scroll-container:hover .scroll-text {
+  opacity: 1;
 }
 
 @keyframes bounce {
@@ -110,6 +108,20 @@ h2 {
   }
   60% {
     transform: translateY(-5px);
+  }
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 3.5rem;
+  }
+  
+  h2 {
+    font-size: 1.75rem;
+  }
+  
+  .description {
+    font-size: 1.1rem;
   }
 }
 

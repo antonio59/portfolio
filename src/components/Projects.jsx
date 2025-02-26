@@ -2,6 +2,32 @@ import React, { useState } from 'react';
 import { FaFolder, FaExternalLinkAlt, FaCode, FaProjectDiagram, FaUserCircle, FaChartLine, FaPlane, FaPoll, FaBook, FaUsers, FaClipboardList } from 'react-icons/fa';
 import './Projects.css';
 
+const developmentProjects = [
+  {
+    title: "DLR Digital Tap Prototype",
+    description: "A digital tap in / tap out for use on the DLR train line. Try it out https://dlrdigitaltap.v0.build/",
+    technologies: ["React", "Node.js", "API Integration"],
+    icon: <FaCode />,
+    live: "https://dlrdigitaltap.v0.build/"
+  },
+  {
+    title: "Personal Portfolio Website",
+    description: "A fully responsive personal portfolio site with modern design and seamless user experience",
+    technologies: ["React", "CSS", "Responsive Design"],
+    icon: <FaProjectDiagram />,
+    github: "#",
+    live: "#"
+  },
+  {
+    title: "Task Management Web App",
+    description: "A feature-rich task management application with drag-and-drop functionality and team collaboration tools.",
+    technologies: ["React", "Node.js", "MongoDB"],
+    icon: <FaClipboardList />,
+    github: "#",
+    live: "#"
+  }
+];
+
 const projectData = [
   {
     title: "Workday Implementation",
@@ -66,8 +92,11 @@ const projectData = [
 ];
 
 const Projects = () => {
+  const [activeTab, setActiveTab] = useState('development');
   const [showAll, setShowAll] = useState(false);
-  const displayedProjects = showAll ? projectData : projectData.slice(0, 6);
+
+  const currentProjects = activeTab === 'development' ? developmentProjects : projectData;
+  const displayedProjects = showAll ? currentProjects : currentProjects.slice(0, 6);
 
   return (
     <section id="projects">
@@ -76,6 +105,20 @@ const Projects = () => {
         <p className="section-description">
           A showcase of my key projects, demonstrating my ability to deliver impactful solutions across various domains.
         </p>
+        <div className="project-tabs">
+          <button 
+            className={`tab-button ${activeTab === 'development' ? 'active' : ''}`}
+            onClick={() => setActiveTab('development')}
+          >
+            Development Projects
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'general' ? 'active' : ''}`}
+            onClick={() => setActiveTab('general')}
+          >
+            General Projects
+          </button>
+        </div>
         <div className="project-grid">
           {displayedProjects.map((project, index) => (
             <div key={index} className="project-card">
@@ -96,11 +139,13 @@ const Projects = () => {
             </div>
           ))}
         </div>
-        <div className="show-more-container">
-          <button className="btn-show-more" onClick={() => setShowAll(!showAll)}>
-            {showAll ? "Show Less" : "Show More"}
-          </button>
-        </div>
+        {currentProjects.length > 6 && (
+          <div className="show-more-container">
+            <button className="btn-show-more" onClick={() => setShowAll(!showAll)}>
+              {showAll ? 'Show Less' : 'Show More'}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
