@@ -18,7 +18,7 @@ const Header = () => {
             <li><a href="#about" onClick={toggleMenu}>About Me</a></li>
             <li><a href="#experience" onClick={toggleMenu}>Experience</a></li>
             <li><a href="#projects" onClick={toggleMenu}>Projects</a></li>
-            <li><a href="#blog" onClick={toggleMenu}>Blog</a></li>
+            <li><a href="/blog" onClick={toggleMenu}>Blog</a></li>
           </ul>
           <div className="nav-buttons">
             <a href="#" className="btn btn-secondary" onClick={toggleMenu}>Resume</a>
