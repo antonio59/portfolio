@@ -100,59 +100,69 @@ const Projects = () => {
   const displayedProjects = showAll ? currentProjects : currentProjects.slice(0, 6);
 
   return (
-    <section id="projects">
-      <div className="container">
-        <h2>Projects</h2>
-        <p className="section-description">
-          A showcase of my key projects, demonstrating my ability to deliver impactful solutions across various domains.
-        </p>
-        <div className="project-tabs">
-          <button 
-            className={`tab-button ${activeTab === 'development' ? 'active' : ''}`}
-            onClick={() => setActiveTab('development')}
-          >
-            Development Projects
-          </button>
-          <button 
-            className={`tab-button ${activeTab === 'general' ? 'active' : ''}`}
-            onClick={() => setActiveTab('general')}
-          >
-            General Projects
-          </button>
-        </div>
-        <div className="project-grid">
-          {displayedProjects.map((project, index) => (
-            <div key={index} className="project-card">
-              <div className="project-header">
-                {project.icon}
-                <div className="project-links">
-                  {project.github && <a href={project.github} target="_blank" rel="noopener noreferrer"><FaCode /></a>}
-                  {project.live && <a href={project.live} target="_blank" rel="noopener noreferrer"><FaExternalLinkAlt /></a>}
-                </div>
-              </div>
-              <h3>{project.title}</h3>
-              {project.demo ? (
-                <div className="project-demo">
-                  <iframe src={project.demo} frameBorder="0" title={project.title} />
-                </div>
-              ) : null}
-              <p>{project.description}</p>
-              <div className="project-tags">
-                {project.technologies.map((tech, techIndex) => (
-                  <span key={techIndex}>{tech}</span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-        {currentProjects.length > 6 && (
-          <div className="show-more-container">
-            <button className="btn-show-more" onClick={() => setShowAll(!showAll)}>
-              {showAll ? 'Show Less' : 'Show More'}
-            </button>
-          </div>
+    <section id="projects" className="projects-section">
+      <h2>Projects</h2>
+      <div className="tabs">
+        <button
+          className={`tab ${activeTab === 'development' ? 'active' : ''}`}
+          onClick={() => setActiveTab('development')}
+        >
+          Development Projects
+        </button>
+        <button
+          className={`tab ${activeTab === 'general' ? 'active' : ''}`}
+          onClick={() => setActiveTab('general')}
+        >
+          General Projects
+        </button>
+      </div>
+      
+      <div className="tab-description">
+        {activeTab === 'development' ? (
+          <p>{content.projects.developmentDescription}</p>
+        ) : (
+          <p>{content.projects.generalDescription}</p>
         )}
       </div>
+
+      <div className="projects-grid">
+        {displayedProjects.map((project, index) => (
+          <div key={index} className="project-card">
+            <div className="project-icon">{project.icon}</div>
+            <h3>{project.title}</h3>
+            <p>{project.description}</p>
+            <div className="technologies">
+              {project.technologies.map((tech, techIndex) => (
+                <span key={techIndex} className="tech-tag">
+                  {tech}
+                </span>
+              ))}
+            </div>
+            <div className="project-links">
+              {project.github && (
+                <a href={project.github} target="_blank" rel="noopener noreferrer">
+                  <FaCode /> Code
+                </a>
+              )}
+              {project.live && (
+                <a href={project.live} target="_blank" rel="noopener noreferrer">
+                  <FaExternalLinkAlt /> Live
+                </a>
+              )}
+              {project.demo && (
+                <a href={project.demo} target="_blank" rel="noopener noreferrer">
+                  <FaExternalLinkAlt /> Demo
+                </a>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      {currentProjects.length > 6 && (
+        <button className="show-more" onClick={() => setShowAll(!showAll)}>
+          {showAll ? 'Show Less' : 'Show More'}
+        </button>
+      )}
     </section>
   );
 };
