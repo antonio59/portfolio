@@ -53,6 +53,32 @@ nav {
 
 .nav-buttons a {
   margin-left: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.nav-buttons .btn-primary,
+.nav-buttons .btn-secondary {
+  background-color: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.nav-buttons .btn-primary:hover,
+.nav-buttons .btn-secondary:hover {
+  background-color: var(--primary-color);
+  color: var(--bg-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .burger-menu {

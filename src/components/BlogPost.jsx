@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
+import { useParams, Link } from 'react-router-dom';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Helmet } from 'react-helmet';
 import './BlogPost.css';
@@ -43,18 +43,32 @@ const BlogPost = () => {
     <div className="blog-post-container">
       <Helmet>
         <title>{post.title} - Antonio Smith's Blog</title>
-        <meta name="description" content={post.content.substring(0, 155)} />
+        <meta name="description" content={post.excerpt || post.content.substring(0, 155)} />
         <meta property="og:title" content={post.title} />
-        <meta property="og:description" content={post.content.substring(0, 155)} />
+        <meta property="og:description" content={post.excerpt || post.content.substring(0, 155)} />
         <meta name="keywords" content={post.tags?.join(', ')} />
       </Helmet>
 
+      <Link to="/blog" className="back-link">&larr; Back to Blog</Link>
+
       <article className="blog-post-content">
+        {post.thumbnail && (
+          <div className="post-thumbnail">
+            <img src={post.thumbnail} alt={post.title} />
+          </div>
+        )}
         <h1>{post.title}</h1>
         <div className="post-meta">
           <span className="post-date">
-            {new Date(post.createdAt?.toDate()).toLocaleDateString()}
+            {new Date(post.createdAt?.toDate()).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
           </span>
+          {post.readTime && (
+            <span className="read-time">{post.readTime} mins read</span>
+          )}
           {post.tags && (
             <div className="post-tags">
               {post.tags.map(tag => (

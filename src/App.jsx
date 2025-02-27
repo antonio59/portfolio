@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebase';
@@ -11,6 +11,7 @@ import Certifications from './components/Certifications';
 import Footer from './components/Footer';
 import Admin from './components/Admin';
 import Login from './components/Login';
+import Blog from './components/Blog';
 import './components/Admin.css';
 
 function ProtectedRoute({ children }) {
@@ -28,14 +29,42 @@ function ProtectedRoute({ children }) {
 }
 
 function App() {
+  const [error, setError] = useState(null);
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    try {
+      if (auth) {
+        setInitialized(true);
+      }
+    } catch (err) {
+      setError(err.message);
+    }
+  }, []);
+
+  if (error) {
+    return <div className="error-container">Error: {error}</div>;
+  }
+
+  if (!initialized) {
+    return <div className="loading-container">Loading...</div>;
+  }
+
   return (
-    <Router>
+    <Router future={{ v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={
           <ProtectedRoute>
             <Admin />
           </ProtectedRoute>
+        } />
+        <Route path="/blog" element={
+          <div className="App">
+            <Header />
+            <Blog />
+            <Footer />
+          </div>
         } />
         <Route path="/" element={
           <div className="App">

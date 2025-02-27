@@ -10,10 +10,13 @@
   flex-direction: column;
   min-width: 200px;
   border-right: 2px solid rgba(255, 255, 255, 0.1);
+  position: sticky;
+  top: 20px;
+  height: fit-content;
 }
 
 .company-tab {
-  padding: 1rem;
+  padding: 1rem 1.5rem;
   background: none;
   border: none;
   text-align: left;
@@ -22,27 +25,21 @@
   transition: all 0.3s ease;
   opacity: 0.7;
   font-size: 0.95rem;
+  position: relative;
+  border-left: 2px solid transparent;
 }
 
 .company-tab:hover {
   opacity: 1;
   background-color: rgba(255, 255, 255, 0.05);
+  border-left: 2px solid var(--primary-color);
 }
 
 .company-tab.active {
   color: var(--primary-color);
   opacity: 1;
-  position: relative;
-}
-
-.company-tab.active::before {
-  content: '';
-  position: absolute;
-  right: -2px;
-  top: 0;
-  height: 100%;
-  width: 2px;
-  background-color: var(--primary-color);
+  background-color: rgba(255, 255, 255, 0.05);
+  border-left: 2px solid var(--primary-color);
 }
 
 .experience-content {
@@ -83,7 +80,33 @@
 }
 
 @media screen and (max-width: 768px) {
-  .timeline::after {
+  .experience-container {
+    flex-direction: column;
+  }
+
+  .company-tabs {
+    flex-direction: row;
+    overflow-x: auto;
+    min-width: unset;
+    border-right: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+  }
+
+  .company-tab {
+    white-space: nowrap;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+  }
+
+  .company-tab:hover,
+  .company-tab.active {
+    border-left: none;
+    border-bottom: 2px solid var(--primary-color);
+  }
+}
+
+.timeline::after {
     left: 31px;
   }
   

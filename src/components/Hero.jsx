@@ -1,8 +1,11 @@
 import React from 'react';
 import { FaChevronDown } from 'react-icons/fa';
+import content from '../data/content.json';
 import './Hero.css';
 
 const Hero = () => {
+  const { title, subtitle, description } = content.hero;
+  
   return (
     <section id="hero">
       <div className="container hero-content">
@@ -10,10 +13,10 @@ const Hero = () => {
           <p className="intro">Hello I'm</p>
           <h1>Antonio.</h1>
           <h2>
-            <span className="highlight">Technical Project Manager</span> based in London
+            <span className="highlight">{subtitle}</span> based in London
           </h2>
           <p className="description">
-            Crafting impactful <span className="highlight">products</span>, shaping <span className="highlight">visual magic</span>.
+            {description}
           </p>
           <div className="cta-container">
             <a href="mailto:antoniojsmith@protonmail.com" className="btn btn-primary">Get In Touch</a>

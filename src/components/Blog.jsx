@@ -35,12 +35,13 @@ const Blog = () => {
   return (
     <div className="blog-container">
       <Helmet>
-        <title>Blog - Antonio Smith</title>
-        <meta name="description" content="Thoughts and insights on software development, technology, and more." />
-        <meta name="keywords" content="blog, software development, technology, programming" />
+        <title>Latest Articles - Antonio Smith</title>
+        <meta name="description" content="My thoughts on tech, programming, and life in general." />
+        <meta name="keywords" content="blog, software development, technology, programming, life" />
       </Helmet>
 
-      <h1 className="blog-title">Blog</h1>
+      <h1 className="blog-title">My thoughts on ... everything</h1>
+      <p className="blog-subtitle">I love writing about tech, programming, and life in general. I hope you will click on them by mistake. Here are a few of my latest articles. You can find more on my <a href="/blog" className="blog-link">blog page</a>.</p>
       
       <div className="blog-posts">
         {posts.length === 0 ? (
@@ -48,18 +49,29 @@ const Blog = () => {
         ) : (
           posts.map(post => (
             <article key={post.id} className="blog-post">
-              <h2>{post.title}</h2>
-              <div className="post-meta">
-                <span className="post-date">
-                  {new Date(post.createdAt?.toDate()).toLocaleDateString()}
-                </span>
+              {post.thumbnail && (
+                <div className="post-thumbnail">
+                  <img src={post.thumbnail} alt={post.title} />
+                </div>
+              )}
+              <div className="post-content">
+                <h2>{post.title}</h2>
+                <div className="post-meta">
+                  <span className="post-date">
+                    {new Date(post.createdAt?.toDate()).toLocaleDateString('en-US', { 
+                      year: 'numeric',
+                      month: 'long', 
+                      day: 'numeric'
+                    })}
+                    {post.readTime && (
+                      <span className="read-time">{post.readTime} mins read</span>
+                    )}
+                  </span>
+                </div>
+                <div className="post-excerpt">
+                  {post.excerpt || post.content.substring(0, 150)}...
+                </div>
               </div>
-              <div className="post-excerpt">
-                {post.content.substring(0, 200)}...
-              </div>
-              <a href={`/blog/${post.slug}`} className="read-more">
-                Read More
-              </a>
             </article>
           ))
         )}

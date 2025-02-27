@@ -24,8 +24,81 @@
     "title": "Projects",
     "developmentDescription": "A collection of software development projects showcasing technical expertise in web development, application design, and system architecture. These projects demonstrate hands-on coding skills and implementation of modern technologies.",
     "generalDescription": "A portfolio of project management initiatives spanning various domains including system implementations, process improvements, and organizational transformations. These projects highlight leadership, strategic planning, and successful delivery of complex solutions.",
-    "developmentProjects": [],
-    "generalProjects": []
+    "developmentProjects": [
+      {
+        "title": "DLR Digital Tap Prototype",
+        "description": "A digital tap in / tap out for use on the DLR train line.",
+        "technologies": ["React", "Node.js", "API Integration"],
+        "live": "https://dlrdigitaltap.v0.build/",
+        "demo": "/media/dlr-demo.html"
+      },
+      {
+        "title": "Personal Portfolio Website",
+        "description": "A fully responsive personal portfolio site with modern design and seamless user experience",
+        "technologies": ["React", "CSS", "Responsive Design"],
+        "github": "#",
+        "live": "#"
+      },
+      {
+        "title": "Task Management Web App",
+        "description": "A feature-rich task management application with drag-and-drop functionality and team collaboration tools.",
+        "technologies": ["React", "Node.js", "MongoDB"],
+        "github": "#",
+        "live": "#"
+      }
+    ],
+    "generalProjects": [
+      {
+        "title": "Workday Implementation",
+        "description": "Implemented Workday platform for human capital management, finance, and core processes, streamlining operations across the organization.",
+        "technologies": ["Workday", "HCM", "Finance"]
+      },
+      {
+        "title": "Cornerstone Implementation",
+        "description": "Led deployment of Cornerstone, a cloud-based learning and talent management platform, focusing on learning management, performance reviews, and recruitment.",
+        "technologies": ["Cornerstone", "LMS", "Talent Management"]
+      },
+      {
+        "title": "CRM Implementation",
+        "description": "Integrated a Customer Relationship Management system, streamlining sales, marketing, and customer service operations.",
+        "technologies": ["CRM", "Sales", "Marketing"]
+      },
+      {
+        "title": "Audio2Face (Phase 1 and 2)",
+        "description": "Phase 1: Initial rollout of AI-driven tool for animating facial movements from voice data. Phase 2: Enhancements including batch processing, multiple characters and shots, viewable generation, and code reuse.",
+        "technologies": ["AI", "Animation", "Voice Processing"]
+      },
+      {
+        "title": "Travel Management System",
+        "description": "Implemented a system for organizing and tracking business-related travel, improving efficiency and cost management.",
+        "technologies": ["Travel Management", "Cost Optimization"]
+      },
+      {
+        "title": "Survey Tool",
+        "description": "Deployed a survey tool for collecting feedback and data from users, enhancing decision-making and customer satisfaction.",
+        "technologies": ["Survey", "Data Collection", "Analytics"]
+      },
+      {
+        "title": "Confluence Upgrade",
+        "description": "Led an upgrade of the Confluence collaboration tool, improving internal documentation and knowledge sharing capabilities.",
+        "technologies": ["Confluence", "Documentation", "Collaboration"]
+      },
+      {
+        "title": "Recruitment Features & Upgrades",
+        "description": "Added new features to the recruitment platform, streamlining the hiring process and upgrading the system for better functionality.",
+        "technologies": ["Recruitment", "HR Tech", "System Upgrade"]
+      },
+      {
+        "title": "Talent Management",
+        "description": "Involved in talent management initiatives, integrating systems for performance reviews, employee development, and succession planning.",
+        "technologies": ["Talent Management", "Performance Reviews", "Succession Planning"]
+      },
+      {
+        "title": "Jira Triage Improvements",
+        "description": "Enhanced the Jira ticket triage process, improving workflow efficiency, prioritization, and task management for the team.",
+        "technologies": ["Jira", "Workflow Optimization", "Task Management"]
+      }
+    ]
   },
   "certifications": {
     "title": "Certifications",

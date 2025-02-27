@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { FaChevronDown, FaChevronUp, FaImage, FaBook, FaHeadphones, FaMountain, FaTv, FaSeedling } from 'react-icons/fa';
 import './About.css';
+import content from '../data/content.json';
 
 const About = () => {
   const [showMore, setShowMore] = useState(false);
+  const { about } = content;
 
   const toggleShowMore = () => {
     setShowMore(!showMore);
@@ -12,7 +14,7 @@ const About = () => {
   return (
     <section id="about">
       <div className="container">
-        <h2>About Me</h2>
+        <h2>{about.title}</h2>
         <div className="about-content">
           <img src="https://placehold.co/250x250?text=Antonio" alt="Antonio Smith" className="profile-pic" />
           <div className="about-text">
@@ -48,15 +50,7 @@ const About = () => {
             </div>
             <div className="currently-item">
               <FaMountain />
-              <span>Learning to Climb</span>
-            </div>
-            <div className="currently-item">
-              <FaTv />
-              <span>Watching Law & Order: SVU and Chicago PD</span>
-            </div>
-            <div className="currently-item">
-              <FaSeedling />
-              <span>Watering my plants</span>
+              <span>Planning a hiking trip to the Dolomites</span>
             </div>
           </div>
         </div>

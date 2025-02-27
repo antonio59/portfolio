@@ -12,11 +12,24 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    console.log('Attempting login with:', { email });
+    
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('Login successful:', userCredential.user);
       navigate('/admin');
     } catch (error) {
-      setError('Invalid email or password');
+      console.error('Login error:', error.code, error.message);
+      if (error.code === 'auth/invalid-email') {
+        setError('Invalid email format');
+      } else if (error.code === 'auth/user-not-found') {
+        setError('No user found with this email');
+      } else if (error.code === 'auth/wrong-password') {
+        setError('Incorrect password');
+      } else {
+        setError(`Authentication error: ${error.message}`);
+      }
     }
   };
 
@@ -30,7 +43,7 @@ const Login = () => {
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value.trim())}
             required
           />
         </div>

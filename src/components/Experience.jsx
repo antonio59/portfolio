@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { FaCalendar, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import './Experience.css';
+import content from '../data/content.json';
 
 const Experience = () => {
+  const { experience } = content;
   const companies = [
     {
       name: "DNEG",
@@ -49,85 +51,49 @@ const Experience = () => {
       name: "Chelsea Building Society",
       positions: [
         {
-          title: "Banking Consultant",
-          duration: "2011 – 2014",
-          description: "Ranked in the top 10% for revenue generation and helped the branch achieve national top performance in new account acquisitions through targeted strategies."
+          title: "Customer Service Representative",
+          duration: "2012 – 2014",
+          description: "Provided exceptional customer service and support for financial products and services."
         }
       ]
     }
   ];
 
-  const [activeTab, setActiveTab] = useState(0);
-  const [expandedPositions, setExpandedPositions] = useState(() => {
-    // Initialize with default expanded states
-    const expanded = {};
-    companies.forEach((company, companyIndex) => {
-      company.positions.forEach((position, positionIndex) => {
-        expanded[`${companyIndex}-${positionIndex}`] = position.defaultExpanded || false;
-      });
-    });
-    return expanded;
-  });
+  const [activeCompany, setActiveCompany] = useState(0);
 
   return (
     <section id="experience">
-      <div className="container">
-        <h2>Experience</h2>
-        <p className="section-description">
-          A journey through my professional career, showcasing my growth and key achievements across various roles.
-        </p>
-        <div className="experience-container">
-          <div className="company-tabs">
-            {companies.map((company, index) => (
-              <button
-                key={index}
-                className={`company-tab ${activeTab === index ? 'active' : ''}`}
-                onClick={() => setActiveTab(index)}
-              >
-                {company.name}
-              </button>
-            ))}
-          </div>
-          <div className="experience-content">
-            {companies[activeTab].positions.map((position, index) => (
-              <div key={index} className="position-details">
-                <div 
-                  className="position-header" 
-                  onClick={() => {
-                    if (companies[activeTab].name === "DNEG") {
-                      setExpandedPositions(prev => ({
-                        ...prev,
-                        [`${activeTab}-${index}`]: !prev[`${activeTab}-${index}`]
-                      }));
-                    }
-                  }}
-                  style={{ cursor: companies[activeTab].name === "DNEG" ? 'pointer' : 'default' }}
-                >
-                  <div>
-                    <h3>{position.title}</h3>
-                  </div>
-                  {companies[activeTab].name === "DNEG" && (
-                    <span className="expand-icon">
-                      {expandedPositions[`${activeTab}-${index}`] ? <FaChevronUp /> : <FaChevronDown />}
-                    </span>
-                  )}
-                </div>
-                {(!companies[activeTab].name === "DNEG" || expandedPositions[`${activeTab}-${index}`]) && (
-                  <div className="position-content">
-                    <p className="job-description">{position.description}</p>
-                    {position.achievements && (
-                      <ul className="achievements-list">
-                        {position.achievements.map((achievement, i) => (
-                          <li key={i}>{achievement}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
-                {index < companies[activeTab].positions.length - 1 && <hr className="position-divider" />}
+      <h2>{experience.title}</h2>
+      <div className="experience-container">
+        <div className="company-tabs">
+          {companies.map((company, index) => (
+            <button
+              key={index}
+              className={`company-tab ${index === activeCompany ? 'active' : ''}`}
+              onClick={() => setActiveCompany(index)}
+            >
+              {company.name}
+            </button>
+          ))}
+        </div>
+        <div className="experience-content">
+          {companies[activeCompany].positions.map((position, index) => (
+            <div key={index} className="job-details">
+              <h3>{position.title}</h3>
+              <div className="job-company">{companies[activeCompany].name}</div>
+              <div className="duration">
+                <FaCalendar /> {position.duration}
               </div>
-            ))}
-          </div>
+              <p className="job-description">{position.description}</p>
+              {position.achievements && (
+                <ul className="achievements">
+                  {position.achievements.map((achievement, achIndex) => (
+                    <li key={achIndex}>{achievement}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </section>

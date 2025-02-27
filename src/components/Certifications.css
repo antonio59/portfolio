@@ -1,14 +1,21 @@
 .certification-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 2rem;
-  margin-top: 2rem;
+  margin: 2rem auto;
+  max-width: 1200px;
+  padding: 0 1rem;
 }
 
 .certification-card {
-  background-color: #1e293b;
+  background-color: var(--secondary-color);
   border-radius: 8px;
-  padding: 1.5rem;
+  padding: 2rem;
+  text-align: left;
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   transition: transform 0.3s ease;
 }
 
@@ -17,15 +24,15 @@
 }
 
 .certification-card h3 {
-  font-size: 1.2rem;
-  color: var(--primary-color);
-  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
 }
 
 .certification-card p {
-  font-size: 0.9rem;
-  color: var(--text-color);
-  opacity: 0.8;
+  color: #a0aec0;
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
 }
 
 @media (max-width: 768px) {
