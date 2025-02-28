@@ -180,11 +180,14 @@ export default function ProjectsManager() {
   const handleEditProject = (project: Project) => {
     setSelectedProject(project);
     
+    // Placeholder for imageUrl if it doesn't exist on the project
+    const placeholderImageUrl = "https://images.unsplash.com/photo-1555066931-4365d14bab8c";
+    
     editForm.reset({
       title: project.title,
       description: project.description,
       category: project.category,
-      imageUrl: project.imageUrl,
+      imageUrl: (project as any).imageUrl || placeholderImageUrl, // Use type assertion as a temporary fix
       githubLink: project.githubLink || "",
       externalLink: project.externalLink || "",
       technologies: Array.isArray(project.technologies) 

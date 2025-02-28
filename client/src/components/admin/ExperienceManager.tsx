@@ -154,12 +154,23 @@ export default function ExperienceManager() {
   const handleEditExperience = (experience: Experience) => {
     setSelectedExperience(experience);
     
+    // Handle different data structures for description
+    let descriptionText = "";
+    if (Array.isArray(experience.description)) {
+      descriptionText = experience.description.join("\n");
+    } else if (typeof experience.description === 'string') {
+      descriptionText = experience.description;
+    } else if (experience.description) {
+      // Try to convert other structures to string
+      descriptionText = JSON.stringify(experience.description);
+    }
+    
     editForm.reset({
       role: experience.role,
       company: experience.company,
       period: experience.period,
-      description: experience.description,
-      order: experience.order || 0
+      description: descriptionText,
+      order: (experience as any).order || 0 // Use type assertion as a temporary fix
     });
     
     setIsEditDialogOpen(true);
