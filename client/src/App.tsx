@@ -63,16 +63,16 @@ const AdminArea = () => {
   const [, navigate] = useLocation();
   
   // Check if user is already authenticated
-  const { data: sessionData, isLoading } = useQuery({
-    queryKey: ["session"],
-    queryFn: () => apiRequest("/api/session"),
-    onError: () => {
-      setIsAuthenticated(false);
-    },
-    onSuccess: (data) => {
-      setIsAuthenticated(!!data?.authenticated);
-    }
+  const { data: sessionData, isLoading } = useQuery({ 
+    queryKey: ["/api/session"] 
   });
+  
+  // Effect to handle session data changes
+  useEffect(() => {
+    if (sessionData) {
+      setIsAuthenticated(!!sessionData.isAuthenticated);
+    }
+  }, [sessionData]);
   
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);

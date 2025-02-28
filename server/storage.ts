@@ -109,7 +109,13 @@ export class MemStorage implements IStorage {
   async createSection(insertSection: InsertSection): Promise<Section> {
     const id = this.sectionIdCounter++;
     const now = new Date();
-    const section: Section = { ...insertSection, id, updatedAt: now };
+    // Ensure subtitle is null and not undefined if not provided
+    const section: Section = { 
+      ...insertSection, 
+      id, 
+      subtitle: insertSection.subtitle || null,
+      updatedAt: now 
+    };
     this.sections.set(id, section);
     return section;
   }
@@ -149,7 +155,19 @@ export class MemStorage implements IStorage {
   async createProject(insertProject: InsertProject): Promise<Project> {
     const id = this.projectIdCounter++;
     const now = new Date();
-    const project: Project = { ...insertProject, id, updatedAt: now };
+    // Make sure optional fields are null instead of undefined
+    const project: Project = { 
+      ...insertProject, 
+      id, 
+      role: insertProject.role || null,
+      year: insertProject.year || null,
+      icon: insertProject.icon || null,
+      githubLink: insertProject.githubLink || null,
+      externalLink: insertProject.externalLink || null,
+      challenges: insertProject.challenges || null,
+      outcomes: insertProject.outcomes || null,
+      updatedAt: now 
+    };
     this.projects.set(id, project);
     return project;
   }
