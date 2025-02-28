@@ -6,7 +6,7 @@ import ProjectsManager from "./ProjectsManager";
 import ExperienceManager from "./ExperienceManager";
 import SectionsManager from "./SectionsManager";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, RotateCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
@@ -47,6 +47,10 @@ export default function AdminDashboard() {
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
   
+  // Sync frontend data to admin
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<any>(null);
+  
   // Function to import sample content
   const handleImportContent = async () => {
     // Dynamically import to avoid loading this unnecessarily
@@ -86,12 +90,50 @@ export default function AdminDashboard() {
     }
   };
   
+  // Function to sync frontend data with admin
+  const handleSyncFrontendData = async () => {
+    try {
+      setIsSyncing(true);
+      const { syncAllData } = await import("@/utils/syncFrontendData");
+      const result = await syncAllData();
+      setSyncResult(result);
+      
+      // Show success or error message
+      if (result.success) {
+        toast({
+          title: "Sync successful",
+          description: `Synced ${result.projects.count} projects, ${result.experiences.count} experiences, and ${result.sections.count} sections from frontend data.`,
+        });
+        
+        // Refresh data
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/experiences"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/admin/sections"] });
+      } else {
+        toast({
+          title: "Sync failed",
+          description: "Some frontend content could not be synced. Check the console for details.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Sync error:", error);
+      toast({
+        title: "Sync error",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+  
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
           <h1 className="text-3xl font-bold">Portfolio Admin Dashboard</h1>
-          <div className="ml-4">
+          <div className="flex space-x-2 ml-4">
             <Button 
               variant="outline" 
               onClick={handleImportContent}
@@ -107,6 +149,24 @@ export default function AdminDashboard() {
                 </>
               ) : (
                 "Import Sample Content"
+              )}
+            </Button>
+            
+            <Button 
+              variant="default" 
+              onClick={handleSyncFrontendData}
+              disabled={isSyncing}
+            >
+              {isSyncing ? (
+                <>
+                  <RotateCw className="mr-2 h-4 w-4 animate-spin" />
+                  Syncing...
+                </>
+              ) : (
+                <>
+                  <RotateCw className="mr-2 h-4 w-4" />
+                  Sync Frontend Data
+                </>
               )}
             </Button>
           </div>

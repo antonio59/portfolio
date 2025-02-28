@@ -1,0 +1,139 @@
+import { apiRequest } from "@/lib/queryClient";
+import { projects as frontendProjects, experiences as frontendExperiences } from "@/utils/ProjectData";
+
+// Function to sync projects from the frontend data to the backend
+export async function syncProjects() {
+  try {
+    const results = [];
+    // Map frontend projects format to the backend format
+    for (const project of frontendProjects) {
+      const formattedProject = {
+        title: project.title,
+        description: project.description,
+        category: project.category === "professional" ? "professional" : "hobby",
+        technologies: project.technologies ? project.technologies.split(",").map(t => t.trim()) : [], 
+        imageUrl: project.imageUrl || "",
+        githubLink: project.link || "",
+        externalLink: project.link || "",
+        icon: "",
+        year: project.year || new Date().getFullYear().toString()
+      };
+      
+      const response = await apiRequest("POST", "/api/admin/projects", formattedProject);
+      const result = await response.json();
+      results.push(result);
+    }
+    
+    return { 
+      success: true, 
+      count: results.length, 
+      message: `Successfully synced ${results.length} projects from frontend data.` 
+    };
+  } catch (error) {
+    console.error("Error syncing projects:", error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : String(error) 
+    };
+  }
+}
+
+// Function to sync experiences from the frontend data to the backend
+export async function syncExperiences() {
+  try {
+    const results = [];
+    // Map frontend experiences format to the backend format
+    for (const [index, experience] of frontendExperiences.entries()) {
+      const formattedExperience = {
+        role: experience.role,
+        company: experience.company,
+        period: experience.period,
+        description: [experience.description], // Convert to array since backend expects array
+        achievements: ["Achievements will be added later"], // Placeholder
+        methodologies: ["Methodologies will be added later"], // Placeholder
+        order: index + 1
+      };
+      
+      const response = await apiRequest("POST", "/api/admin/experiences", formattedExperience);
+      const result = await response.json();
+      results.push(result);
+    }
+    
+    return { 
+      success: true, 
+      count: results.length, 
+      message: `Successfully synced ${results.length} experiences from frontend data.` 
+    };
+  } catch (error) {
+    console.error("Error syncing experiences:", error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : String(error) 
+    };
+  }
+}
+
+// Function to create basic sections based on common portfolio elements
+export async function createBasicSections() {
+  try {
+    const results = [];
+    const basicSections = [
+      {
+        title: "About Me",
+        subtitle: "Professional Overview",
+        content: ["I'm a professional with expertise in project management and software development. My approach combines technical knowledge with strong communication skills to bridge the gap between development teams and stakeholders.", "With experience in both traditional and agile methodologies, I adapt my management style to suit each project's unique requirements."],
+        type: "about"
+      },
+      {
+        title: "My Work",
+        subtitle: "Professional Projects",
+        content: ["Browse through my collection of projects showcasing my skills and expertise."],
+        type: "professionalProject"
+      },
+      {
+        title: "Personal Projects",
+        subtitle: "Hobby & Side Projects",
+        content: ["A collection of personal projects I've worked on outside of my professional career."],
+        type: "personalProject"
+      },
+      {
+        title: "Get In Touch",
+        subtitle: "Contact Information",
+        content: ["I'm always interested in hearing about new projects and opportunities. Feel free to reach out!"],
+        type: "contact"
+      }
+    ];
+    
+    for (const [index, section] of basicSections.entries()) {
+      const response = await apiRequest("POST", "/api/admin/sections", { ...section, order: index });
+      const result = await response.json();
+      results.push(result);
+    }
+    
+    return { 
+      success: true, 
+      count: results.length, 
+      message: `Successfully created ${results.length} basic sections.` 
+    };
+  } catch (error) {
+    console.error("Error creating basic sections:", error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : String(error) 
+    };
+  }
+}
+
+// Function to sync all data at once
+export async function syncAllData() {
+  const projectResult = await syncProjects();
+  const experienceResult = await syncExperiences();
+  const sectionResult = await createBasicSections();
+  
+  return {
+    projects: projectResult,
+    experiences: experienceResult,
+    sections: sectionResult,
+    success: projectResult.success && experienceResult.success && sectionResult.success
+  };
+}
