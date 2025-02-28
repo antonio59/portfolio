@@ -130,16 +130,42 @@ export async function createBasicSections() {
   }
 }
 
-// Function to sync all data at once
+// Function to sync all data at once, including specialized projects
 export async function syncAllData() {
+  // Import main data
   const projectResult = await syncProjects();
   const experienceResult = await syncExperiences();
   const sectionResult = await createBasicSections();
   
+  // Import specialized app & PM projects
+  let specializedProjectsResult = { success: true, count: 0 };
+  try {
+    const { importAllSpecializedProjects } = await import("./importPersonalProjects");
+    const result = await importAllSpecializedProjects();
+    specializedProjectsResult = {
+      success: result.success,
+      count: (result.personal?.count || 0) + (result.professional?.count || 0)
+    };
+  } catch (error) {
+    console.error("Error importing specialized projects:", error);
+    specializedProjectsResult = { 
+      success: false, 
+      count: 0,
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
+  
   return {
-    projects: projectResult,
+    projects: {
+      ...projectResult,
+      count: (projectResult.count || 0) + specializedProjectsResult.count
+    },
     experiences: experienceResult,
     sections: sectionResult,
-    success: projectResult.success && experienceResult.success && sectionResult.success
+    specializedProjects: specializedProjectsResult,
+    success: projectResult.success && 
+             experienceResult.success && 
+             sectionResult.success && 
+             specializedProjectsResult.success
   };
 }
