@@ -8,19 +8,35 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
-  method: string,
   url: string,
-  data?: unknown | undefined,
-): Promise<Response> {
+  options?: {
+    method?: string,
+    body?: string,
+    headers?: Record<string, string>
+  }
+): Promise<any> {
+  const method = options?.method || 'GET';
+  const headers = options?.headers || {};
+  
+  if (options?.body && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+  
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
+    headers,
+    body: options?.body,
     credentials: "include",
   });
 
   await throwIfResNotOk(res);
-  return res;
+  
+  // Try to parse as JSON first, fall back to text
+  try {
+    return await res.json();
+  } catch (e) {
+    return await res.text();
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
