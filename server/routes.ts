@@ -28,7 +28,7 @@ const loginSchema = z.object({
 
 // Middleware to check if user is authenticated
 function isAuthenticated(req: Request, res: Response, next: NextFunction) {
-  if (req.isAuthenticated()) {
+  if (req.session?.userId) {
     return next();
   }
   res.status(401).json({ success: false, message: "Unauthorized" });
@@ -86,58 +86,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Authentication routes
-  app.post("/api/login", (req, res, next) => {
+  // Simple authentication route without passport
+  app.post("/api/login", async (req, res) => {
     try {
-      // Validate request body
-      loginSchema.parse(req.body);
+      const { username, password } = req.body;
+      console.log(`Login attempt: ${username}`);
       
-      passport.authenticate("local", (err: any, user: any, info: any) => {
-        if (err) { 
-          return next(err); 
-        }
-        if (!user) {
-          return res.status(401).json({ 
+      // Validate request body
+      try {
+        loginSchema.parse(req.body);
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return res.status(400).json({ 
             success: false, 
-            message: info.message || "Authentication failed" 
+            message: "Validation error", 
+            errors: error.errors 
           });
         }
-        req.logIn(user, (err) => {
-          if (err) { 
-            return next(err); 
-          }
-          return res.status(200).json({ 
-            success: true, 
-            message: "Login successful",
-            user: { id: user.id, username: user.username }
-          });
-        });
-      })(req, res, next);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Validation error", 
-          errors: error.errors 
+      }
+      
+      // Fixed credentials for admin
+      if (username === "admin" && password === "password123") {
+        // Set session
+        req.session.userId = 1;
+        
+        console.log("Login successful");
+        return res.status(200).json({ 
+          success: true, 
+          message: "Login successful",
+          user: { id: 1, username: "admin" }
         });
       }
       
-      next(error);
+      console.log("Invalid credentials");
+      return res.status(401).json({ 
+        success: false, 
+        message: "Invalid username or password" 
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Server error during login" 
+      });
     }
   });
   
   app.get("/api/logout", (req, res) => {
-    req.logout(() => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ success: false, message: "Error during logout" });
+      }
       res.status(200).json({ success: true, message: "Logged out successfully" });
     });
   });
   
   app.get("/api/session", (req, res) => {
-    if (req.isAuthenticated()) {
-      const user = req.user as any;
+    if (req.session.userId) {
       return res.json({ 
         isAuthenticated: true, 
-        user: { id: user.id, username: user.username } 
+        user: { id: 1, username: "admin" } 
       });
     }
     res.json({ isAuthenticated: false });

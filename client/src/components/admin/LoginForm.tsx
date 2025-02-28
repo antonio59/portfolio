@@ -46,13 +46,12 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
   
   // Login mutation
   const loginMutation = useMutation({
-    mutationFn: (data: LoginFormValues) => {
-      return apiRequest('/api/login', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+    mutationFn: async (data: LoginFormValues) => {
+      const response = await apiRequest('POST', '/api/login', data);
+      return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Login success:", data);
       toast({
         title: 'Login successful',
         description: 'Welcome to the admin dashboard!',
@@ -60,6 +59,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
       onLoginSuccess();
     },
     onError: (error: any) => {
+      console.error("Login error:", error);
       toast({
         title: 'Login failed',
         description: error.message || 'Invalid username or password',

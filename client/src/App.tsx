@@ -69,7 +69,7 @@ const AdminArea = () => {
   
   // Effect to handle session data changes
   useEffect(() => {
-    if (sessionData) {
+    if (sessionData && typeof sessionData === 'object' && 'isAuthenticated' in sessionData) {
       setIsAuthenticated(!!sessionData.isAuthenticated);
     }
   }, [sessionData]);
