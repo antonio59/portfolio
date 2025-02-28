@@ -1,58 +1,53 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+import { z } from "zod";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
 } from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Edit, Trash2, Plus, ArrowUp, ArrowDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Plus, Pencil, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { insertExperienceSchema } from "@shared/schema";
 
-// Experience form schema
-const experienceFormSchema = z.object({
-  company: z.string().min(2, "Company name must be at least 2 characters"),
-  role: z.string().min(2, "Role must be at least 2 characters"),
-  period: z.string().min(2, "Period must be at least 2 characters"),
-  description: z.string().min(10, "Description must include at least one item"),
-  achievements: z.string().min(10, "Achievements must include at least one item"),
-  methodologies: z.string().min(3, "Methodologies must include at least one item"),
+// Extended experience form schema with validation
+const experienceFormSchema = insertExperienceSchema.extend({
+  description: z.string().min(1, "Description is required").transform(val => 
+    JSON.parse(val) as string[]
+  ),
+  achievements: z.string().min(1, "Achievements are required").transform(val => 
+    JSON.parse(val) as string[]
+  ),
+  methodologies: z.string().min(1, "Methodologies are required").transform(val => 
+    JSON.parse(val) as string[]
+  ),
   order: z.number().optional(),
 });
 
@@ -61,90 +56,119 @@ type ExperienceFormValues = z.infer<typeof experienceFormSchema>;
 export default function ExperienceManager() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [currentExperience, setCurrentExperience] = useState<any>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [experienceToDelete, setExperienceToDelete] = useState<number | null>(null);
-  
+  const [selectedExperience, setSelectedExperience] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Form setup for adding/editing experiences
-  const form = useForm<ExperienceFormValues>({
+  // Fetch experiences data
+  const { data: experiences, isLoading, error } = useQuery({
+    queryKey: ["/api/admin/experiences"],
+    queryFn: () => apiRequest("/api/admin/experiences"),
+  });
+  
+  // Add experience form
+  const addForm = useForm<ExperienceFormValues>({
     resolver: zodResolver(experienceFormSchema),
     defaultValues: {
       company: "",
       role: "",
       period: "",
-      description: "",
-      achievements: "",
-      methodologies: "",
-      order: 0,
+      description: "[]",
+      achievements: "[]",
+      methodologies: "[]",
     },
   });
   
-  // Fetch experiences
-  const { data: experiences, isLoading } = useQuery({
-    queryKey: ["admin", "experiences"],
-    queryFn: () => apiRequest("/api/admin/experiences"),
+  // Edit experience form
+  const editForm = useForm<ExperienceFormValues>({
+    resolver: zodResolver(experienceFormSchema),
+    defaultValues: {
+      company: "",
+      role: "",
+      period: "",
+      description: "[]",
+      achievements: "[]",
+      methodologies: "[]",
+    },
   });
   
-  // Create experience mutation
-  const createMutation = useMutation({
-    mutationFn: (data: any) => apiRequest("/api/admin/experiences", {
-      method: "POST",
-      body: JSON.stringify(data)
-    }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "experiences"] });
-      setIsAddDialogOpen(false);
-      form.reset();
-      toast({
-        title: "Experience created",
-        description: "The experience has been created successfully.",
+  // Prepare experience data for form editing
+  const prepareExperienceForEdit = (experience: any) => {
+    setSelectedExperience(experience);
+    
+    // Format data for the form
+    editForm.reset({
+      company: experience.company,
+      role: experience.role,
+      period: experience.period,
+      description: JSON.stringify(experience.description),
+      achievements: JSON.stringify(experience.achievements),
+      methodologies: JSON.stringify(experience.methodologies),
+    });
+    
+    setIsEditDialogOpen(true);
+  };
+  
+  // Mutations
+  const addExperienceMutation = useMutation({
+    mutationFn: (data: ExperienceFormValues) => {
+      return apiRequest("/api/admin/experiences", {
+        method: "POST",
+        body: JSON.stringify(data),
       });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/experiences"] });
+      toast({
+        title: "Experience added",
+        description: "The experience has been added successfully.",
+      });
+      setIsAddDialogOpen(false);
+      addForm.reset();
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create experience",
+        title: "Failed to add experience",
+        description: error.message || "Something went wrong.",
         variant: "destructive",
       });
     },
   });
   
-  // Update experience mutation
-  const updateMutation = useMutation({
-    mutationFn: (data: any) => apiRequest(`/api/admin/experiences/${currentExperience.id}`, {
-      method: "PUT",
-      body: JSON.stringify(data)
-    }),
+  const updateExperienceMutation = useMutation({
+    mutationFn: (data: ExperienceFormValues & { id: number }) => {
+      const { id, ...experienceData } = data;
+      return apiRequest(`/api/admin/experiences/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(experienceData),
+      });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "experiences"] });
-      setIsEditDialogOpen(false);
-      setCurrentExperience(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/experiences"] });
       toast({
         title: "Experience updated",
         description: "The experience has been updated successfully.",
       });
+      setIsEditDialogOpen(false);
+      setSelectedExperience(null);
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update experience",
+        title: "Failed to update experience",
+        description: error.message || "Something went wrong.",
         variant: "destructive",
       });
     },
   });
   
-  // Delete experience mutation
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => apiRequest(`/api/admin/experiences/${id}`, {
-      method: "DELETE"
-    }),
+  const deleteExperienceMutation = useMutation({
+    mutationFn: (id: number) => {
+      return apiRequest(`/api/admin/experiences/${id}`, {
+        method: "DELETE",
+      });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "experiences"] });
-      setDeleteDialogOpen(false);
-      setExperienceToDelete(null);
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/experiences"] });
       toast({
         title: "Experience deleted",
         description: "The experience has been deleted successfully.",
@@ -152,323 +176,279 @@ export default function ExperienceManager() {
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete experience",
+        title: "Failed to delete experience",
+        description: error.message || "Something went wrong.",
         variant: "destructive",
       });
     },
   });
   
-  // Move experience order mutation
-  const moveOrderMutation = useMutation({
-    mutationFn: ({ id, order }: { id: number, order: number }) => 
-      apiRequest(`/api/admin/experiences/${id}`, {
-        method: "PUT",
-        body: JSON.stringify({ order })
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin", "experiences"] });
-      toast({
-        title: "Order updated",
-        description: "The experience order has been updated.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update order",
-        variant: "destructive",
-      });
-    },
-  });
-  
-  // Handle form submission
+  // Handle form submissions
   const onSubmit = (data: ExperienceFormValues) => {
-    // Process text areas into arrays
-    const processedData = {
-      ...data,
-      description: data.description.split("\n").filter(Boolean),
-      achievements: data.achievements.split("\n").filter(Boolean),
-      methodologies: data.methodologies.split(",").map(item => item.trim()).filter(Boolean),
-    };
-    
-    if (currentExperience) {
-      updateMutation.mutate(processedData);
+    if (selectedExperience) {
+      updateExperienceMutation.mutate({
+        ...data,
+        id: selectedExperience.id,
+      });
     } else {
-      createMutation.mutate(processedData);
+      addExperienceMutation.mutate(data);
     }
   };
   
-  // Handle move up/down to reorder experiences
-  const handleMove = (experience: any, direction: 'up' | 'down') => {
-    if (!experiences) return;
-    
-    const sortedExperiences = [...experiences].sort((a: any, b: any) => a.order - b.order);
-    const currentIndex = sortedExperiences.findIndex((e: any) => e.id === experience.id);
-    
-    if (direction === 'up' && currentIndex > 0) {
-      const prevExperience = sortedExperiences[currentIndex - 1];
-      moveOrderMutation.mutate({ id: experience.id, order: prevExperience.order });
-      moveOrderMutation.mutate({ id: prevExperience.id, order: experience.order });
-    } else if (direction === 'down' && currentIndex < sortedExperiences.length - 1) {
-      const nextExperience = sortedExperiences[currentIndex + 1];
-      moveOrderMutation.mutate({ id: experience.id, order: nextExperience.order });
-      moveOrderMutation.mutate({ id: nextExperience.id, order: experience.order });
-    }
-  };
-  
-  // Handle edit button click
-  const handleEdit = (experience: any) => {
-    setCurrentExperience(experience);
-    
-    // Format data for the form
-    form.reset({
-      company: experience.company,
-      role: experience.role,
-      period: experience.period,
-      description: Array.isArray(experience.description) 
-        ? experience.description.join("\n") 
-        : "",
-      achievements: Array.isArray(experience.achievements) 
-        ? experience.achievements.join("\n") 
-        : "",
-      methodologies: Array.isArray(experience.methodologies) 
-        ? experience.methodologies.join(", ") 
-        : "",
-      order: experience.order,
-    });
-    
-    setIsEditDialogOpen(true);
-  };
-  
-  // Handle delete button click
-  const handleDelete = (id: number) => {
-    setExperienceToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-  
-  // Handle confirm delete
-  const confirmDelete = () => {
-    if (experienceToDelete !== null) {
-      deleteMutation.mutate(experienceToDelete);
-    }
-  };
-  
-  // Reset form when opening add dialog
-  const handleAddClick = () => {
-    form.reset({
-      company: "",
-      role: "",
-      period: "",
-      description: "",
-      achievements: "",
-      methodologies: "",
-      order: experiences ? experiences.length : 0,
-    });
-    setIsAddDialogOpen(true);
-  };
-  
-  if (isLoading) {
-    return <div className="py-10 text-center">Loading experiences...</div>;
-  }
+  if (isLoading) return <div>Loading experiences...</div>;
+  if (error) return <div>Error loading experiences: {(error as Error).message}</div>;
   
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Manage Work Experience</h2>
-        <Button onClick={handleAddClick}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Experience
-        </Button>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Experience Management</h2>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Experience
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle>Add New Experience</DialogTitle>
+              <DialogDescription>
+                Create a new work experience for your portfolio.
+              </DialogDescription>
+            </DialogHeader>
+            <Form {...addForm}>
+              <form onSubmit={addForm.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={addForm.control}
+                  name="company"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Company name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={addForm.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Role</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Your position" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={addForm.control}
+                  name="period"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Period</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Jan 2020 - Present" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={addForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder='["Managed cross-functional teams", "Led product initiatives"]' 
+                          rows={3}
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter as JSON array of strings
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={addForm.control}
+                  name="achievements"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Achievements</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder='["Increased revenue by 30%", "Reduced costs by 20%"]' 
+                          rows={3}
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter as JSON array of strings
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={addForm.control}
+                  name="methodologies"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Methodologies/Skills</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder='["Agile", "Scrum", "JIRA", "Project Management"]' 
+                          rows={3}
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter as JSON array of strings
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={() => setIsAddDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    disabled={addExperienceMutation.isPending}
+                  >
+                    {addExperienceMutation.isPending ? "Adding..." : "Add Experience"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
       </div>
       
-      {experiences && experiences.length > 0 ? (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Period</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {[...experiences]
-              .sort((a: any, b: any) => a.order - b.order)
-              .map((experience: any) => (
-                <TableRow key={experience.id}>
-                  <TableCell>{experience.order}</TableCell>
-                  <TableCell className="font-medium">{experience.company}</TableCell>
-                  <TableCell>{experience.role}</TableCell>
-                  <TableCell>{experience.period}</TableCell>
-                  <TableCell className="text-right">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleMove(experience, 'up')}
-                      disabled={experience.order === 0}
-                    >
-                      <ArrowUp className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleMove(experience, 'down')}
-                      disabled={experience.order === experiences.length - 1}
-                    >
-                      <ArrowDown className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(experience)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(experience.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>No Experience Entries</CardTitle>
-            <CardDescription>
-              There are no work experience entries yet. Add your first experience to get started.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      )}
-      
-      {/* Add Experience Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add New Work Experience</DialogTitle>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="company"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Company</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Company Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Role</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Job Title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="period"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Period</FormLabel>
-                    <FormControl>
-                      <Input placeholder="2020 - Present" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Responsibilities (One per line)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Responsibility 1&#10;Responsibility 2" 
-                        className="min-h-[100px]" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="achievements"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Achievements (One per line)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Achievement 1&#10;Achievement 2" 
-                        className="min-h-[100px]" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="methodologies"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Methodologies & Skills (comma-separated)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Agile, PRINCE2, Scrum" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button type="submit" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Saving..." : "Save Experience"}
+      {/* Experience listing */}
+      <div className="space-y-4">
+        {experiences && experiences.length > 0 ? (
+          experiences.map((experience: any) => (
+            <Card key={experience.id}>
+              <CardHeader>
+                <CardTitle className="text-lg">{experience.company}</CardTitle>
+                <CardDescription className="flex justify-between">
+                  <span>{experience.role}</span>
+                  <span>{experience.period}</span>
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Description:</h4>
+                    <ul className="list-disc pl-5 text-sm">
+                      {experience.description.map((item: string, index: number) => (
+                        <li key={index}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Achievements:</h4>
+                    <ul className="list-disc pl-5 text-sm">
+                      {experience.achievements.map((item: string, index: number) => (
+                        <li key={index}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Skills & Methodologies:</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {experience.methodologies.map((item: string, index: number) => (
+                        <span key={index} className="text-xs px-2 py-1 rounded-full bg-gray-100">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-end space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => prepareExperienceForEdit(experience)}
+                >
+                  <Pencil className="h-4 w-4 mr-1" /> Edit
                 </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="h-4 w-4 mr-1" /> Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Experience</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this experience at {experience.company}? This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deleteExperienceMutation.mutate(experience.id)}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </CardFooter>
+            </Card>
+          ))
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No experiences found. Add your first experience!</p>
+          </div>
+        )}
+      </div>
       
       {/* Edit Experience Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Edit Work Experience</DialogTitle>
+            <DialogTitle>Edit Experience</DialogTitle>
+            <DialogDescription>
+              Update experience information.
+            </DialogDescription>
           </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <Form {...editForm}>
+            <form onSubmit={editForm.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
-                control={form.control}
+                control={editForm.control}
                 name="company"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Company</FormLabel>
                     <FormControl>
-                      <Input placeholder="Company Name" {...field} />
+                      <Input placeholder="Company name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -476,13 +456,13 @@ export default function ExperienceManager() {
               />
               
               <FormField
-                control={form.control}
+                control={editForm.control}
                 name="role"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Role</FormLabel>
                     <FormControl>
-                      <Input placeholder="Job Title" {...field} />
+                      <Input placeholder="Your position" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -490,13 +470,13 @@ export default function ExperienceManager() {
               />
               
               <FormField
-                control={form.control}
+                control={editForm.control}
                 name="period"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Period</FormLabel>
                     <FormControl>
-                      <Input placeholder="2020 - Present" {...field} />
+                      <Input placeholder="Jan 2020 - Present" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -504,82 +484,87 @@ export default function ExperienceManager() {
               />
               
               <FormField
-                control={form.control}
+                control={editForm.control}
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Responsibilities (One per line)</FormLabel>
+                    <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Responsibility 1&#10;Responsibility 2" 
-                        className="min-h-[100px]" 
+                        placeholder='["Managed cross-functional teams", "Led product initiatives"]' 
+                        rows={3}
                         {...field} 
                       />
                     </FormControl>
+                    <FormDescription>
+                      Enter as JSON array of strings
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               
               <FormField
-                control={form.control}
+                control={editForm.control}
                 name="achievements"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Achievements (One per line)</FormLabel>
+                    <FormLabel>Achievements</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Achievement 1&#10;Achievement 2" 
-                        className="min-h-[100px]" 
+                        placeholder='["Increased revenue by 30%", "Reduced costs by 20%"]' 
+                        rows={3}
                         {...field} 
                       />
                     </FormControl>
+                    <FormDescription>
+                      Enter as JSON array of strings
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               
               <FormField
-                control={form.control}
+                control={editForm.control}
                 name="methodologies"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Methodologies & Skills (comma-separated)</FormLabel>
+                    <FormLabel>Methodologies/Skills</FormLabel>
                     <FormControl>
-                      <Input placeholder="Agile, PRINCE2, Scrum" {...field} />
+                      <Textarea 
+                        placeholder='["Agile", "Scrum", "JIRA", "Project Management"]' 
+                        rows={3}
+                        {...field} 
+                      />
                     </FormControl>
+                    <FormDescription>
+                      Enter as JSON array of strings
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
               
-              <DialogFooter>
-                <Button type="submit" disabled={updateMutation.isPending}>
-                  {updateMutation.isPending ? "Updating..." : "Update Experience"}
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
+                  Cancel
                 </Button>
-              </DialogFooter>
+                <Button 
+                  type="submit" 
+                  disabled={updateExperienceMutation.isPending}
+                >
+                  {updateExperienceMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
             </form>
           </Form>
         </DialogContent>
       </Dialog>
-      
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this experience entry.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
