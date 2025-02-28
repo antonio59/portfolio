@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="John Doe - Creative developer crafting digital experiences" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>John Doe | Creative Developer</title>
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        overflow-x: hidden;
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .cursor-dot {
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        transition: transform 0.2s, width 0.2s, height 0.2s, background-color 0.2s;
+      }
+      .cursor-hover {
+        transform: translate(-50%, -50%) scale(1.5);
+        background-color: rgba(77, 171, 247, 0.2) !important;
+        mix-blend-mode: exclusion;
+      }
+    </style>
+  </head>
+  <body class="font-sans text-textColor bg-primary">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
