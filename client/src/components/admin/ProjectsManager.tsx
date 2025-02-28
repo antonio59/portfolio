@@ -218,8 +218,8 @@ export default function ProjectsManager() {
 
   // Filter projects by category
   const filteredProjects = categoryFilter
-    ? (projects as any[]).filter(project => project.category === categoryFilter)
-    : projects;
+    ? (projects as Project[]).filter(project => project.category === categoryFilter)
+    : (projects as Project[]);
 
   // Get friendly category name
   const getCategoryName = (category: string) => {
