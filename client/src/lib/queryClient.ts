@@ -8,35 +8,45 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest(
-  url: string,
-  options?: {
-    method?: string,
-    body?: string,
-    headers?: Record<string, string>
-  }
-): Promise<any> {
-  const method = options?.method || 'GET';
-  const headers = options?.headers || {};
+  methodOrUrl: string,
+  urlOrData?: string | any,
+  data?: any
+): Promise<Response> {
+  let method: string;
+  let url: string;
+  let body: string | undefined;
   
-  if (options?.body && !headers['Content-Type']) {
+  // Handle both apiRequest(url, options) and apiRequest(method, url, data) patterns
+  if (typeof urlOrData === 'string') {
+    // New pattern: apiRequest('POST', '/api/login', data)
+    method = methodOrUrl;
+    url = urlOrData;
+    body = data ? JSON.stringify(data) : undefined;
+  } else {
+    // Old pattern: apiRequest('/api/login', { method: 'POST', body: JSON.stringify(data) })
+    method = urlOrData?.method || 'GET';
+    url = methodOrUrl;
+    body = urlOrData?.body;
+  }
+  
+  const headers: Record<string, string> = {};
+  
+  if (body && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
   
   const res = await fetch(url, {
     method,
     headers,
-    body: options?.body,
+    body,
     credentials: "include",
   });
 
-  await throwIfResNotOk(res);
-  
-  // Try to parse as JSON first, fall back to text
-  try {
-    return await res.json();
-  } catch (e) {
-    return await res.text();
+  if (!res.ok) {
+    await throwIfResNotOk(res);
   }
+  
+  return res;
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

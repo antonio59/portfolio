@@ -15,14 +15,14 @@ export default function AdminDashboard() {
   
   // Check session status
   const { data: sessionData, isLoading: sessionLoading } = useQuery({
-    queryKey: ["session"],
-    queryFn: () => apiRequest("/api/session"),
+    queryKey: ["/api/session"],
   });
   
   // Logout function
   const handleLogout = async () => {
     try {
-      await apiRequest("/api/logout", { method: "GET" });
+      const response = await apiRequest("GET", "/api/logout");
+      await response.json();
       toast({
         title: "Logged out",
         description: "You have been logged out successfully.",
@@ -30,6 +30,7 @@ export default function AdminDashboard() {
       // Reload the page to reset the app state
       window.location.reload();
     } catch (error) {
+      console.error("Logout error:", error);
       toast({
         title: "Logout failed",
         description: "Something went wrong during logout.",
