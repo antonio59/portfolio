@@ -12,7 +12,7 @@ export async function syncProjects() {
       const formattedProject = {
         title: project.title,
         description: project.description,
-        category: project.category === "professional" ? "professional" : "hobby",
+        category: project.category === "professional" ? "project_management" : "app_development",
         technologies: ["HTML", "CSS", "JavaScript"], // Default technologies
         imageUrl: project.imageUrl || "",
         githubLink: project.link || "",

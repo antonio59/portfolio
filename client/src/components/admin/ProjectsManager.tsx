@@ -36,6 +36,7 @@ export default function ProjectsManager() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Fetch all projects
@@ -49,7 +50,7 @@ export default function ProjectsManager() {
     defaultValues: {
       title: "",
       description: "",
-      category: "professional",
+      category: "project_management",
       imageUrl: "",
       githubLink: "",
       externalLink: "",
@@ -65,7 +66,7 @@ export default function ProjectsManager() {
     defaultValues: {
       title: "",
       description: "",
-      category: "professional",
+      category: "project_management",
       imageUrl: "",
       githubLink: "",
       externalLink: "",
@@ -215,6 +216,22 @@ export default function ProjectsManager() {
     }
   };
 
+  // Filter projects by category
+  const filteredProjects = categoryFilter
+    ? (projects as any[]).filter(project => project.category === categoryFilter)
+    : projects;
+
+  // Get friendly category name
+  const getCategoryName = (category: string) => {
+    switch (category) {
+      case 'project_management': return 'Professional Project Management';
+      case 'app_development': return 'Personal App Development';
+      case 'client': return 'Client Project';
+      case 'research': return 'Research Project';
+      default: return category.charAt(0).toUpperCase() + category.slice(1);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-12">
@@ -232,10 +249,42 @@ export default function ProjectsManager() {
         </Button>
       </div>
 
-      {projects.length === 0 ? (
+      {/* Category filter buttons */}
+      <div className="flex gap-2 mb-4">
+        <Button 
+          variant={categoryFilter === null ? "default" : "outline"} 
+          onClick={() => setCategoryFilter(null)}
+        >
+          All
+        </Button>
+        <Button 
+          variant={categoryFilter === "project_management" ? "default" : "outline"} 
+          onClick={() => setCategoryFilter("project_management")}
+        >
+          Project Management
+        </Button>
+        <Button 
+          variant={categoryFilter === "app_development" ? "default" : "outline"} 
+          onClick={() => setCategoryFilter("app_development")}
+        >
+          App Development
+        </Button>
+        <Button 
+          variant={categoryFilter === "client" ? "default" : "outline"} 
+          onClick={() => setCategoryFilter("client")}
+        >
+          Client Projects
+        </Button>
+      </div>
+
+      {filteredProjects.length === 0 ? (
         <Card>
           <CardContent className="p-6">
-            <p className="text-center text-muted-foreground">No projects found. Add your first project to get started.</p>
+            <p className="text-center text-muted-foreground">
+              {categoryFilter 
+                ? `No ${getCategoryName(categoryFilter)} projects found.` 
+                : 'No projects found. Add your first project to get started.'}
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -251,10 +300,10 @@ export default function ProjectsManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {projects.map((project: Project) => (
+                {filteredProjects.map((project: Project) => (
                   <TableRow key={project.id}>
                     <TableCell className="font-medium">{project.title}</TableCell>
-                    <TableCell>{project.category}</TableCell>
+                    <TableCell>{getCategoryName(project.category)}</TableCell>
                     <TableCell>{project.year || "N/A"}</TableCell>
                     <TableCell className="flex space-x-2">
                       <Button variant="outline" size="sm" onClick={() => handleEditProject(project)}>
@@ -312,8 +361,10 @@ export default function ProjectsManager() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="professional">Professional</SelectItem>
-                          <SelectItem value="hobby">Hobby</SelectItem>
+                          <SelectItem value="project_management">Professional Project Management</SelectItem>
+                          <SelectItem value="app_development">Personal App Development</SelectItem>
+                          <SelectItem value="client">Client Project</SelectItem>
+                          <SelectItem value="research">Research Project</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -495,8 +546,10 @@ export default function ProjectsManager() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="professional">Professional</SelectItem>
-                          <SelectItem value="hobby">Hobby</SelectItem>
+                          <SelectItem value="project_management">Professional Project Management</SelectItem>
+                          <SelectItem value="app_development">Personal App Development</SelectItem>
+                          <SelectItem value="client">Client Project</SelectItem>
+                          <SelectItem value="research">Research Project</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -640,15 +693,11 @@ export default function ProjectsManager() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle>Delete Project</DialogTitle>
           </DialogHeader>
-          
-          <p className="py-4">
-            Are you sure you want to delete the project "{selectedProject?.title}"? This action cannot be undone.
-          </p>
-          
+          <p>Are you sure you want to delete this project? This action cannot be undone.</p>
           <DialogFooter>
             <Button 
               type="button" 
@@ -669,7 +718,7 @@ export default function ProjectsManager() {
                   Deleting...
                 </>
               ) : (
-                "Delete Project"
+                "Delete"
               )}
             </Button>
           </DialogFooter>
