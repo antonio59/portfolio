@@ -13,12 +13,23 @@ import Admin from './components/Admin';
 import Login from './components/Login';
 import Blog from './components/Blog';
 import './components/Admin.css';
+import './components/LoadingSpinner.css';
+import './index.css';
+
+function LoadingSpinner() {
+  return (
+    <div className="loading-spinner-container">
+      <div className="loading-spinner"></div>
+      <p>Loading your experience...</p>
+    </div>
+  );
+}
 
 function ProtectedRoute({ children }) {
   const [user, loading] = useAuthState(auth);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner />;
   }
 
   if (!user) {
@@ -36,20 +47,19 @@ function App() {
   useEffect(() => {
     const loadContent = async () => {
       try {
-        if (auth) {
-          setInitialized(true);
-          // First try to load from localStorage
-          const savedContent = localStorage.getItem('portfolioContent');
-          if (savedContent) {
-            setContent(JSON.parse(savedContent));
-          } else {
-            // If not in localStorage, load from content.json
-            const response = await import('./data/content.json');
-            setContent(response.default);
-          }
+        // First try to load from localStorage
+        const savedContent = localStorage.getItem('portfolioContent');
+        if (savedContent) {
+          setContent(JSON.parse(savedContent));
+        } else {
+          // If not in localStorage, load from content.json
+          const response = await import('./data/content.json');
+          setContent(response.default);
         }
+        setInitialized(true);
       } catch (err) {
         setError(err.message);
+        setInitialized(true);
       }
     };
     loadContent();
@@ -60,7 +70,7 @@ function App() {
   }
 
   if (!initialized || !content) {
-    return <div className="loading-container">Loading...</div>;
+    return <LoadingSpinner />;
   }
 
   return (
