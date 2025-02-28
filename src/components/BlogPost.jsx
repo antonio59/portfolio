@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Helmet } from 'react-helmet';
 import './BlogPost.css';
@@ -11,24 +11,26 @@ const BlogPost = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const postsRef = collection(db, 'blog-posts');
-        const q = query(postsRef, where('slug', '==', slug));
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
-          const postData = querySnapshot.docs[0].data();
-          setPost({ id: querySnapshot.docs[0].id, ...postData });
+    const postsRef = collection(db, 'blog-posts');
+    const q = query(postsRef, where('slug', '==', slug));
+
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        if (!snapshot.empty) {
+          const postData = snapshot.docs[0].data();
+          setPost({ id: snapshot.docs[0].id, ...postData });
+        } else {
+          setPost(null);
         }
-      } catch (error) {
+        setLoading(false);
+      },
+      (error) => {
         console.error('Error fetching blog post:', error);
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    fetchPost();
+    return () => unsubscribe();
   }, [slug]);
 
   if (loading) {

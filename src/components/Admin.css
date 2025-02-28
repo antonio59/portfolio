@@ -1,56 +1,299 @@
-.admin-dashboard {
-  padding: 2rem;
+.admin-container {
+  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  background-color: var(--background-color);
 }
 
-.section-nav {
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.admin-header h1 {
+  color: #212529;
+  font-size: 2rem;
+  margin: 0;
+}
+
+.admin-controls {
+  display: flex;
+  gap: 1rem;
+}
+
+.admin-nav {
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
-  flex-wrap: wrap;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.nav-button {
-  padding: 0.5rem 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background: white;
+.admin-nav button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background-color: transparent;
+  color: #495057;
+  font-weight: 500;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
-.nav-button.active {
-  background: #007bff;
+.admin-nav button:hover {
+  background-color: #e9ecef;
+  color: #212529;
+}
+
+.admin-nav button.active {
+  background-color: #339af0;
   color: white;
-  border-color: #0056b3;
 }
 
 .admin-section {
-  margin-bottom: 2rem;
-  background: white;
+  background-color: white;
   padding: 2rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.admin-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 8px;
+}
+
+.project-section h3 {
+  color: #e2e8f0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.items-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.item-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.item-card .form-group label {
+  color: #333333;
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.item-card input[type="text"],
+.item-card textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #ffffff;
+  color: #333333;
+  margin-bottom: 10px;
+}
+
+.item-card input:focus,
+.item-card textarea:focus {
+  border-color: #666;
+  outline: none;
+}
+
+.item-card input[type="text"],
+.item-card textarea {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.form-group input[type="text"][value*=","] {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  padding: 16px 0;
+}
+
+.delete-button {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: rgb(255, 59, 48);
+  border: 1px solid rgba(255, 59, 48, 0.2);
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 16px;
+}
+
+.delete-button:hover {
+  background-color: rgba(255, 59, 48, 0.2);
+  border-color: rgba(255, 59, 48, 0.3);
+}
+
+.add-button {
+  padding: 0.75rem 1.5rem;
+  margin-bottom: 1.5rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 6px;
+  color: #3b82f6;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.add-button:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 20px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-color);
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 1rem;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--input-background);
+  color: var(--text-color);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #339af0;
+  box-shadow: 0 0 0 3px rgba(51,154,240,0.1);
+}
+
+.preview-button,
+.save-button,
+.logout-button,
+.add-button,
+.delete-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preview-button {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.save-button {
+  background-color: #339af0;
+  color: white;
+}
+
+.logout-button {
+  background-color: #fa5252;
+  color: white;
+}
+
+.add-button {
+  background-color: #40c057;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.delete-button {
+  background-color: #fa5252;
+  color: white;
+}
+
+.preview-button:hover,
+.save-button:hover,
+.logout-button:hover,
+.add-button:hover,
+.delete-button:hover {
+  filter: brightness(0.9);
+}
+
+.welcome-message {
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  color: #212529;
+  font-size: 1.5rem;
+}
+
+.blog-posts-list,
+.certification-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.blog-post-item {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.post-meta {
+  display: flex;
+  gap: 1rem;
+  color: #868e96;
+  margin: 0.5rem 0;
+}
+
+.post-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .form-group textarea {
@@ -58,67 +301,113 @@
   resize: vertical;
 }
 
-.cards-container {
-  margin-top: 2rem;
+.certification-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.admin-section .certification-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.admin-section .certification-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.admin-section .certification-card .form-group {
+  margin-bottom: 15px;
+}
+
+.admin-section .certification-card input,
+.admin-section .certification-card textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+
+.certification-card textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.admin-section .certification-card .delete-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.admin-section .certification-card .delete-button:hover {
+  background-color: #c82333;
 }
 
 .card-item {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  transition: all 0.3s ease;
-  cursor: move;
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  background-color: var(--card-background);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-item:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.card-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
 }
 
 .card-item.pinned {
   border-color: #007bff;
   background-color: #f8f9ff;
+  box-shadow: 0 2px 8px rgba(0,123,255,0.2);
 }
 
 .card-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .pin-button {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.25rem;
+  font-size: 1.2em;
   opacity: 0.5;
-  transition: opacity 0.3s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.pin-button:hover {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
 }
 
 .pin-button.pinned {
   opacity: 1;
-}
-
-.save-button {
-  background-color: #007bff;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  margin-top: 2rem;
-  transition: background-color 0.3s ease;
-}
-
-.save-button:hover {
-  background-color: #0056b3;
+  color: var(--primary-color);
 }
 
 .admin-section h2 {
@@ -129,4 +418,421 @@
 .admin-section h3 {
   margin: 1rem 0;
   color: #666;
+}
+/* Dark Mode Styles */
+.admin-container {
+  background-color: #121212;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+.admin-header {
+  background-color: #1e1e1e;
+  border-bottom: 1px solid #333;
+}
+
+.admin-header h1 {
+  color: #ffffff;
+}
+
+.admin-nav {
+  background-color: #1e1e1e;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.admin-nav button {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  border: 1px solid #333;
+}
+
+.admin-nav button:hover {
+  background-color: #2d2d2d;
+  color: #ffffff;
+}
+
+.admin-nav button.active {
+  background-color: #0066cc;
+  color: #ffffff;
+  border-color: #0077ee;
+}
+
+.admin-section {
+  background-color: #1e1e1e;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.admin-section-header {
+  background-color: #252525;
+  border-bottom: 1px solid #333;
+}
+
+.admin-section h2 {
+  color: #ffffff;
+}
+
+.admin-section h3 {
+  color: #e0e0e0;
+}
+
+.form-group label {
+  color: #e0e0e0;
+}
+
+.form-group input,
+.form-group textarea {
+  background-color: #252525;
+  color: #e0e0e0;
+  border: 1px solid #333;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #0066cc;
+  box-shadow: 0 0 0 2px rgba(0,102,204,0.2);
+}
+
+.item-card,
+.card-item,
+.blog-post-item {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.item-card:hover,
+.card-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.card-header {
+  background-color: #252525;
+  border-bottom: 1px solid #333;
+}
+
+.add-button {
+  background-color: #006633;
+  color: #ffffff;
+  border: 1px solid #007744;
+}
+
+.add-button:hover {
+  background-color: #007744;
+}
+
+.save-button {
+  background-color: #0066cc;
+  color: #ffffff;
+  border: 1px solid #0077ee;
+}
+
+.save-button:hover {
+  background-color: #0077ee;
+}
+
+.preview-button {
+  background-color: #333;
+  color: #ffffff;
+  border: 1px solid #444;
+}
+
+.preview-button:hover {
+  background-color: #444;
+}
+
+.logout-button {
+  background-color: #cc0000;
+  color: #ffffff;
+  border: 1px solid #dd0000;
+}
+
+.logout-button:hover {
+  background-color: #dd0000;
+}
+
+.delete-button {
+  background-color: #cc0000;
+  color: #ffffff;
+  border: 1px solid #dd0000;
+}
+
+.delete-button:hover {
+  background-color: #dd0000;
+}
+
+.welcome-message {
+  background-color: #1e1e1e;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.post-meta {
+  color: #999;
+}
+
+.post-actions button {
+  background-color: #252525;
+  color: #ffffff;
+  border: 1px solid #333;
+}
+
+.post-actions button:hover {
+  background-color: #333;
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.certification-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.admin-section .certification-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.admin-section .certification-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.admin-section .certification-card .form-group {
+  margin-bottom: 15px;
+}
+
+.admin-section .certification-card input,
+.admin-section .certification-card textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+
+.certification-card textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.admin-section .certification-card .delete-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.admin-section .certification-card .delete-button:hover {
+  background-color: #c82333;
+}
+
+.card-item {
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  background-color: var(--card-background);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.card-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.card-item.pinned {
+  border-color: #007bff;
+  background-color: #f8f9ff;
+  box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.pin-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2em;
+  opacity: 0.5;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.pin-button:hover {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.pin-button.pinned {
+  opacity: 1;
+  color: var(--primary-color);
+}
+
+.admin-section h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.admin-section h3 {
+  margin: 1rem 0;
+  color: #666;
+}
+/* Dark Mode Styles */
+.admin-container {
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+.admin-header {
+  background-color: #2d2d2d;
+  border-bottom: 1px solid #404040;
+}
+
+.admin-nav button {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  border: 1px solid #404040;
+}
+
+.admin-nav button:hover {
+  background-color: #404040;
+}
+
+.admin-section {
+  background-color: #1a1a1a;
+}
+
+.form-group input,
+.form-group textarea {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  border: 1px solid #404040;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #666;
+  outline: none;
+}
+
+.item-card,
+.card-item {
+  background-color: #2d2d2d;
+  border: 1px solid #404040;
+}
+
+.card-header {
+  background-color: #333;
+  border-bottom: 1px solid #404040;
+}
+
+.add-button,
+.save-button,
+.preview-button,
+.back-button,
+.logout-button {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  border: 1px solid #404040;
+}
+
+.add-button:hover,
+.save-button:hover,
+.preview-button:hover,
+.back-button:hover,
+.logout-button:hover {
+  background-color: #404040;
+}
+
+.blog-post-item {
+  background-color: #2d2d2d;
+  border: 1px solid #404040;
+}
+
+.post-actions button {
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #404040;
+}
+
+.post-actions button:hover {
+  background-color: #404040;
+}
+
+.welcome-message {
+  color: #e0e0e0;
+}
+
+.delete-button {
+  background-color: #662222;
+  color: #e0e0e0;
+  border: 1px solid #993333;
+}
+
+.delete-button:hover {
+  background-color: #993333;
+}
+
+.pin-button {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+  border: 1px solid #404040;
+}
+
+.pin-button.pinned {
+  background-color: #404040;
+}
+
+.no-items-message {
+  color: #888;
+}
+
+/* Checkbox styles */
+.checkbox-label input[type="checkbox"] {
+  background-color: #2d2d2d;
+  border: 1px solid #404040;
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+  background-color: #404040;
+}
+
+/* Placeholder text color */
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #888;
+}
+
+/* Selection color */
+::selection {
+  background-color: #404040;
+  color: #e0e0e0;
 }

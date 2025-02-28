@@ -1,9 +1,8 @@
 import React from 'react';
 import { FaChevronDown } from 'react-icons/fa';
-import content from '../data/content.json';
 import './Hero.css';
 
-const Hero = () => {
+const Hero = ({ content }) => {
   const { title, subtitle, description } = content.hero;
   
   return (

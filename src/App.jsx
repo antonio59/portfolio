@@ -31,11 +31,15 @@ function ProtectedRoute({ children }) {
 function App() {
   const [error, setError] = useState(null);
   const [initialized, setInitialized] = useState(false);
+  const [content, setContent] = useState(null);
 
   useEffect(() => {
     try {
       if (auth) {
         setInitialized(true);
+        // Load content from localStorage if available, otherwise use default content
+        const savedContent = localStorage.getItem('portfolioContent');
+        setContent(savedContent ? JSON.parse(savedContent) : null);
       }
     } catch (err) {
       setError(err.message);
@@ -46,7 +50,7 @@ function App() {
     return <div className="error-container">Error: {error}</div>;
   }
 
-  if (!initialized) {
+  if (!initialized || !content) {
     return <div className="loading-container">Loading...</div>;
   }
 
@@ -54,9 +58,9 @@ function App() {
     <Router future={{ v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={
+        <Route path="/admin/*" element={
           <ProtectedRoute>
-            <Admin />
+            <Admin content={content} setContent={setContent} />
           </ProtectedRoute>
         } />
         <Route path="/blog" element={
@@ -69,11 +73,11 @@ function App() {
         <Route path="/" element={
           <div className="App">
             <Header />
-            <Hero />
-            <About />
-            <Experience />
-            <Projects />
-            <Certifications />
+            <Hero content={content} />
+            <About content={content} />
+            <Experience content={content} />
+            <Projects content={content} />
+            <Certifications content={content} />
             <Footer />
           </div>
         } />

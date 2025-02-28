@@ -7,7 +7,9 @@
   "about": {
     "title": "About Me",
     "description": "Edit your about section here",
-    "skills": ["JavaScript", "React", "Node.js"]
+    "skills": ["JavaScript", "React", "Node.js"],
+    "currently": [],
+    "profilePicture": "placeholder.jpg"
   },
   "experience": {
     "title": "Experience",
@@ -102,13 +104,6 @@
   },
   "certifications": {
     "title": "Certifications",
-    "items": [
-      {
-        "title": "Certification 1",
-        "issuer": "Issuing Organization",
-        "date": "2023",
-        "link": "https://certification-link.com"
-      }
-    ]
+    "items": []
   }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Helmet } from 'react-helmet';
 import './Blog.css';
@@ -9,23 +9,25 @@ const Blog = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const q = query(collection(db, 'blog-posts'), orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        const fetchedPosts = querySnapshot.docs.map(doc => ({
+    setLoading(true);
+    const q = query(collection(db, 'blog-posts'), orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const fetchedPosts = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
         setPosts(fetchedPosts);
-      } catch (error) {
+        setLoading(false);
+      },
+      (error) => {
         console.error('Error fetching blog posts:', error);
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    fetchPosts();
+    return () => unsubscribe();
   }, []);
 
   if (loading) {

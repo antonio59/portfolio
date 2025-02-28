@@ -39,10 +39,10 @@ const projectData = content.projects.generalProjects.map(project => ({
 })) || [];
 
 const Projects = () => {
-  const [activeTab, setActiveTab] = useState('development');
+  const [activeTab, setActiveTab] = useState('pm');
   const [showAll, setShowAll] = useState(false);
 
-  const currentProjects = activeTab === 'development' ? developmentProjects : projectData;
+  const currentProjects = activeTab === 'pm' ? projectData : developmentProjects;
   const displayedProjects = showAll ? currentProjects : currentProjects.slice(0, 6);
 
   return (
@@ -50,21 +50,21 @@ const Projects = () => {
       <h2>Projects</h2>
       <div className="tabs">
         <button
-          className={`tab ${activeTab === 'development' ? 'active' : ''}`}
-          onClick={() => setActiveTab('development')}
+          className={`tab ${activeTab === 'pm' ? 'active' : ''}`}
+          onClick={() => setActiveTab('pm')}
         >
-          Development Projects
+          PM Projects
         </button>
         <button
-          className={`tab ${activeTab === 'general' ? 'active' : ''}`}
-          onClick={() => setActiveTab('general')}
+          className={`tab ${activeTab === 'personal' ? 'active' : ''}`}
+          onClick={() => setActiveTab('personal')}
         >
-          General Projects
+          Personal Projects
         </button>
       </div>
       
       <div className="tab-description">
-        {activeTab === 'development' ? (
+        {activeTab === 'personal' ? (
           <p>{content.projects.developmentDescription}</p>
         ) : (
           <p>{content.projects.generalDescription}</p>
