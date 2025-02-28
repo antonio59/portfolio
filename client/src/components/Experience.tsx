@@ -6,46 +6,65 @@ interface ExperienceItem {
   role: string;
   period: string;
   description: string[];
-  technologies: string[];
+  achievements: string[];
+  methodologies: string[];
 }
 
 export default function Experience() {
   const experienceData: ExperienceItem[] = [
     {
-      company: "TechCorp Inc.",
-      role: "Senior Frontend Developer",
-      period: "2021 - Present",
+      company: "Global Financial Services",
+      role: "Senior Programme Manager",
+      period: "2020 - Present",
       description: [
-        "Led a team of 5 developers in building a new e-commerce platform using React and TypeScript, resulting in a 30% increase in conversion rates.",
-        "Implemented performance optimizations that reduced load times by 45% and improved Core Web Vitals scores.",
-        "Established coding standards and conducted code reviews to ensure high-quality, maintainable code.",
-        "Collaborated with design and product teams to create intuitive user interfaces and seamless experiences."
+        "Leading a comprehensive digital transformation programme across multiple business units valued at $15M.",
+        "Managing a portfolio of 8 concurrent projects with cross-functional teams totaling 45+ members.",
+        "Establishing enterprise-wide governance frameworks and reporting structures.",
+        "Coordinating with C-level executives to align programme objectives with strategic business goals."
       ],
-      technologies: ["React", "TypeScript", "Next.js", "GraphQL", "Tailwind CSS"]
+      achievements: [
+        "Delivered annual cost savings of $3.2M through process optimization and system consolidation.",
+        "Improved operational efficiency by 35% through implementation of automated workflows.",
+        "Reduced time-to-market for new features by 45% through agile delivery methods.",
+        "Successfully navigated regulatory changes with zero compliance incidents."
+      ],
+      methodologies: ["MSP", "PRINCE2", "Agile", "SAFe", "Portfolio Management", "Risk Management"]
     },
     {
-      company: "WebSolutions Ltd.",
-      role: "Frontend Developer",
-      period: "2019 - 2021",
+      company: "Healthcare Technologies Inc.",
+      role: "Project Manager",
+      period: "2017 - 2020",
       description: [
-        "Developed responsive web applications for clients across various industries using React and Vue.js.",
-        "Built reusable component libraries that reduced development time by 25%.",
-        "Integrated third-party APIs and services to enhance application functionality.",
-        "Collaborated with backend developers to design and implement RESTful APIs."
+        "Managed the implementation of electronic health record systems across a network of 18 regional hospitals.",
+        "Led cross-functional teams of 25+ members including developers, clinical staff, and IT specialists.",
+        "Developed comprehensive project plans, timelines, and resource allocation strategies.",
+        "Facilitated stakeholder engagement sessions to ensure alignment with user requirements."
       ],
-      technologies: ["React", "Vue.js", "JavaScript", "SCSS", "REST APIs"]
+      achievements: [
+        "Completed all implementations on schedule and 8% under budget.",
+        "Achieved 99.9% data migration accuracy during system transitions.",
+        "Reduced patient wait times by 27% through optimized clinical workflows.",
+        "Designed and delivered training program reaching 2,000+ healthcare professionals."
+      ],
+      methodologies: ["PRINCE2", "Waterfall", "Hybrid", "Clinical Workflow Analysis", "HIPAA Compliance"]
     },
     {
-      company: "Digital Agency XYZ",
-      role: "Web Developer",
-      period: "2017 - 2019",
+      company: "Tech Innovations Group",
+      role: "Project Coordinator",
+      period: "2014 - 2017",
       description: [
-        "Created custom WordPress themes and plugins for small to medium-sized businesses.",
-        "Designed and implemented responsive layouts that improved mobile user experience.",
-        "Optimized website performance and SEO, resulting in higher search rankings.",
-        "Provided technical support and maintenance for existing client websites."
+        "Coordinated multiple technology implementation projects for enterprise clients across finance and retail sectors.",
+        "Managed project schedules, resource allocation, and budget tracking for initiatives ranging from $500K to $2M.",
+        "Facilitated communication between technical teams, stakeholders, and third-party vendors.",
+        "Developed and maintained comprehensive project documentation and status reports."
       ],
-      technologies: ["HTML5", "CSS3", "JavaScript", "WordPress", "PHP"]
+      achievements: [
+        "Successfully delivered 12 projects with 100% client satisfaction ratings.",
+        "Improved project documentation processes, reducing reporting time by 35%.",
+        "Implemented risk management framework that preemptively addressed 28 potential issues.",
+        "Recognized with 'Excellence in Project Coordination' company award in 2016."
+      ],
+      methodologies: ["Agile", "Scrum", "Kanban", "Stakeholder Management", "Risk Assessment"]
     }
   ];
   
@@ -99,21 +118,36 @@ export default function Experience() {
               </span>
             </div>
             
-            <ul className="space-y-4 mb-6">
-              {experienceData[activeTab].description.map((item, index) => (
-                <li key={index} className="flex items-start text-gray-600">
-                  <span className="text-accentColor mr-2 mt-1">•</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="mb-6">
+              <h4 className="text-md font-semibold text-textColor mb-3">Responsibilities:</h4>
+              <ul className="space-y-3">
+                {experienceData[activeTab].description.map((item, index) => (
+                  <li key={index} className="flex items-start text-gray-600">
+                    <span className="text-accentColor mr-2 mt-1">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="mb-6">
+              <h4 className="text-md font-semibold text-textColor mb-3">Key Achievements:</h4>
+              <ul className="space-y-3">
+                {experienceData[activeTab].achievements.map((item, index) => (
+                  <li key={index} className="flex items-start text-gray-600">
+                    <span className="text-highlightColor mr-2 mt-1">✓</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
             
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2">TECHNOLOGIES USED:</h4>
+              <h4 className="text-md font-semibold text-textColor mb-3">Methodologies & Skills:</h4>
               <div className="flex flex-wrap gap-2">
-                {experienceData[activeTab].technologies.map((tech, index) => (
-                  <span key={index} className="px-3 py-1 bg-white rounded-full text-xs text-gray-700 shadow-sm">
-                    {tech}
+                {experienceData[activeTab].methodologies.map((method, index) => (
+                  <span key={index} className="px-3 py-1 bg-white rounded-full text-xs text-gray-700 shadow-sm border border-accentColor/20">
+                    {method}
                   </span>
                 ))}
               </div>

@@ -10,88 +10,143 @@ export interface ProjectGridItem {
   description: string;
   technologies: ProjectTech[];
   icon: string;
+  category: "hobby" | "professional";
+  year?: string;
   githubLink?: string;
   externalLink?: string;
 }
 
 const projectsData: ProjectGridItem[] = [
+  // Hobby App Development Projects
   {
     id: 1,
-    title: "Bracha-Law firm",
-    description: "Deliver a landing page for Law office.",
+    title: "Budget Tracker",
+    description: "A personal finance management app with expense categorization and visualization tools.",
     technologies: [
-      { name: "PHP" },
-      { name: "WordPress" },
-      { name: "CSS" },
-      { name: "JS" }
+      { name: "React" },
+      { name: "TypeScript" },
+      { name: "Chart.js" },
+      { name: "Firebase" }
     ],
-    icon: "folder",
+    icon: "app",
+    category: "hobby",
+    year: "2023",
+    githubLink: "#",
     externalLink: "#"
   },
   {
     id: 2,
-    title: "OTD-Production",
-    description: "Build a landing page for known Event-Production company",
+    title: "Meal Planner",
+    description: "A weekly meal planning app with nutritional information and grocery list generation.",
     technologies: [
-      { name: "PHP" },
-      { name: "WordPress" },
-      { name: "CSS" },
-      { name: "JS" }
+      { name: "Vue.js" },
+      { name: "Vuex" },
+      { name: "Node.js" },
+      { name: "MongoDB" }
     ],
-    icon: "folder",
-    externalLink: "#"
-  },
-  {
-    id: 3,
-    title: "Chatbot",
-    description: "Build a chatbot that can provide weather information based on location.",
-    technologies: [
-      { name: "Flask" },
-      { name: "Python" }
-    ],
-    icon: "folder",
+    icon: "app",
+    category: "hobby",
+    year: "2022",
     githubLink: "#"
   },
   {
-    id: 4,
-    title: "HogwartsCRM",
-    description: "Create a Hogwarts table in CRM as part of my studies in ITC.",
+    id: 3,
+    title: "Habit Tracker",
+    description: "A minimal habit tracking application with streaks, reminders and progress visualization.",
     technologies: [
-      { name: "Flask" },
-      { name: "Python" },
-      { name: "React.js" }
+      { name: "Flutter" },
+      { name: "Dart" },
+      { name: "Firebase" }
     ],
-    icon: "folder",
+    icon: "app",
+    category: "hobby",
+    year: "2023",
+    githubLink: "#",
+    externalLink: "#"
+  },
+  {
+    id: 4,
+    title: "Language Learning Flashcards",
+    description: "A spaced-repetition flashcard app for learning foreign languages with pronunciation guides.",
+    technologies: [
+      { name: "React Native" },
+      { name: "Redux" },
+      { name: "Express" }
+    ],
+    icon: "app",
+    category: "hobby",
+    year: "2022",
     githubLink: "#"
   },
   {
     id: 5,
-    title: "Minecraft",
-    description: "Create a Minecraft game as part of my studies in ITC.",
+    title: "Movie Recommendation Engine",
+    description: "A personalized movie recommendation app using machine learning algorithms based on user preferences.",
     technologies: [
-      { name: "JS" },
-      { name: "CSS" },
-      { name: "HTML5" }
+      { name: "Python" },
+      { name: "Flask" },
+      { name: "TensorFlow" },
+      { name: "React" }
     ],
-    icon: "folder",
+    icon: "app",
+    category: "hobby",
+    year: "2023",
     githubLink: "#"
   },
   {
     id: 6,
-    title: "Mytwitter",
-    description: "Create a Twitter platform as part of my studies in ITC course. Integrated user and server-side using React.js and Firebase.",
+    title: "Home Automation Dashboard",
+    description: "A central control dashboard for smart home devices with scheduling and automation features.",
     technologies: [
-      { name: "React.js" },
-      { name: "Firebase" }
+      { name: "React" },
+      { name: "Node.js" },
+      { name: "WebSockets" },
+      { name: "MQTT" }
     ],
-    icon: "folder",
+    icon: "app",
+    category: "hobby",
+    year: "2023",
     githubLink: "#"
+  },
+  {
+    id: 7,
+    title: "Hiking Trail Explorer",
+    description: "An interactive map-based application for discovering and tracking hiking trails with elevation data.",
+    technologies: [
+      { name: "Svelte" },
+      { name: "Leaflet.js" },
+      { name: "Node.js" },
+      { name: "PostgreSQL" }
+    ],
+    icon: "app",
+    category: "hobby",
+    year: "2022",
+    githubLink: "#",
+    externalLink: "#"
+  },
+  {
+    id: 8,
+    title: "Minimalist Pomodoro Timer",
+    description: "A beautifully designed productivity timer using the Pomodoro technique with task tracking and statistics.",
+    technologies: [
+      { name: "HTML5" },
+      { name: "CSS3" },
+      { name: "JavaScript" },
+      { name: "PWA" }
+    ],
+    icon: "app",
+    category: "hobby",
+    year: "2021",
+    githubLink: "#",
+    externalLink: "#"
   }
 ];
 
 export default function ProjectsGrid() {
+  const hobbyProjects = projectsData.filter(project => project.category === "hobby");
+  
   return (
-    <section className="py-20 bg-darkBg text-white">
+    <section className="py-20 bg-darkBg text-white" id="hobby-projects">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -100,12 +155,22 @@ export default function ProjectsGrid() {
           viewport={{ once: true }}
           className="mb-12 text-center"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Other Noteworthy Projects</h2>
-          <a href="#" className="text-sm text-accentColor hover:underline">view the archive</a>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Personal App Development Projects</h2>
+          <p className="text-gray-400 max-w-3xl mx-auto mb-6">
+            A collection of mobile and web applications I've built as hobby projects to explore new technologies 
+            and solve everyday problems. These projects showcase my passion for app development beyond my 
+            professional project management work.
+          </p>
+          <div className="inline-flex items-center text-sm text-accentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+            <a href="#" className="hover:underline">View all projects on GitHub</a>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projectsData.map((project) => (
+          {hobbyProjects.map((project) => (
             <motion.div
               key={project.id}
               initial={{ opacity: 0, y: 20 }}
@@ -116,15 +181,15 @@ export default function ProjectsGrid() {
             >
               <div className="flex justify-between items-center mb-6">
                 <div className="text-accentColor">
-                  {project.icon === "folder" ? (
+                  {project.icon === "app" ? (
                     <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                      <line x1="8" y1="21" x2="16" y2="21"></line>
+                      <line x1="12" y1="17" x2="12" y2="21"></line>
                     </svg>
                   ) : (
                     <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="2" y1="12" x2="22" y2="12"></line>
-                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                     </svg>
                   )}
                 </div>
@@ -148,12 +213,26 @@ export default function ProjectsGrid() {
                 </div>
               </div>
 
-              <h3 className="font-bold text-xl mb-2">{project.title}</h3>
-              <p className="text-gray-400 mb-6 flex-grow">{project.description}</p>
+              <div className="mb-auto">
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="font-bold text-xl">{project.title}</h3>
+                  {project.year && (
+                    <span className="text-xs text-gray-500 px-2 py-1 bg-gray-800 rounded-full">
+                      {project.year}
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-400 mb-6">{project.description}</p>
+              </div>
 
-              <div className="flex flex-wrap gap-3 mt-auto text-sm text-gray-400">
+              <div className="flex flex-wrap gap-2 mt-4">
                 {project.technologies.map((tech, index) => (
-                  <span key={index}>{tech.name}</span>
+                  <span 
+                    key={index} 
+                    className="px-2 py-1 bg-gray-800 rounded-md text-xs text-gray-300"
+                  >
+                    {tech.name}
+                  </span>
                 ))}
               </div>
             </motion.div>
@@ -166,7 +245,7 @@ export default function ProjectsGrid() {
             whileHover={{ y: -5 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
-            Show More
+            Show More Projects
           </motion.button>
         </div>
       </div>

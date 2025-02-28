@@ -1,11 +1,18 @@
 import { motion } from "framer-motion";
 
 export default function About() {
-  // Skills list
-  const skills = [
-    "JavaScript", "TypeScript", "React", "Next.js", 
-    "Node.js", "Express", "HTML5", "CSS3", 
-    "Tailwind CSS", "Framer Motion", "Git", "Figma"
+  // Professional Skills
+  const professionalSkills = [
+    "Project Management", "Programme Management", "Agile", "Scrum", 
+    "PRINCE2", "PMP", "Risk Management", "Stakeholder Management", 
+    "Budget Planning", "Resource Allocation", "Strategic Planning", "Change Management"
+  ];
+  
+  // Technical Skills
+  const technicalSkills = [
+    "JavaScript", "TypeScript", "React", "React Native", 
+    "Node.js", "Python", "Flutter", "MongoDB", 
+    "SQL", "Firebase", "Git", "CI/CD"
   ];
   
   const containerVariants = {
@@ -63,10 +70,10 @@ export default function About() {
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-textColor">About Me</h2>
               <p className="text-gray-600 mb-6">
-                I'm a passionate frontend developer with a keen eye for design and a dedication to creating seamless user experiences. With over 5 years of professional experience, I've worked on projects ranging from small business websites to large-scale enterprise applications.
+                I'm an experienced Project and Programme Manager with over 10 years of professional experience in the technology sector. My expertise lies in leading complex digital transformation initiatives, healthcare system implementations, and financial technology projects from inception to successful delivery.
               </p>
               <p className="text-gray-600 mb-6">
-                My approach combines technical expertise with creative problem-solving. I believe that great websites are not just functional but also intuitive and delightful to use. When I'm not coding, you might find me exploring photography, reading about design trends, or hiking in nature.
+                While my primary profession is project management, I'm also passionate about software development. As a hobby, I build mobile and web applications to solve everyday problems and explore new technologies, combining my project management expertise with hands-on technical skills to create efficient and user-friendly solutions.
               </p>
             </motion.div>
             
@@ -77,13 +84,26 @@ export default function About() {
               viewport={{ once: true }}
               className="mt-8"
             >
-              <h3 className="text-xl font-semibold mb-4 text-textColor">Skills & Technologies</h3>
-              <div className="flex flex-wrap gap-3">
-                {skills.map((skill, index) => (
+              <h3 className="text-xl font-semibold mb-4 text-textColor">Professional Skills</h3>
+              <div className="flex flex-wrap gap-3 mb-6">
+                {professionalSkills.map((skill, index) => (
                   <motion.span 
                     key={index}
                     variants={itemVariants}
                     className="px-4 py-2 rounded-full bg-white shadow-sm border border-gray-200 text-gray-700 text-sm"
+                  >
+                    {skill}
+                  </motion.span>
+                ))}
+              </div>
+              
+              <h3 className="text-xl font-semibold mb-4 text-textColor mt-8">Technical Skills (Hobby Development)</h3>
+              <div className="flex flex-wrap gap-3">
+                {technicalSkills.map((skill, index) => (
+                  <motion.span 
+                    key={index}
+                    variants={itemVariants}
+                    className="px-4 py-2 rounded-full bg-white shadow-sm border border-accentColor/20 text-gray-700 text-sm"
                   >
                     {skill}
                   </motion.span>
