@@ -44,6 +44,13 @@ export default {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        // Custom colors for the portfolio
+        textColor: "#212529",
+        primaryBg: "#F8F9FA",
+        secondaryBg: "#E9ECEF",
+        accentColor: "#4DABF7",
+        highlightColor: "#339AF0",
+        darkBg: "#212529",
         chart: {
           "1": "hsl(var(--chart-1))",
           "2": "hsl(var(--chart-2))",
