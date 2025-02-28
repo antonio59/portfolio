@@ -169,31 +169,68 @@ export default function ProjectsGrid() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {hobbyProjects.map((project) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {hobbyProjects.slice(0, 3).map((project) => (
             <motion.div
               key={project.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: project.id * 0.1 }}
               viewport={{ once: true, margin: "-50px" }}
-              className="bg-darkBg border border-gray-800 rounded-lg p-6 flex flex-col h-full hover:translate-y-[-10px] transition-transform duration-300"
+              className="bg-darkBg border border-gray-800 rounded-lg flex flex-col h-full hover:translate-y-[-5px] transition-transform duration-300"
             >
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex items-center justify-center py-6 bg-gray-900 rounded-t-lg border-b border-gray-800">
                 <div className="text-accentColor">
-                  {project.icon === "app" ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                      <line x1="8" y1="21" x2="16" y2="21"></line>
-                      <line x1="12" y1="17" x2="12" y2="21"></line>
+                  {project.title === "Budget Tracker" && (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                      <line x1="12" y1="6" x2="12.01" y2="6"></line>
+                      <line x1="12" y1="18" x2="12.01" y2="18"></line>
+                      <path d="M15 10h-6a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1z"></path>
                     </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                  )}
+                  {project.title === "Meal Planner" && (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 2h.01M7 2h.01M11 2h.01M15 2h.01M19 2h.01M21 6h.01M21 10h.01M21 14h.01M21 18h.01M21 22h.01M17 22h.01M13 22h.01M9 22h.01M5 22h.01M3 18h.01M3 14h.01M3 10h.01M3 6h.01M10 10h.01M14 10h.01M10 14h.01M14 14h.01"></path>
+                      <rect x="8" y="8" width="8" height="8" rx="1" ry="1"></rect>
+                    </svg>
+                  )}
+                  {project.title === "Habit Tracker" && (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M3 3v18h18"></path>
+                      <path d="M18.4 9l-1.2 1.5"></path>
+                      <path d="M13.5 13l-3-4.5-7 9"></path>
+                      <path d="M8 3H6.5a2.5 2.5 0 0 0 0 5H8"></path>
+                      <path d="M11 3h1.5a2.5 2.5 0 0 1 0 5H11"></path>
+                      <path d="M8 8h3"></path>
                     </svg>
                   )}
                 </div>
-                <div className="flex space-x-4">
+              </div>
+              
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold text-xl text-white">{project.title}</h3>
+                  {project.year && (
+                    <span className="text-xs text-gray-400 px-2 py-1 bg-gray-800 rounded-full">
+                      {project.year}
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-400 mb-6 text-sm">{project.description}</p>
+                
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {project.technologies.map((tech, index) => (
+                    <span 
+                      key={index} 
+                      className="px-2 py-1 bg-gray-800 rounded-md text-xs text-gray-300"
+                    >
+                      {tech.name}
+                    </span>
+                  ))}
+                </div>
+                
+                <div className="flex mt-6 space-x-4">
                   {project.githubLink && (
                     <a href={project.githubLink} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-accentColor transition-colors">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -211,29 +248,6 @@ export default function ProjectsGrid() {
                     </a>
                   )}
                 </div>
-              </div>
-
-              <div className="mb-auto">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-bold text-xl">{project.title}</h3>
-                  {project.year && (
-                    <span className="text-xs text-gray-500 px-2 py-1 bg-gray-800 rounded-full">
-                      {project.year}
-                    </span>
-                  )}
-                </div>
-                <p className="text-gray-400 mb-6">{project.description}</p>
-              </div>
-
-              <div className="flex flex-wrap gap-2 mt-4">
-                {project.technologies.map((tech, index) => (
-                  <span 
-                    key={index} 
-                    className="px-2 py-1 bg-gray-800 rounded-md text-xs text-gray-300"
-                  >
-                    {tech.name}
-                  </span>
-                ))}
               </div>
             </motion.div>
           ))}

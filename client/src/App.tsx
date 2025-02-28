@@ -6,6 +6,7 @@ import Header from "./components/Header";
 import Hero from "./components/Hero";
 import ProjectShowcase from "./components/ProjectShowcase";
 import ProjectsGrid from "./components/ProjectsGrid";
+import ProfessionalProjectsGrid from "./components/ProfessionalProjectsGrid";
 import About from "./components/About";
 import Experience from "./components/Experience";
 import Contact from "./components/Contact";
@@ -38,6 +39,7 @@ function App() {
       <main>
         <Hero />
         <ProjectShowcase />
+        <ProfessionalProjectsGrid />
         <ProjectsGrid />
         <About />
         <Experience />
