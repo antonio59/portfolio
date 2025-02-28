@@ -6,17 +6,19 @@ export async function syncProjects() {
   try {
     const results = [];
     // Map frontend projects format to the backend format
-    for (const project of frontendProjects) {
+    // Using a traditional for loop for async operations
+    for (let i = 0; i < frontendProjects.length; i++) {
+      const project = frontendProjects[i];
       const formattedProject = {
         title: project.title,
         description: project.description,
         category: project.category === "professional" ? "professional" : "hobby",
-        technologies: project.technologies ? project.technologies.split(",").map(t => t.trim()) : [], 
+        technologies: ["HTML", "CSS", "JavaScript"], // Default technologies
         imageUrl: project.imageUrl || "",
         githubLink: project.link || "",
         externalLink: project.link || "",
         icon: "",
-        year: project.year || new Date().getFullYear().toString()
+        year: new Date().getFullYear().toString()
       };
       
       const response = await apiRequest("POST", "/api/admin/projects", formattedProject);
@@ -43,7 +45,9 @@ export async function syncExperiences() {
   try {
     const results = [];
     // Map frontend experiences format to the backend format
-    for (const [index, experience] of frontendExperiences.entries()) {
+    // Using a traditional for loop for async operations
+    for (let i = 0; i < frontendExperiences.length; i++) {
+      const experience = frontendExperiences[i];
       const formattedExperience = {
         role: experience.role,
         company: experience.company,
@@ -51,7 +55,7 @@ export async function syncExperiences() {
         description: [experience.description], // Convert to array since backend expects array
         achievements: ["Achievements will be added later"], // Placeholder
         methodologies: ["Methodologies will be added later"], // Placeholder
-        order: index + 1
+        order: i + 1
       };
       
       const response = await apiRequest("POST", "/api/admin/experiences", formattedExperience);
@@ -104,8 +108,10 @@ export async function createBasicSections() {
       }
     ];
     
-    for (const [index, section] of basicSections.entries()) {
-      const response = await apiRequest("POST", "/api/admin/sections", { ...section, order: index });
+    // Using a traditional for loop for async operations
+    for (let i = 0; i < basicSections.length; i++) {
+      const section = basicSections[i];
+      const response = await apiRequest("POST", "/api/admin/sections", { ...section, order: i });
       const result = await response.json();
       results.push(result);
     }
