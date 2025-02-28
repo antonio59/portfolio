@@ -9,7 +9,8 @@ import bcrypt from "bcrypt";
 import { 
   insertSectionSchema, 
   insertProjectSchema, 
-  insertExperienceSchema 
+  insertExperienceSchema,
+  insertCertificationSchema
 } from "@shared/schema";
 
 // Define contact form schema for validation
@@ -535,6 +536,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "Error fetching experiences" 
+      });
+    }
+  });
+  
+  // Certifications CRUD
+  app.get("/api/admin/certifications", isAuthenticated, async (req, res) => {
+    try {
+      const certifications = await storage.getAllCertifications();
+      res.json(certifications);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching certifications" 
+      });
+    }
+  });
+  
+  app.get("/api/admin/certifications/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const certification = await storage.getCertification(id);
+      if (!certification) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Certification not found" 
+        });
+      }
+      res.json(certification);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching certification" 
+      });
+    }
+  });
+  
+  app.post("/api/admin/certifications", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertCertificationSchema.parse(req.body);
+      const certification = await storage.createCertification(validatedData);
+      res.status(201).json(certification);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error creating certification" 
+      });
+    }
+  });
+  
+  app.put("/api/admin/certifications/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      // Partial validation of the update data
+      const updateSchema = insertCertificationSchema.partial();
+      const validatedData = updateSchema.parse(req.body);
+      
+      const updatedCertification = await storage.updateCertification(id, validatedData);
+      if (!updatedCertification) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Certification not found" 
+        });
+      }
+      
+      res.json(updatedCertification);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error updating certification" 
+      });
+    }
+  });
+  
+  app.delete("/api/admin/certifications/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteCertification(id);
+      if (!success) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Certification not found" 
+        });
+      }
+      
+      res.json({ success: true, message: "Certification deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error deleting certification" 
+      });
+    }
+  });
+  
+  // Public API routes for featured content
+  app.get("/api/featured-projects", async (req, res) => {
+    try {
+      const projects = await storage.getFeaturedProjects();
+      res.json(projects);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching featured projects" 
+      });
+    }
+  });
+  
+  app.get("/api/certifications", async (req, res) => {
+    try {
+      const certifications = await storage.getAllCertifications();
+      res.json(certifications);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching certifications" 
+      });
+    }
+  });
+  
+  app.get("/api/featured-certifications", async (req, res) => {
+    try {
+      const certifications = await storage.getFeaturedCertifications();
+      res.json(certifications);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching featured certifications" 
       });
     }
   });

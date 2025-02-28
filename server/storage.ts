@@ -3,6 +3,7 @@ import {
   sections, 
   projects, 
   experiences,
+  certifications,
   type User, 
   type InsertUser,
   type Section,
@@ -10,7 +11,9 @@ import {
   type Project,
   type InsertProject,
   type Experience,
-  type InsertExperience
+  type InsertExperience,
+  type Certification,
+  type InsertCertification
 } from "@shared/schema";
 
 export interface IStorage {
@@ -30,6 +33,7 @@ export interface IStorage {
   // Project operations
   getAllProjects(): Promise<Project[]>;
   getProjectsByCategory(category: string): Promise<Project[]>;
+  getFeaturedProjects(): Promise<Project[]>;
   getProject(id: number): Promise<Project | undefined>;
   createProject(project: InsertProject): Promise<Project>;
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project | undefined>;
@@ -41,6 +45,14 @@ export interface IStorage {
   createExperience(experience: InsertExperience): Promise<Experience>;
   updateExperience(id: number, experience: Partial<InsertExperience>): Promise<Experience | undefined>;
   deleteExperience(id: number): Promise<boolean>;
+  
+  // Certification operations
+  getAllCertifications(): Promise<Certification[]>;
+  getFeaturedCertifications(): Promise<Certification[]>;
+  getCertification(id: number): Promise<Certification | undefined>;
+  createCertification(certification: InsertCertification): Promise<Certification>;
+  updateCertification(id: number, certification: Partial<InsertCertification>): Promise<Certification | undefined>;
+  deleteCertification(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -48,24 +60,28 @@ export class MemStorage implements IStorage {
   private sections: Map<number, Section>;
   private projects: Map<number, Project>;
   private experiences: Map<number, Experience>;
+  private certifications: Map<number, Certification>;
   
   userIdCounter: number;
   sectionIdCounter: number;
   projectIdCounter: number;
   experienceIdCounter: number;
   experienceOrderCounter: number;
+  certificationIdCounter: number;
 
   constructor() {
     this.users = new Map();
     this.sections = new Map();
     this.projects = new Map();
     this.experiences = new Map();
+    this.certifications = new Map();
     
     this.userIdCounter = 1;
     this.sectionIdCounter = 1;
     this.projectIdCounter = 1;
     this.experienceIdCounter = 1;
     this.experienceOrderCounter = 1;
+    this.certificationIdCounter = 1;
     
     // Initialize with admin user
     this.createUser({
@@ -148,6 +164,18 @@ export class MemStorage implements IStorage {
     return Array.from(this.projects.values()).filter(project => project.category === category);
   }
   
+  async getFeaturedProjects(): Promise<Project[]> {
+    return Array.from(this.projects.values())
+      .filter(project => project.featured === true)
+      .sort((a, b) => {
+        // Sort by featuredOrder if available, otherwise keep original order
+        if (a.featuredOrder !== null && b.featuredOrder !== null) {
+          return a.featuredOrder - b.featuredOrder;
+        }
+        return 0;
+      });
+  }
+  
   async getProject(id: number): Promise<Project | undefined> {
     return this.projects.get(id);
   }
@@ -166,6 +194,9 @@ export class MemStorage implements IStorage {
       externalLink: insertProject.externalLink || null,
       challenges: insertProject.challenges || null,
       outcomes: insertProject.outcomes || null,
+      featured: insertProject.featured || false,
+      featuredOrder: insertProject.featuredOrder || null,
+      imageUrl: insertProject.imageUrl || null,
       updatedAt: now 
     };
     this.projects.set(id, project);
@@ -234,6 +265,61 @@ export class MemStorage implements IStorage {
   
   async deleteExperience(id: number): Promise<boolean> {
     return this.experiences.delete(id);
+  }
+  
+  // Certification operations
+  async getAllCertifications(): Promise<Certification[]> {
+    return Array.from(this.certifications.values());
+  }
+  
+  async getFeaturedCertifications(): Promise<Certification[]> {
+    return Array.from(this.certifications.values())
+      .filter(certification => certification.featured === true);
+  }
+  
+  async getCertification(id: number): Promise<Certification | undefined> {
+    return this.certifications.get(id);
+  }
+  
+  async createCertification(insertCertification: InsertCertification): Promise<Certification> {
+    const id = this.certificationIdCounter++;
+    const now = new Date();
+    
+    // Make sure optional fields are null instead of undefined
+    const certification: Certification = { 
+      ...insertCertification, 
+      id, 
+      expiryDate: insertCertification.expiryDate || null,
+      credentialID: insertCertification.credentialID || null,
+      credentialURL: insertCertification.credentialURL || null,
+      description: insertCertification.description || null,
+      skills: insertCertification.skills || null,
+      featured: insertCertification.featured || false,
+      imageUrl: insertCertification.imageUrl || null,
+      updatedAt: now 
+    };
+    
+    this.certifications.set(id, certification);
+    return certification;
+  }
+  
+  async updateCertification(id: number, certificationUpdate: Partial<InsertCertification>): Promise<Certification | undefined> {
+    const certification = this.certifications.get(id);
+    if (!certification) return undefined;
+    
+    const now = new Date();
+    const updatedCertification: Certification = { 
+      ...certification, 
+      ...certificationUpdate, 
+      updatedAt: now 
+    };
+    
+    this.certifications.set(id, updatedCertification);
+    return updatedCertification;
+  }
+  
+  async deleteCertification(id: number): Promise<boolean> {
+    return this.certifications.delete(id);
   }
 }
 
