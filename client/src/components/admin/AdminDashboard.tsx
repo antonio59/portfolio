@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectsManager from "./ProjectsManager";
 import ExperienceManager from "./ExperienceManager";
 import SectionsManager from "./SectionsManager";
+import CertificationsManager from "./CertificationsManager";
 import { Button } from "@/components/ui/button";
 import { LogOut, RotateCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -225,9 +226,10 @@ export default function AdminDashboard() {
       
       <div className="bg-white rounded-lg shadow-md p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-3 mb-8">
+          <TabsList className="grid grid-cols-4 mb-8">
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="experience">Experience</TabsTrigger>
+            <TabsTrigger value="certifications">Certifications</TabsTrigger>
             <TabsTrigger value="sections">Content Sections</TabsTrigger>
           </TabsList>
           
@@ -237,6 +239,10 @@ export default function AdminDashboard() {
           
           <TabsContent value="experience">
             <ExperienceManager />
+          </TabsContent>
+          
+          <TabsContent value="certifications">
+            <CertificationsManager />
           </TabsContent>
           
           <TabsContent value="sections">
