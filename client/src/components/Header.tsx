@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface HeaderProps {
   isMobileMenuOpen: boolean;
@@ -9,108 +9,139 @@ interface HeaderProps {
 export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   
+  // Handle scroll event to change header style
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      const offset = window.scrollY;
+      if (offset > 50) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
     };
     
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Check initial scroll position
     
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
-
+  
+  // Navigation links
+  const navLinks = [
+    { name: "Home", href: "#home" },
+    { name: "Projects", href: "#projects" },
+    { name: "About", href: "#about" },
+    { name: "Experience", href: "#experience" },
+    { name: "Contact", href: "#contact" },
+  ];
+  
   return (
     <header 
-      className={`fixed top-0 w-full z-40 py-6 transition-all duration-300 ${
-        scrolled ? "bg-primary/80 backdrop-blur-md shadow-sm" : ""
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled 
+          ? "py-3 bg-white/95 backdrop-blur-sm shadow-sm" 
+          : "py-5 bg-transparent"
       }`}
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
-        <a href="#" className="text-lg font-semibold tracking-tight">John Doe</a>
+        {/* Logo */}
+        <a 
+          href="#home" 
+          className="text-2xl font-bold text-textColor"
+        >
+          {scrolled ? "JS." : "John Smith"}
+        </a>
+        
+        {/* Desktop Navigation */}
         <nav className="hidden md:block">
-          <ul className="flex space-x-8">
-            <li><a href="#work" className="hover:text-accent transition-colors duration-300">Work</a></li>
-            <li><a href="#about" className="hover:text-accent transition-colors duration-300">About</a></li>
-            <li><a href="#contact" className="hover:text-accent transition-colors duration-300">Contact</a></li>
+          <ul className="flex space-x-10">
+            {navLinks.map((link, index) => (
+              <li key={index}>
+                <a 
+                  href={link.href}
+                  className="text-gray-600 hover:text-accentColor transition-colors duration-300"
+                >
+                  {link.name}
+                </a>
+              </li>
+            ))}
           </ul>
         </nav>
-        <button 
+        
+        {/* Mobile Menu Button */}
+        <button
+          className="md:hidden text-gray-700 focus:outline-none z-20"
           onClick={toggleMobileMenu}
-          className="md:hidden focus:outline-none" 
-          aria-label="Toggle Menu"
+          aria-label="Toggle menu"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+          <div className="relative w-6 h-6">
+            <div className={`absolute w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'rotate-45 top-3' : 'top-1'}`}></div>
+            <div className={`absolute w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'opacity-0' : 'opacity-100'} top-3`}></div>
+            <div className={`absolute w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${isMobileMenuOpen ? '-rotate-45 top-3' : 'top-5'}`}></div>
+          </div>
         </button>
+        
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: "100%" }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed top-0 right-0 bottom-0 w-[70%] bg-white z-10 shadow-xl"
+            >
+              <div className="flex flex-col h-full justify-center p-8">
+                <nav>
+                  <ul className="space-y-8">
+                    {navLinks.map((link, index) => (
+                      <motion.li 
+                        key={index}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                      >
+                        <a 
+                          href={link.href}
+                          className="text-2xl font-medium text-gray-700 hover:text-accentColor transition-colors duration-300"
+                          onClick={toggleMobileMenu}
+                        >
+                          {link.name}
+                        </a>
+                      </motion.li>
+                    ))}
+                  </ul>
+                </nav>
+                
+                <div className="mt-auto pt-8 border-t border-gray-200">
+                  <p className="text-gray-600 mb-4">Get in touch</p>
+                  <a 
+                    href="mailto:contact@example.com" 
+                    className="text-accentColor hover:text-highlightColor transition-colors duration-300"
+                  >
+                    contact@example.com
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black z-0 md:hidden"
+              onClick={toggleMobileMenu}
+            />
+          )}
+        </AnimatePresence>
       </div>
-      
-      {/* Mobile Menu */}
-      <motion.div 
-        initial={false}
-        animate={{ 
-          opacity: isMobileMenuOpen ? 1 : 0,
-          pointerEvents: isMobileMenuOpen ? "auto" : "none" 
-        }}
-        transition={{ duration: 0.3 }}
-        className="fixed inset-0 bg-primary z-50 flex flex-col justify-center items-center"
-      >
-        <button 
-          onClick={toggleMobileMenu}
-          className="absolute top-6 right-6 focus:outline-none" 
-          aria-label="Close Menu"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-        <nav>
-          <ul className="flex flex-col space-y-6 text-center">
-            <motion.li
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: isMobileMenuOpen ? 0 : 10, opacity: isMobileMenuOpen ? 1 : 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-            >
-              <a 
-                href="#work" 
-                className="text-2xl hover:text-accent transition-colors duration-300"
-                onClick={toggleMobileMenu}
-              >
-                Work
-              </a>
-            </motion.li>
-            <motion.li
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: isMobileMenuOpen ? 0 : 10, opacity: isMobileMenuOpen ? 1 : 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-            >
-              <a 
-                href="#about" 
-                className="text-2xl hover:text-accent transition-colors duration-300"
-                onClick={toggleMobileMenu}
-              >
-                About
-              </a>
-            </motion.li>
-            <motion.li
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: isMobileMenuOpen ? 0 : 10, opacity: isMobileMenuOpen ? 1 : 0 }}
-              transition={{ duration: 0.3, delay: 0.3 }}
-            >
-              <a 
-                href="#contact" 
-                className="text-2xl hover:text-accent transition-colors duration-300"
-                onClick={toggleMobileMenu}
-              >
-                Contact
-              </a>
-            </motion.li>
-          </ul>
-        </nav>
-      </motion.div>
     </header>
   );
 }
