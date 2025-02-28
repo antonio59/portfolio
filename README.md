@@ -15,6 +15,10 @@ Welcome to my personal portfolio website! This project showcases my skills, expe
 - Contact information
 - Enhanced Admin dashboard for content management
 - Secure authentication system
+- Robust error handling with graceful recovery
+  - Custom ErrorBoundary component
+  - User-friendly error messages
+  - Automatic error recovery options
 
 ## 🛠 Technologies Used
 
@@ -24,6 +28,7 @@ Welcome to my personal portfolio website! This project showcases my skills, expe
 - React Icons
 - Firebase Authentication
 - Firebase Realtime Database
+- React Error Boundary for error handling
 
 ## 🏗 Project Structure
 
@@ -38,7 +43,8 @@ Welcome to my personal portfolio website! This project showcases my skills, expe
 │   │   ├── Header.jsx
 │   │   ├── Hero.jsx
 │   │   ├── Login.jsx
-│   │   └── Projects.jsx
+│   │   ├── Projects.jsx
+│   │   └── ErrorBoundary.jsx
 │   ├── data/
 │   │   └── content.json
 │   ├── App.jsx

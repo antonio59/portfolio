@@ -7,22 +7,31 @@ import './Blog.css';
 const Blog = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
     const q = query(collection(db, 'blog-posts'), orderBy('createdAt', 'desc'));
 
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
-        const fetchedPosts = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setPosts(fetchedPosts);
-        setLoading(false);
+        try {
+          const fetchedPosts = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setPosts(fetchedPosts);
+          setLoading(false);
+        } catch (err) {
+          console.error('Error processing blog posts:', err);
+          setError('Failed to process blog posts data');
+          setLoading(false);
+        }
       },
       (error) => {
         console.error('Error fetching blog posts:', error);
+        setError('Failed to load blog posts. Please try again later.');
         setLoading(false);
       }
     );
@@ -32,6 +41,10 @@ const Blog = () => {
 
   if (loading) {
     return <div className="blog-loading">Loading posts...</div>;
+  }
+
+  if (error) {
+    return <div className="blog-error">{error}</div>;
   }
 
   return (

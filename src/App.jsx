@@ -12,6 +12,7 @@ import Footer from './components/Footer';
 import Admin from './components/Admin';
 import Login from './components/Login';
 import Blog from './components/Blog';
+import ErrorBoundary from './components/ErrorBoundary';
 import './components/Admin.css';
 import './components/LoadingSpinner.css';
 import './index.css';
@@ -74,35 +75,43 @@ function App() {
   }
 
   return (
-    <Router future={{ v7_relativeSplatPath: true }}>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/admin/*" element={
-          <ProtectedRoute>
-            <Admin content={content} setContent={setContent} />
-          </ProtectedRoute>
-        } />
-        <Route path="/blog" element={
-          <div className="App">
-            <Header />
-            <Blog />
-            <Footer />
-          </div>
-        } />
-        <Route path="/" element={
-          <div className="App">
-            <Header />
-            <Hero content={content} />
-            <About content={content} />
-            <Experience content={content} />
-            <Projects content={content} />
-            <Certifications content={content} />
-            <Footer />
-          </div>
-        } />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router future={{ v7_relativeSplatPath: true }}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin/*" element={
+            <ProtectedRoute>
+              <ErrorBoundary>
+                <Admin content={content} setContent={setContent} />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          } />
+          <Route path="/blog" element={
+            <div className="App">
+              <Header />
+              <ErrorBoundary>
+                <Blog />
+              </ErrorBoundary>
+              <Footer />
+            </div>
+          } />
+          <Route path="/" element={
+            <div className="App">
+              <Header />
+              <ErrorBoundary>
+                <Hero content={content} />
+                <About content={content} />
+                <Experience content={content} />
+                <Projects content={content} />
+                <Certifications content={content} />
+              </ErrorBoundary>
+              <Footer />
+            </div>
+          } />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
 
