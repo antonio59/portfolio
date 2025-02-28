@@ -66,7 +66,13 @@ export default function SectionsManager() {
   // Section creation mutation
   const createSectionMutation = useMutation({
     mutationFn: async (data: SectionFormValues) => {
-      const response = await apiRequest("POST", "/api/admin/sections", data);
+      // Convert content from string to array or appropriate format for storage
+      const transformedData = {
+        ...data,
+        content: data.content.split("\n\n").filter(p => p.trim().length > 0)
+      };
+      
+      const response = await apiRequest("POST", "/api/admin/sections", transformedData);
       return await response.json();
     },
     onSuccess: () => {
@@ -91,7 +97,14 @@ export default function SectionsManager() {
   const updateSectionMutation = useMutation({
     mutationFn: async (data: SectionFormValues & { id: number }) => {
       const { id, ...updateData } = data;
-      const response = await apiRequest("PUT", `/api/admin/sections/${id}`, updateData);
+      
+      // Convert content from string to array for storage
+      const transformedData = {
+        ...updateData,
+        content: updateData.content.split("\n\n").filter(p => p.trim().length > 0)
+      };
+      
+      const response = await apiRequest("PUT", `/api/admin/sections/${id}`, transformedData);
       return await response.json();
     },
     onSuccess: () => {
@@ -155,12 +168,27 @@ export default function SectionsManager() {
   const handleEditSection = (section: Section) => {
     setSelectedSection(section);
     
+    // Handle different data structures for content
+    let contentText = "";
+    if (Array.isArray(section.content)) {
+      contentText = section.content.join("\n\n");
+    } else if (typeof section.content === 'string') {
+      contentText = section.content;
+    } else if (section.content) {
+      // Try to convert other structures to string
+      try {
+        contentText = JSON.stringify(section.content, null, 2);
+      } catch (e) {
+        contentText = String(section.content);
+      }
+    }
+    
     editForm.reset({
       title: section.title,
       subtitle: section.subtitle || "",
-      content: section.content,
+      content: contentText,
       type: section.type,
-      order: section.order || 0
+      order: (section as any).order || 0 // Use type assertion as a temporary fix
     });
     
     setIsEditDialogOpen(true);
