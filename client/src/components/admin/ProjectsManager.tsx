@@ -1,729 +1,908 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { Switch } from "@/components/ui/switch";
 import { z } from "zod";
-import { Pencil, Trash2, Plus, Loader2 } from "lucide-react";
-import { Project } from "@shared/schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Pencil, Trash2, Plus, Star, GripVertical } from "lucide-react";
+import type { Project } from "@shared/schema";
 
-// Project form schema
+// Form validation schema
 const projectSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().min(1, "Description is required"),
-  category: z.string().min(1, "Category is required"),
-  imageUrl: z.string().min(1, "Image URL is required"),
-  githubLink: z.string().optional(),
-  externalLink: z.string().optional(),
-  technologies: z.string(), // We'll convert this to array before submission
+  title: z.string().min(2, "Title must be at least 2 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  category: z.string(),
+  technologies: z.array(z.string()).optional().default([]),
   year: z.string().optional(),
-  icon: z.string().optional(),
+  githubLink: z.string().url().optional().nullable(),
+  externalLink: z.string().url().optional().nullable(),
+  imageUrl: z.string().url().optional().nullable(),
+  challenges: z.array(z.string()).optional().default([]),
+  outcomes: z.array(z.string()).optional().default([]),
+  featured: z.boolean().optional().default(false),
+  featuredOrder: z.number().optional().nullable(),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
 export default function ProjectsManager() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [filter, setFilter] = useState("all");
   const { toast } = useToast();
 
-  // Fetch all projects
+  // Fetch projects
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ["/api/admin/projects"],
   });
 
-  // Form setup for adding projects
+  // Filter projects based on the active tab
+  const filteredProjects = filter === "all" 
+    ? projects 
+    : filter === "featured" 
+      ? projects.filter((p: Project) => p.featured) 
+      : projects.filter((p: Project) => p.category === filter);
+
   const addForm = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
       title: "",
       description: "",
-      category: "project_management",
-      imageUrl: "",
+      category: "app_development",
+      technologies: [],
+      year: new Date().getFullYear().toString(),
       githubLink: "",
       externalLink: "",
-      technologies: "",
-      year: "",
-      icon: "",
-    }
+      imageUrl: "",
+      challenges: [],
+      outcomes: [],
+      featured: false,
+      featuredOrder: null,
+    },
   });
 
-  // Form setup for editing projects
   const editForm = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
       title: "",
       description: "",
-      category: "project_management",
-      imageUrl: "",
+      category: "app_development",
+      technologies: [],
+      year: new Date().getFullYear().toString(),
       githubLink: "",
       externalLink: "",
-      technologies: "",
-      year: "",
-      icon: "",
+      imageUrl: "",
+      challenges: [],
+      outcomes: [],
+      featured: false,
+      featuredOrder: null,
+    },
+  });
+
+  // Add project mutation
+  const addMutation = useMutation({
+    mutationFn: async (data: ProjectFormValues) => {
+      // Convert string arrays if needed
+      const formattedData = {
+        ...data,
+        technologies: typeof data.technologies === 'string' 
+          ? data.technologies.split(',').map(t => t.trim()) 
+          : data.technologies,
+        challenges: typeof data.challenges === 'string'
+          ? data.challenges.split(',').map(c => c.trim())
+          : data.challenges,
+        outcomes: typeof data.outcomes === 'string'
+          ? data.outcomes.split(',').map(o => o.trim())
+          : data.outcomes,
+      };
+      
+      const response = await apiRequest("POST", "/api/admin/projects", formattedData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
+      setIsAdding(false);
+      addForm.reset();
+      toast({
+        title: "Project added",
+        description: "The project has been added successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error adding project",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
     }
   });
 
-  // Project creation mutation
-  const createProjectMutation = useMutation({
+  // Edit project mutation
+  const editMutation = useMutation({
     mutationFn: async (data: ProjectFormValues) => {
-      // Convert technologies from comma-separated string to array
-      const transformedData = {
+      if (!selectedProject) return null;
+      
+      // Convert string arrays if needed
+      const formattedData = {
         ...data,
-        technologies: data.technologies.split(",").map(t => t.trim())
+        technologies: typeof data.technologies === 'string' 
+          ? data.technologies.split(',').map(t => t.trim()) 
+          : data.technologies,
+        challenges: typeof data.challenges === 'string'
+          ? data.challenges.split(',').map(c => c.trim())
+          : data.challenges,
+        outcomes: typeof data.outcomes === 'string'
+          ? data.outcomes.split(',').map(o => o.trim())
+          : data.outcomes,
       };
       
-      const response = await apiRequest("POST", "/api/admin/projects", transformedData);
-      return await response.json();
+      const response = await apiRequest("PUT", `/api/admin/projects/${selectedProject.id}`, formattedData);
+      return response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Project has been created successfully.",
-      });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
-      setIsAddDialogOpen(false);
-      addForm.reset();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create project.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Project update mutation
-  const updateProjectMutation = useMutation({
-    mutationFn: async (data: ProjectFormValues & { id: number }) => {
-      const { id, ...updateData } = data;
-      
-      // Convert technologies from comma-separated string to array
-      const transformedData = {
-        ...updateData,
-        technologies: (updateData.technologies as string).split(",").map(t => t.trim())
-      };
-      
-      const response = await apiRequest("PUT", `/api/admin/projects/${id}`, transformedData);
-      return await response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Project has been updated successfully.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
-      setIsEditDialogOpen(false);
+      setIsEditing(false);
       setSelectedProject(null);
-    },
-    onError: (error: any) => {
+      editForm.reset();
       toast({
-        title: "Error",
-        description: error.message || "Failed to update project.",
-        variant: "destructive",
+        title: "Project updated",
+        description: "The project has been updated successfully.",
       });
     },
+    onError: (error) => {
+      toast({
+        title: "Error updating project",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    }
   });
 
-  // Project deletion mutation
-  const deleteProjectMutation = useMutation({
+  // Delete project mutation
+  const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await apiRequest("DELETE", `/api/admin/projects/${id}`);
-      return await response.json();
+      return response.ok;
     },
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Project has been deleted successfully.",
-      });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
-      setIsDeleteDialogOpen(false);
-      setSelectedProject(null);
-    },
-    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete project.",
+        title: "Project deleted",
+        description: "The project has been deleted successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting project",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
-    },
+    }
   });
 
-  // Handle project creation form submission
   const onSubmitAdd = (data: ProjectFormValues) => {
-    createProjectMutation.mutate(data);
+    addMutation.mutate(data);
   };
 
-  // Handle project update form submission
   const onSubmitEdit = (data: ProjectFormValues) => {
-    if (selectedProject) {
-      updateProjectMutation.mutate({
-        id: selectedProject.id,
-        ...data,
-      });
-    }
+    editMutation.mutate(data);
   };
 
-  // Open edit dialog and populate form with selected project
   const handleEditProject = (project: Project) => {
     setSelectedProject(project);
     
-    // Placeholder for imageUrl if it doesn't exist on the project
-    const placeholderImageUrl = "https://images.unsplash.com/photo-1555066931-4365d14bab8c";
+    // Format technologies for the form if it's JSON or array
+    const technologies = Array.isArray(project.technologies) 
+      ? project.technologies 
+      : typeof project.technologies === 'string' 
+        ? JSON.parse(project.technologies)
+        : [];
     
+    // Format challenges and outcomes similarly
+    const challenges = Array.isArray(project.challenges) 
+      ? project.challenges 
+      : project.challenges 
+        ? JSON.parse(project.challenges)
+        : [];
+        
+    const outcomes = Array.isArray(project.outcomes) 
+      ? project.outcomes 
+      : project.outcomes 
+        ? JSON.parse(project.outcomes)
+        : [];
+        
+    // Set form values
     editForm.reset({
       title: project.title,
       description: project.description,
       category: project.category,
-      imageUrl: (project as any).imageUrl || placeholderImageUrl, // Use type assertion as a temporary fix
+      technologies,
+      year: project.year || new Date().getFullYear().toString(),
       githubLink: project.githubLink || "",
       externalLink: project.externalLink || "",
-      technologies: Array.isArray(project.technologies) 
-        ? project.technologies.join(", ") 
-        : typeof project.technologies === 'string' 
-          ? project.technologies 
-          : "",
-      year: project.year || "",
-      icon: project.icon || "",
+      imageUrl: project.imageUrl || "",
+      challenges,
+      outcomes,
+      featured: project.featured || false,
+      featuredOrder: project.featuredOrder || null,
     });
     
-    setIsEditDialogOpen(true);
+    setIsEditing(true);
   };
 
-  // Open delete confirmation dialog
   const handleDeleteProject = (project: Project) => {
-    setSelectedProject(project);
-    setIsDeleteDialogOpen(true);
-  };
-
-  // Confirm project deletion
-  const confirmDeleteProject = () => {
-    if (selectedProject) {
-      deleteProjectMutation.mutate(selectedProject.id);
-    }
-  };
-
-  // Filter projects by category
-  const filteredProjects = categoryFilter
-    ? (projects as Project[]).filter(project => project.category === categoryFilter)
-    : (projects as Project[]);
-
-  // Get friendly category name
-  const getCategoryName = (category: string) => {
-    switch (category) {
-      case 'project_management': return 'Professional Project Management';
-      case 'app_development': return 'Personal App Development';
-      case 'client': return 'Client Project';
-      case 'research': return 'Research Project';
-      default: return category.charAt(0).toUpperCase() + category.slice(1);
-    }
+    deleteMutation.mutate(project.id);
   };
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center p-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <div>Loading projects...</div>;
   }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Projects</h2>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Project
+        <h2 className="text-2xl font-bold">Projects Management</h2>
+        <Button onClick={() => setIsAdding(!isAdding)}>
+          {isAdding ? "Cancel" : <>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Project
+          </>}
         </Button>
       </div>
 
-      {/* Category filter buttons */}
-      <div className="flex gap-2 mb-4">
-        <Button 
-          variant={categoryFilter === null ? "default" : "outline"} 
-          onClick={() => setCategoryFilter(null)}
-        >
-          All
-        </Button>
-        <Button 
-          variant={categoryFilter === "project_management" ? "default" : "outline"} 
-          onClick={() => setCategoryFilter("project_management")}
-        >
-          Project Management
-        </Button>
-        <Button 
-          variant={categoryFilter === "app_development" ? "default" : "outline"} 
-          onClick={() => setCategoryFilter("app_development")}
-        >
-          App Development
-        </Button>
-        <Button 
-          variant={categoryFilter === "client" ? "default" : "outline"} 
-          onClick={() => setCategoryFilter("client")}
-        >
-          Client Projects
-        </Button>
-      </div>
-
-      {filteredProjects.length === 0 ? (
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-center text-muted-foreground">
-              {categoryFilter 
-                ? `No ${getCategoryName(categoryFilter)} projects found.` 
-                : 'No projects found. Add your first project to get started.'}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Year</TableHead>
-                  <TableHead className="w-[150px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProjects.map((project: Project) => (
-                  <TableRow key={project.id}>
-                    <TableCell className="font-medium">{project.title}</TableCell>
-                    <TableCell>{getCategoryName(project.category)}</TableCell>
-                    <TableCell>{project.year || "N/A"}</TableCell>
-                    <TableCell className="flex space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEditProject(project)}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDeleteProject(project)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+      {isAdding && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Add New Project</CardTitle>
+            <CardDescription>Create a new project in your portfolio</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...addForm}>
+              <form onSubmit={addForm.handleSubmit(onSubmitAdd)} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={addForm.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Project title" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={addForm.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="app_development">App Development</SelectItem>
+                            <SelectItem value="project_management">Project Management</SelectItem>
+                            <SelectItem value="web_development">Web Development</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={addForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe the project..." 
+                          className="min-h-[100px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={addForm.control}
+                    name="technologies"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Technologies</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="React, Node.js, etc. (comma separated)" 
+                            {...field} 
+                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
+                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enter technologies separated by commas
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={addForm.control}
+                    name="year"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Year</FormLabel>
+                        <FormControl>
+                          <Input placeholder="2025" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={addForm.control}
+                    name="githubLink"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>GitHub Link</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://github.com/username/repo" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={addForm.control}
+                    name="externalLink"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>External Link</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={addForm.control}
+                  name="imageUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image URL</FormLabel>
+                      <FormControl>
+                        <Input placeholder="https://example.com/image.jpg" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        URL to a screenshot or logo for this project
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={addForm.control}
+                    name="challenges"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Challenges</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Challenge 1, Challenge 2, etc. (comma separated)" 
+                            className="min-h-[80px]" 
+                            {...field} 
+                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
+                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enter challenges separated by commas
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={addForm.control}
+                    name="outcomes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Outcomes</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Outcome 1, Outcome 2, etc. (comma separated)" 
+                            className="min-h-[80px]" 
+                            {...field} 
+                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
+                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enter outcomes separated by commas
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <FormField
+                    control={addForm.control}
+                    name="featured"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Featured Project</FormLabel>
+                          <FormDescription>
+                            Featured projects appear in a special section
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                {addForm.watch("featured") && (
+                  <FormField
+                    control={addForm.control}
+                    name="featuredOrder"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Featured Order</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="1" 
+                            {...field} 
+                            value={field.value === null ? "" : field.value}
+                            onChange={e => field.onChange(e.target.value === "" ? null : parseInt(e.target.value, 10))}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Order in which the project appears in the featured section (lower number = higher priority)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+                
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={addMutation.isPending}>
+                    {addMutation.isPending ? "Adding..." : "Add Project"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </CardContent>
         </Card>
       )}
 
-      {/* Add Project Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Add New Project</DialogTitle>
-          </DialogHeader>
-          
-          <Form {...addForm}>
-            <form onSubmit={addForm.handleSubmit(onSubmitAdd)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={addForm.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Project Title" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={addForm.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
+      {isEditing && selectedProject && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Edit Project</CardTitle>
+            <CardDescription>Update project details</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(onSubmitEdit)} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Title</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
+                          <Input placeholder="Project title" {...field} />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="project_management">Professional Project Management</SelectItem>
-                          <SelectItem value="app_development">Personal App Development</SelectItem>
-                          <SelectItem value="client">Client Project</SelectItem>
-                          <SelectItem value="research">Research Project</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={addForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Describe your project..." 
-                        className="min-h-[100px]" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={addForm.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/image.jpg" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={addForm.control}
-                  name="technologies"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Technologies</FormLabel>
-                      <FormControl>
-                        <Input placeholder="React, TypeScript, Tailwind CSS" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={addForm.control}
-                  name="year"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Year</FormLabel>
-                      <FormControl>
-                        <Input placeholder="2023" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={addForm.control}
-                  name="githubLink"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>GitHub Link (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://github.com/username/repo" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={addForm.control}
-                  name="externalLink"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>External Link (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://project-demo.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={addForm.control}
-                name="icon"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Icon (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="icon-name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsAddDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={createProjectMutation.isPending}
-                >
-                  {createProjectMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    "Create Project"
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Project Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Project</DialogTitle>
-          </DialogHeader>
-          
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onSubmitEdit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Project Title" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="app_development">App Development</SelectItem>
+                            <SelectItem value="project_management">Project Management</SelectItem>
+                            <SelectItem value="web_development">Web Development</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 
                 <FormField
                   control={editForm.control}
-                  name="category"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe the project..." 
+                          className="min-h-[100px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="technologies"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Technologies</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
+                          <Input 
+                            placeholder="React, Node.js, etc. (comma separated)" 
+                            {...field} 
+                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
+                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="project_management">Professional Project Management</SelectItem>
-                          <SelectItem value="app_development">Personal App Development</SelectItem>
-                          <SelectItem value="client">Client Project</SelectItem>
-                          <SelectItem value="research">Research Project</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={editForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Describe your project..." 
-                        className="min-h-[100px]" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={editForm.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://example.com/image.jpg" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-2 gap-4">
+                        <FormDescription>
+                          Enter technologies separated by commas
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="year"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Year</FormLabel>
+                        <FormControl>
+                          <Input placeholder="2025" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="githubLink"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>GitHub Link</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://github.com/username/repo" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="externalLink"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>External Link</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://example.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
                 <FormField
                   control={editForm.control}
-                  name="technologies"
+                  name="imageUrl"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Technologies</FormLabel>
+                      <FormLabel>Image URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="React, TypeScript, Tailwind CSS" {...field} />
+                        <Input placeholder="https://example.com/image.jpg" {...field} />
                       </FormControl>
+                      <FormDescription>
+                        URL to a screenshot or logo for this project
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 
-                <FormField
-                  control={editForm.control}
-                  name="year"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Year</FormLabel>
-                      <FormControl>
-                        <Input placeholder="2023" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="githubLink"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>GitHub Link (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://github.com/username/repo" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="challenges"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Challenges</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Challenge 1, Challenge 2, etc. (comma separated)" 
+                            className="min-h-[80px]" 
+                            {...field} 
+                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
+                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enter challenges separated by commas
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="outcomes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Outcomes</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Outcome 1, Outcome 2, etc. (comma separated)" 
+                            className="min-h-[80px]" 
+                            {...field} 
+                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
+                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enter outcomes separated by commas
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 
-                <FormField
-                  control={editForm.control}
-                  name="externalLink"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>External Link (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://project-demo.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={editForm.control}
-                name="icon"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Icon (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="icon-name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                <div className="flex items-center space-x-2">
+                  <FormField
+                    control={editForm.control}
+                    name="featured"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel>Featured Project</FormLabel>
+                          <FormDescription>
+                            Featured projects appear in a special section
+                          </FormDescription>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                {editForm.watch("featured") && (
+                  <FormField
+                    control={editForm.control}
+                    name="featuredOrder"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Featured Order</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            placeholder="1" 
+                            {...field} 
+                            value={field.value === null ? "" : field.value}
+                            onChange={e => field.onChange(e.target.value === "" ? null : parseInt(e.target.value, 10))}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Order in which the project appears in the featured section (lower number = higher priority)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 )}
-              />
-              
-              <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsEditDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={updateProjectMutation.isPending}
-                >
-                  {updateProjectMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Project"
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+                
+                <div className="flex justify-between">
+                  <Button variant="outline" onClick={() => {
+                    setIsEditing(false);
+                    setSelectedProject(null);
+                  }}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={editMutation.isPending}>
+                    {editMutation.isPending ? "Updating..." : "Update Project"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Project</DialogTitle>
-          </DialogHeader>
-          <p>Are you sure you want to delete this project? This action cannot be undone.</p>
-          <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setIsDeleteDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="button" 
-              variant="destructive"
-              onClick={confirmDeleteProject}
-              disabled={deleteProjectMutation.isPending}
-            >
-              {deleteProjectMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Tabs value={filter} onValueChange={setFilter} className="mb-6">
+        <TabsList>
+          <TabsTrigger value="all">All Projects</TabsTrigger>
+          <TabsTrigger value="featured">Featured</TabsTrigger>
+          <TabsTrigger value="app_development">App Development</TabsTrigger>
+          <TabsTrigger value="project_management">Project Management</TabsTrigger>
+          <TabsTrigger value="web_development">Web Development</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      <div className="grid grid-cols-1 gap-4">
+        {filteredProjects.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No projects found. Add a new project to get started.
+          </div>
+        ) : (
+          filteredProjects.map((project: Project) => (
+            <Card key={project.id} className="overflow-hidden">
+              <div className="flex flex-col md:flex-row">
+                {project.imageUrl && (
+                  <div className="w-full md:w-1/4 min-h-[150px] bg-gray-100">
+                    <img 
+                      src={project.imageUrl} 
+                      alt={project.title} 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=No+Image';
+                      }}
+                    />
+                  </div>
+                )}
+                
+                <div className="flex-1 p-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-semibold">
+                        {project.title}
+                        {project.featured && (
+                          <span className="ml-2 inline-flex items-center text-amber-500">
+                            <Star className="h-4 w-4" />
+                            {project.featuredOrder && (
+                              <span className="ml-1 text-sm">{project.featuredOrder}</span>
+                            )}
+                          </span>
+                        )}
+                      </h3>
+                      <p className="text-sm text-gray-500 mb-2">
+                        {project.category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        {project.year && <span> • {project.year}</span>}
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="ghost" size="sm" onClick={() => handleEditProject(project)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This will permanently delete this project. This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction className="bg-red-500 hover:bg-red-600" onClick={() => handleDeleteProject(project)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm mt-2">{project.description}</p>
+                  
+                  {Array.isArray(project.technologies) && project.technologies.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {project.technologies.map((tech, i) => (
+                        <span key={i} className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
+                          {typeof tech === 'string' ? tech : tech.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {(project.githubLink || project.externalLink) && (
+                    <div className="mt-3 flex space-x-3 text-sm">
+                      {project.githubLink && (
+                        <a href={project.githubLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                          GitHub
+                        </a>
+                      )}
+                      {project.externalLink && (
+                        <a href={project.externalLink} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                          Live Project
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   );
 }

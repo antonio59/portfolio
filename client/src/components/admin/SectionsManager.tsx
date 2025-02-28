@@ -1,458 +1,495 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Pencil, Trash2, Plus, Loader2 } from "lucide-react";
-import { Section } from "@shared/schema";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Pencil, Trash2, Plus, MoveUp, MoveDown } from "lucide-react";
+import type { Section } from "@shared/schema";
 
-// Section form schema
+// Form validation schema
 const sectionSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  subtitle: z.string().optional(),
-  content: z.string().min(1, "Content is required"),
-  type: z.string().min(1, "Type is required"),
-  order: z.coerce.number().optional()
+  title: z.string().min(2, "Title must be at least 2 characters"),
+  subtitle: z.string().optional().nullable(),
+  content: z.array(z.string()).min(1, "At least one content paragraph is required"),
+  type: z.enum([
+    "hero", 
+    "about", 
+    "professionalProject", 
+    "personalProject", 
+    "experience", 
+    "contact", 
+    "certification", 
+    "featuredProject"
+  ]),
+  displayOrder: z.number().int().optional(),
 });
 
 type SectionFormValues = z.infer<typeof sectionSchema>;
 
+const sectionTypeLabels: Record<string, string> = {
+  hero: "Hero Section",
+  about: "About Me",
+  professionalProject: "Professional Projects",
+  personalProject: "Personal Projects",
+  experience: "Experience",
+  contact: "Contact",
+  certification: "Certifications",
+  featuredProject: "Featured Projects"
+};
+
 export default function SectionsManager() {
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedSection, setSelectedSection] = useState<Section | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [filter, setFilter] = useState("all");
   const { toast } = useToast();
 
-  // Fetch all sections
+  // Fetch sections
   const { data: sections = [], isLoading } = useQuery({
     queryKey: ["/api/admin/sections"],
   });
 
-  // Form setup for adding sections
+  // Filter sections based on the active tab
+  const filteredSections = filter === "all" 
+    ? sections 
+    : sections.filter((s: Section) => s.type === filter);
+
   const addForm = useForm<SectionFormValues>({
     resolver: zodResolver(sectionSchema),
     defaultValues: {
       title: "",
       subtitle: "",
-      content: "",
+      content: [""],
       type: "about",
-      order: 0
-    }
+      displayOrder: 1,
+    },
   });
 
-  // Form setup for editing sections
   const editForm = useForm<SectionFormValues>({
     resolver: zodResolver(sectionSchema),
     defaultValues: {
       title: "",
       subtitle: "",
-      content: "",
+      content: [""],
       type: "about",
-      order: 0
+      displayOrder: 1,
+    },
+  });
+
+  // Add section mutation
+  const addMutation = useMutation({
+    mutationFn: async (data: SectionFormValues) => {
+      // Ensure content is always an array
+      const formattedData = {
+        ...data,
+        content: Array.isArray(data.content) 
+          ? data.content 
+          : [data.content as unknown as string],
+      };
+      
+      const response = await apiRequest("POST", "/api/admin/sections", formattedData);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/sections"] });
+      setIsAdding(false);
+      addForm.reset({
+        title: "",
+        subtitle: "",
+        content: [""],
+        type: "about",
+        displayOrder: 1,
+      });
+      toast({
+        title: "Section added",
+        description: "The section has been added successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error adding section",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
     }
   });
 
-  // Section creation mutation
-  const createSectionMutation = useMutation({
+  // Edit section mutation
+  const editMutation = useMutation({
     mutationFn: async (data: SectionFormValues) => {
-      // Convert content from string to array or appropriate format for storage
-      const transformedData = {
+      if (!selectedSection) return null;
+      
+      // Ensure content is always an array
+      const formattedData = {
         ...data,
-        content: data.content.split("\n\n").filter(p => p.trim().length > 0)
+        content: Array.isArray(data.content) 
+          ? data.content 
+          : [data.content as unknown as string],
       };
       
-      const response = await apiRequest("POST", "/api/admin/sections", transformedData);
-      return await response.json();
+      const response = await apiRequest("PUT", `/api/admin/sections/${selectedSection.id}`, formattedData);
+      return response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Section has been created successfully.",
-      });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/sections"] });
-      setIsAddDialogOpen(false);
-      addForm.reset();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create section.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Section update mutation
-  const updateSectionMutation = useMutation({
-    mutationFn: async (data: SectionFormValues & { id: number }) => {
-      const { id, ...updateData } = data;
-      
-      // Convert content from string to array for storage
-      const transformedData = {
-        ...updateData,
-        content: updateData.content.split("\n\n").filter(p => p.trim().length > 0)
-      };
-      
-      const response = await apiRequest("PUT", `/api/admin/sections/${id}`, transformedData);
-      return await response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Section has been updated successfully.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/sections"] });
-      setIsEditDialogOpen(false);
+      setIsEditing(false);
       setSelectedSection(null);
-    },
-    onError: (error: any) => {
+      editForm.reset();
       toast({
-        title: "Error",
-        description: error.message || "Failed to update section.",
-        variant: "destructive",
+        title: "Section updated",
+        description: "The section has been updated successfully.",
       });
     },
+    onError: (error) => {
+      toast({
+        title: "Error updating section",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
+      });
+    }
   });
 
-  // Section deletion mutation
-  const deleteSectionMutation = useMutation({
+  // Delete section mutation
+  const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await apiRequest("DELETE", `/api/admin/sections/${id}`);
-      return await response.json();
+      return response.ok;
     },
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Section has been deleted successfully.",
-      });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/sections"] });
-      setIsDeleteDialogOpen(false);
-      setSelectedSection(null);
-    },
-    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete section.",
+        title: "Section deleted",
+        description: "The section has been deleted successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting section",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
-    },
+    }
   });
-
-  // Handle section creation form submission
-  const onSubmitAdd = (data: SectionFormValues) => {
-    createSectionMutation.mutate(data);
-  };
-
-  // Handle section update form submission
-  const onSubmitEdit = (data: SectionFormValues) => {
-    if (selectedSection) {
-      updateSectionMutation.mutate({
-        id: selectedSection.id,
-        ...data,
+  
+  // Reorder section mutation
+  const reorderMutation = useMutation({
+    mutationFn: async ({ id, direction }: { id: number; direction: 'up' | 'down' }) => {
+      const response = await apiRequest("PUT", `/api/admin/sections/${id}/reorder`, { direction });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/sections"] });
+      toast({
+        title: "Section reordered",
+        description: "The section order has been updated.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error reordering section",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive",
       });
     }
+  });
+
+  const onSubmitAdd = (data: SectionFormValues) => {
+    addMutation.mutate(data);
   };
 
-  // Open edit dialog and populate form with selected section
+  const onSubmitEdit = (data: SectionFormValues) => {
+    editMutation.mutate(data);
+  };
+
   const handleEditSection = (section: Section) => {
     setSelectedSection(section);
     
-    // Handle different data structures for content
-    let contentText = "";
-    if (Array.isArray(section.content)) {
-      contentText = section.content.join("\n\n");
-    } else if (typeof section.content === 'string') {
-      contentText = section.content;
-    } else if (section.content) {
-      // Try to convert other structures to string
-      try {
-        contentText = JSON.stringify(section.content, null, 2);
-      } catch (e) {
-        contentText = String(section.content);
-      }
-    }
+    // Parse content if needed
+    const contentArray = Array.isArray(section.content) 
+      ? section.content 
+      : typeof section.content === 'string' 
+        ? JSON.parse(section.content) 
+        : [section.content];
     
+    // Set form values
     editForm.reset({
       title: section.title,
       subtitle: section.subtitle || "",
-      content: contentText,
+      content: contentArray,
       type: section.type,
-      order: (section as any).order || 0 // Use type assertion as a temporary fix
+      displayOrder: section.displayOrder || 1,
     });
     
-    setIsEditDialogOpen(true);
+    setIsEditing(true);
   };
 
-  // Open delete confirmation dialog
   const handleDeleteSection = (section: Section) => {
-    setSelectedSection(section);
-    setIsDeleteDialogOpen(true);
+    deleteMutation.mutate(section.id);
+  };
+  
+  const handleReorderSection = (section: Section, direction: 'up' | 'down') => {
+    reorderMutation.mutate({ id: section.id, direction });
   };
 
-  // Confirm section deletion
-  const confirmDeleteSection = () => {
-    if (selectedSection) {
-      deleteSectionMutation.mutate(selectedSection.id);
-    }
+  // Helper function to add a new content field
+  const addContentField = (formHook: any) => {
+    const currentContent = formHook.getValues("content") || [];
+    formHook.setValue("content", [...currentContent, ""]);
+  };
+
+  // Helper function to remove a content field
+  const removeContentField = (formHook: any, index: number) => {
+    const currentContent = formHook.getValues("content") || [];
+    if (currentContent.length <= 1) return; // Don't remove the last one
+    
+    formHook.setValue(
+      "content", 
+      currentContent.filter((_: any, i: number) => i !== index)
+    );
   };
 
   if (isLoading) {
-    return (
-      <div className="flex justify-center items-center p-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <div>Loading sections...</div>;
   }
+
+  // Sort sections by order and type
+  const sortedSections = [...filteredSections].sort((a: Section, b: Section) => {
+    if (a.type !== b.type) {
+      return a.type.localeCompare(b.type);
+    }
+    return (a.displayOrder || 999) - (b.displayOrder || 999);
+  });
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Content Sections</h2>
-        <Button onClick={() => setIsAddDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" /> Add New Section
+        <h2 className="text-2xl font-bold">Content Sections Management</h2>
+        <Button onClick={() => setIsAdding(!isAdding)}>
+          {isAdding ? "Cancel" : <>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Section
+          </>}
         </Button>
       </div>
 
-      {sections.length === 0 ? (
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-center text-muted-foreground">No sections found. Add your first section to get started.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Order</TableHead>
-                  <TableHead className="w-[150px]">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sections.map((section: Section) => (
-                  <TableRow key={section.id}>
-                    <TableCell className="font-medium">{section.title}</TableCell>
-                    <TableCell>{section.type}</TableCell>
-                    <TableCell>{section.order || 0}</TableCell>
-                    <TableCell className="flex space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEditSection(section)}>
-                        <Pencil className="h-4 w-4" />
+      {isAdding && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Add New Section</CardTitle>
+            <CardDescription>Create a new content section for your portfolio</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...addForm}>
+              <form onSubmit={addForm.handleSubmit(onSubmitAdd)} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={addForm.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Section Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Section title" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={addForm.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Section Type</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="hero">Hero Section</SelectItem>
+                            <SelectItem value="about">About Me</SelectItem>
+                            <SelectItem value="professionalProject">Professional Projects</SelectItem>
+                            <SelectItem value="personalProject">Personal Projects</SelectItem>
+                            <SelectItem value="experience">Experience</SelectItem>
+                            <SelectItem value="contact">Contact</SelectItem>
+                            <SelectItem value="certification">Certifications</SelectItem>
+                            <SelectItem value="featuredProject">Featured Projects</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={addForm.control}
+                  name="subtitle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Subtitle (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Section subtitle" {...field} value={field.value || ""} />
+                      </FormControl>
+                      <FormDescription>
+                        A brief tagline or description for this section
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <FormLabel>Content Paragraphs</FormLabel>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => addContentField(addForm)}
+                    >
+                      Add Paragraph
+                    </Button>
+                  </div>
+                  
+                  {addForm.watch("content")?.map((_, index) => (
+                    <div key={index} className="flex items-start gap-2 mb-3">
+                      <FormField
+                        control={addForm.control}
+                        name={`content.${index}`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Textarea 
+                                placeholder={`Paragraph ${index + 1}`} 
+                                className="min-h-[80px]"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => removeContentField(addForm, index)}
+                        disabled={addForm.watch("content")?.length <= 1}
+                        className="mt-2"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDeleteSection(section)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                  ))}
+                </div>
+                
+                <FormField
+                  control={addForm.control}
+                  name="displayOrder"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Display Order</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="1" 
+                          {...field} 
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Order in which section appears within its type (lower number = higher position)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex justify-end">
+                  <Button type="submit" disabled={addMutation.isPending}>
+                    {addMutation.isPending ? "Adding..." : "Add Section"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
           </CardContent>
         </Card>
       )}
 
-      {/* Add Section Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Add New Section</DialogTitle>
-          </DialogHeader>
-          
-          <Form {...addForm}>
-            <form onSubmit={addForm.handleSubmit(onSubmitAdd)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={addForm.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="About Me" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={addForm.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Section Type</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
+      {isEditing && selectedSection && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Edit Section</CardTitle>
+            <CardDescription>Update section details</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...editForm}>
+              <form onSubmit={editForm.handleSubmit(onSubmitEdit)} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={editForm.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Section Title</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select section type" />
-                          </SelectTrigger>
+                          <Input placeholder="Section title" {...field} />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="about">About</SelectItem>
-                          <SelectItem value="skills">Skills</SelectItem>
-                          <SelectItem value="contact">Contact</SelectItem>
-                          <SelectItem value="hero">Hero</SelectItem>
-                          <SelectItem value="services">Services</SelectItem>
-                          <SelectItem value="testimonials">Testimonials</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={addForm.control}
-                  name="subtitle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Subtitle (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="A brief introduction" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editForm.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Section Type</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="hero">Hero Section</SelectItem>
+                            <SelectItem value="about">About Me</SelectItem>
+                            <SelectItem value="professionalProject">Professional Projects</SelectItem>
+                            <SelectItem value="personalProject">Personal Projects</SelectItem>
+                            <SelectItem value="experience">Experience</SelectItem>
+                            <SelectItem value="contact">Contact</SelectItem>
+                            <SelectItem value="certification">Certifications</SelectItem>
+                            <SelectItem value="featuredProject">Featured Projects</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 
-                <FormField
-                  control={addForm.control}
-                  name="order"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Display Order</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="1" 
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <FormField
-                control={addForm.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Content</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Section content..." 
-                        className="min-h-[200px]" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsAddDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={createSectionMutation.isPending}
-                >
-                  {createSectionMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    "Create Section"
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Section Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Section</DialogTitle>
-          </DialogHeader>
-          
-          <Form {...editForm}>
-            <form onSubmit={editForm.handleSubmit(onSubmitEdit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={editForm.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="About Me" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={editForm.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Section Type</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select section type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="about">About</SelectItem>
-                          <SelectItem value="skills">Skills</SelectItem>
-                          <SelectItem value="contact">Contact</SelectItem>
-                          <SelectItem value="hero">Hero</SelectItem>
-                          <SelectItem value="services">Services</SelectItem>
-                          <SelectItem value="testimonials">Testimonials</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={editForm.control}
                   name="subtitle"
@@ -460,16 +497,65 @@ export default function SectionsManager() {
                     <FormItem>
                       <FormLabel>Subtitle (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="A brief introduction" {...field} />
+                        <Input placeholder="Section subtitle" {...field} value={field.value || ""} />
                       </FormControl>
+                      <FormDescription>
+                        A brief tagline or description for this section
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <FormLabel>Content Paragraphs</FormLabel>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => addContentField(editForm)}
+                    >
+                      Add Paragraph
+                    </Button>
+                  </div>
+                  
+                  {editForm.watch("content")?.map((_, index) => (
+                    <div key={index} className="flex items-start gap-2 mb-3">
+                      <FormField
+                        control={editForm.control}
+                        name={`content.${index}`}
+                        render={({ field }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Textarea 
+                                placeholder={`Paragraph ${index + 1}`} 
+                                className="min-h-[80px]"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => removeContentField(editForm, index)}
+                        disabled={editForm.watch("content")?.length <= 1}
+                        className="mt-2"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                
                 <FormField
                   control={editForm.control}
-                  name="order"
+                  name="displayOrder"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Display Order</FormLabel>
@@ -477,98 +563,137 @@ export default function SectionsManager() {
                         <Input 
                           type="number" 
                           placeholder="1" 
-                          {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          {...field} 
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
                         />
                       </FormControl>
+                      <FormDescription>
+                        Order in which section appears within its type (lower number = higher position)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-              
-              <FormField
-                control={editForm.control}
-                name="content"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Content</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Section content..." 
-                        className="min-h-[200px]" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsEditDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  disabled={updateSectionMutation.isPending}
-                >
-                  {updateSectionMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Section"
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+                
+                <div className="flex justify-between">
+                  <Button variant="outline" onClick={() => {
+                    setIsEditing(false);
+                    setSelectedSection(null);
+                  }}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={editMutation.isPending}>
+                    {editMutation.isPending ? "Updating..." : "Update Section"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-          </DialogHeader>
-          
-          <p className="py-4">
-            Are you sure you want to delete the section "{selectedSection?.title}"? This action cannot be undone.
-          </p>
-          
-          <DialogFooter>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => setIsDeleteDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              type="button" 
-              variant="destructive"
-              onClick={confirmDeleteSection}
-              disabled={deleteSectionMutation.isPending}
-            >
-              {deleteSectionMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete Section"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <Tabs value={filter} onValueChange={setFilter} className="mb-6">
+        <TabsList className="flex flex-wrap">
+          <TabsTrigger value="all">All Sections</TabsTrigger>
+          <TabsTrigger value="hero">Hero</TabsTrigger>
+          <TabsTrigger value="about">About</TabsTrigger>
+          <TabsTrigger value="professionalProject">Professional Projects</TabsTrigger>
+          <TabsTrigger value="personalProject">Personal Projects</TabsTrigger>
+          <TabsTrigger value="experience">Experience</TabsTrigger>
+          <TabsTrigger value="featuredProject">Featured Projects</TabsTrigger>
+          <TabsTrigger value="certification">Certifications</TabsTrigger>
+          <TabsTrigger value="contact">Contact</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      <div className="grid grid-cols-1 gap-4">
+        {sortedSections.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            No sections found. Add a new section to get started.
+          </div>
+        ) : (
+          sortedSections.map((section: Section) => (
+            <Card key={section.id} className="overflow-hidden">
+              <div className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold">{section.title}</h3>
+                      <span className="px-2 py-1 rounded text-xs bg-gray-100">
+                        {sectionTypeLabels[section.type] || section.type}
+                      </span>
+                    </div>
+                    {section.subtitle && (
+                      <p className="text-sm text-gray-500 mb-2">{section.subtitle}</p>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleReorderSection(section, 'up')}
+                    >
+                      <MoveUp className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleReorderSection(section, 'down')}
+                    >
+                      <MoveDown className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleEditSection(section)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This will permanently delete this section. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction className="bg-red-500 hover:bg-red-600" onClick={() => handleDeleteSection(section)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <h5 className="text-sm font-semibold mb-2">Content</h5>
+                  {Array.isArray(section.content) ? (
+                    section.content.map((contentItem, i) => (
+                      <p key={i} className="text-sm mb-2">{contentItem}</p>
+                    ))
+                  ) : (
+                    typeof section.content === 'string' ? (
+                      <p className="text-sm mb-2">{section.content}</p>
+                    ) : (
+                      <p className="text-sm mb-2 text-gray-500">No content available</p>
+                    )
+                  )}
+                </div>
+                
+                {section.updatedAt && (
+                  <div className="mt-3 text-xs text-gray-400">
+                    Last updated: {new Date(section.updatedAt).toLocaleString()}
+                  </div>
+                )}
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   );
 }
