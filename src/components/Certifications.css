@@ -41,5 +41,35 @@
 @media (max-width: 768px) {
   .certification-grid {
     grid-template-columns: 1fr;
+    padding: 0 1rem;
+    gap: 1.5rem;
+  }
+
+  .certification-card {
+    padding: 1.5rem;
+  }
+
+  .certification-card h3 {
+    font-size: 1.3rem;
+  }
+
+  .certification-card p {
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .certification-grid {
+    padding: 0 0.75rem;
+    gap: 1rem;
+  }
+
+  .certification-card {
+    padding: 1.25rem;
+  }
+
+  .certification-card h3 {
+    font-size: 1.2rem;
   }
 }

@@ -100,7 +100,8 @@ nav {
     align-items: center;
     justify-content: center;
     transform: translateX(-100%);
-    transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s ease;
+    padding: 2rem;
   }
 
   .nav-links.active {
@@ -118,18 +119,33 @@ nav {
 
   .nav-buttons {
     flex-direction: column;
+    margin: 1rem 0;
     align-items: center;
-    margin-top: 1rem;
-    margin-left: 0;
   }
 
   .nav-buttons a {
     margin: 0.5rem 0;
+    width: 100%;
+    text-align: center;
   }
 
   .burger-menu {
     display: block;
-    position: relative;
     z-index: 1001;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    font-size: 1.25rem;
+  }
+
+  .nav-links {
+    padding: 1.5rem;
+  }
+
+  .nav-buttons a {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
   }
 }

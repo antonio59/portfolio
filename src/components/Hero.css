@@ -197,3 +197,38 @@ h2 {
     font-size: 2rem;
   }
 }
+@media (max-width: 480px) {
+  .hero-content {
+    padding: 0 1rem;
+  }
+
+  h1 {
+    font-size: 3rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .description {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .intro {
+    font-size: 1.25rem;
+  }
+
+  .cta-container {
+    margin-bottom: 1.5rem;
+  }
+
+  .scroll-prompt {
+    bottom: 1rem;
+  }
+
+  .scroll-icon {
+    font-size: 1.5rem;
+  }
+}

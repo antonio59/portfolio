@@ -100,9 +100,40 @@
 
   .profile-pic {
     margin-bottom: 1rem;
+    width: 200px;
+    height: 200px;
   }
 
   .currently-grid {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .currently {
+    padding: 1.25rem;
+  }
+
+  .currently h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-pic {
+    width: 150px;
+    height: 150px;
+  }
+
+  .currently {
+    padding: 1rem;
+  }
+
+  .currently h3 {
+    font-size: 1.3rem;
+  }
+
+  .currently-item {
+    font-size: 0.9rem;
+    padding: 0.4rem;
   }
 }

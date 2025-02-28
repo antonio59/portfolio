@@ -34,16 +34,25 @@ function App() {
   const [content, setContent] = useState(null);
 
   useEffect(() => {
-    try {
-      if (auth) {
-        setInitialized(true);
-        // Load content from localStorage if available, otherwise use default content
-        const savedContent = localStorage.getItem('portfolioContent');
-        setContent(savedContent ? JSON.parse(savedContent) : null);
+    const loadContent = async () => {
+      try {
+        if (auth) {
+          setInitialized(true);
+          // First try to load from localStorage
+          const savedContent = localStorage.getItem('portfolioContent');
+          if (savedContent) {
+            setContent(JSON.parse(savedContent));
+          } else {
+            // If not in localStorage, load from content.json
+            const response = await import('./data/content.json');
+            setContent(response.default);
+          }
+        }
+      } catch (err) {
+        setError(err.message);
       }
-    } catch (err) {
-      setError(err.message);
-    }
+    };
+    loadContent();
   }, []);
 
   if (error) {
