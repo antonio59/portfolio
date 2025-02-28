@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, json, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, json, timestamp, pgEnum, boolean, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -26,6 +26,8 @@ export const sectionTypeEnum = pgEnum("section_type", [
   "personalProject", 
   "experience",
   "contact",
+  "certification",
+  "featuredProject",
 ]);
 
 // Content sections schema
@@ -53,7 +55,7 @@ export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description").notNull(),
-  category: varchar("category", { length: 50 }).notNull(), // "professional" or "personal"
+  category: varchar("category", { length: 50 }).notNull(), // "project_management", "app_development", etc.
   technologies: json("technologies").notNull(), // Array of tech names
   year: varchar("year", { length: 10 }),
   icon: varchar("icon", { length: 50 }),
@@ -62,6 +64,9 @@ export const projects = pgTable("projects", {
   challenges: json("challenges"), // Array of challenges (for professional projects)
   outcomes: json("outcomes"), // Array of outcomes (for professional projects)
   role: text("role"), // Role in the project (for professional projects)
+  featured: boolean("featured").default(false), // Flag to mark featured projects
+  featuredOrder: integer("featured_order"), // Order in featured projects list
+  imageUrl: varchar("image_url", { length: 255 }), // URL to project image or screenshot
   updatedAt: timestamp("updated_at").defaultNow()
 });
 
@@ -77,6 +82,9 @@ export const insertProjectSchema = createInsertSchema(projects).pick({
   challenges: true,
   outcomes: true,
   role: true,
+  featured: true,
+  featuredOrder: true,
+  imageUrl: true,
 });
 
 export type InsertProject = z.infer<typeof insertProjectSchema>;
@@ -107,3 +115,35 @@ export const insertExperienceSchema = createInsertSchema(experiences).pick({
 
 export type InsertExperience = z.infer<typeof insertExperienceSchema>;
 export type Experience = typeof experiences.$inferSelect;
+
+// Certifications schema
+export const certifications = pgTable("certifications", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  issuer: varchar("issuer", { length: 255 }).notNull(),
+  issueDate: varchar("issue_date", { length: 100 }).notNull(), // e.g., "May 2023"
+  expiryDate: varchar("expiry_date", { length: 100 }), // Optional, e.g., "No Expiry" or "May 2025"
+  credentialID: varchar("credential_id", { length: 255 }),
+  credentialURL: varchar("credential_url", { length: 255 }),
+  description: text("description"),
+  skills: json("skills"), // Array of skills associated with this certification
+  featured: boolean("featured").default(false),
+  imageUrl: varchar("image_url", { length: 255 }), // URL to the certification image or badge
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+export const insertCertificationSchema = createInsertSchema(certifications).pick({
+  title: true,
+  issuer: true,
+  issueDate: true,
+  expiryDate: true,
+  credentialID: true,
+  credentialURL: true,
+  description: true,
+  skills: true,
+  featured: true,
+  imageUrl: true,
+});
+
+export type InsertCertification = z.infer<typeof insertCertificationSchema>;
+export type Certification = typeof certifications.$inferSelect;

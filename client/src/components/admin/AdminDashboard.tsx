@@ -18,7 +18,7 @@ export default function AdminDashboard() {
     queryKey: ["/api/session"],
   });
   
-  // Logout function
+  // Logout function with redirection to home page
   const handleLogout = async () => {
     try {
       const response = await apiRequest("GET", "/api/logout");
@@ -27,8 +27,8 @@ export default function AdminDashboard() {
         title: "Logged out",
         description: "You have been logged out successfully.",
       });
-      // Reload the page to reset the app state
-      window.location.reload();
+      // Redirect to home page
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);
       toast({
