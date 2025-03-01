@@ -106,23 +106,24 @@ export default function Certifications() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 hover:translate-y-[-5px] border border-gray-100 relative before:absolute before:top-0 before:left-0 before:right-0 before:h-2 group ${
+                  index % 5 === 0 ? "before:bg-blue-600" : 
+                  index % 5 === 1 ? "before:bg-green-600" : 
+                  index % 5 === 2 ? "before:bg-purple-600" : 
+                  index % 5 === 3 ? "before:bg-amber-600" : 
+                  "before:bg-cyan-600"
+                }`}
               >
-                {certification.imageUrl && (
-                  <div className="h-48 overflow-hidden bg-gray-100">
-                    <img 
-                      src={certification.imageUrl} 
-                      alt={certification.title} 
-                      className="w-full h-full object-contain p-4"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                  </div>
-                )}
+                {/* Removed image section as requested */}
                 
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2">{certification.title}</h3>
+                <div className="p-8">
+                  <h3 className={`text-2xl font-bold mb-3 transition-colors duration-300 ${
+                    index % 5 === 0 ? "text-blue-700 group-hover:text-blue-800" : 
+                    index % 5 === 1 ? "text-green-700 group-hover:text-green-800" : 
+                    index % 5 === 2 ? "text-purple-700 group-hover:text-purple-800" : 
+                    index % 5 === 3 ? "text-amber-700 group-hover:text-amber-800" : 
+                    "text-cyan-700 group-hover:text-cyan-800"
+                  }`}>{certification.title}</h3>
                   <p className="text-gray-600 text-sm mb-4">
                     {certification.issuer} • Issued: {certification.issueDate}
                     {certification.expiryDate && <span> • Expires: {certification.expiryDate}</span>}
@@ -132,11 +133,23 @@ export default function Certifications() {
                   
                   {Array.isArray(certification.skills) && certification.skills.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {certification.skills.map((skill: string, i: number) => (
-                        <Badge key={i} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                          {skill}
-                        </Badge>
-                      ))}
+                      {certification.skills.map((skill: string, i: number) => {
+                        // Rotate through different color schemes for the badges
+                        const colorSchemes = [
+                          "bg-blue-50 text-blue-700 border-blue-200",
+                          "bg-green-50 text-green-700 border-green-200",
+                          "bg-purple-50 text-purple-700 border-purple-200",
+                          "bg-amber-50 text-amber-700 border-amber-200",
+                          "bg-cyan-50 text-cyan-700 border-cyan-200"
+                        ];
+                        const colorScheme = colorSchemes[i % colorSchemes.length];
+                        
+                        return (
+                          <Badge key={i} variant="outline" className={colorScheme}>
+                            {skill}
+                          </Badge>
+                        );
+                      })}
                     </div>
                   )}
                   
