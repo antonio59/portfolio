@@ -134,11 +134,16 @@ export default function BlogPost() {
             <div className="flex items-center">
               <Calendar className="h-4 w-4 mr-1" /> 
               {formatDate(post.publishDate)}
+              {post.publishDate && ` (${Math.floor((new Date().getTime() - new Date(post.publishDate).getTime()) / (1000 * 60 * 60 * 24 * 30))}mo ago)`}
             </div>
             
             <div className="flex items-center">
               <User className="h-4 w-4 mr-1" /> 
               Admin
+            </div>
+            
+            <div className="flex items-center">
+              <span>{Math.max(1, Math.ceil(post.content.replace(/<[^>]*>?/gm, '').split(/\s+/).length / 200))} mins read</span>
             </div>
           </div>
           

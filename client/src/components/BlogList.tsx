@@ -147,66 +147,64 @@ export default function BlogList() {
   };
   
   return (
-    <div className="container mx-auto py-12 px-4 bg-[#f8f8f0]">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <div className="inline-block rounded-full bg-white px-4 py-2 mb-6 shadow-sm">
+    <div className="container mx-auto py-12">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-10">
+          <div className="inline-block rounded-lg border px-4 py-2 mb-6">
             <h2 className="text-lg font-medium">Latest Articles</h2>
           </div>
           
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">My thoughts on ... everything</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-6">My thoughts on ... everything</h1>
           
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-4">
+          <p className="text-lg max-w-2xl mx-auto mb-6">
             I love writing about tech, programming, and life in general. I hope
             you will click on them by mistake. Here are a few of my latest
-            articles. You can find more on my <Link href="/blog" className="text-blue-500 hover:underline">blog page</Link>.
+            articles. You can find more on my <Link href="/blog" className="text-primary hover:underline">blog page</Link>.
           </p>
         </div>
         
-        {/* Optional search and filtering - hidden by default, can be toggled */}
-        <div className={`mb-8 ${search || categoryFilter !== 'all' ? 'block' : 'hidden'}`}>
-          <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm">
-            <div className="relative flex-grow">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search posts..."
-                className="pl-10"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            
-            <div className="w-full md:w-[200px]">
-              <Select
-                value={categoryFilter}
-                onValueChange={setCategoryFilter}
-              >
-                <SelectTrigger className="w-full">
-                  <div className="flex items-center">
-                    <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="All Categories" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="uncategorized">Uncategorized</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem 
-                      key={category.id} 
-                      value={category.id.toString()}
-                    >
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+        {/* Search and filtering */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-grow">
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search posts..."
+              className="pl-10"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          
+          <div className="w-full md:w-[200px]">
+            <Select
+              value={categoryFilter}
+              onValueChange={setCategoryFilter}
+            >
+              <SelectTrigger className="w-full">
+                <div className="flex items-center">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="All Categories" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem 
+                    key={category.id} 
+                    value={category.id.toString()}
+                  >
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
         {/* Blog posts */}
         {filteredPosts.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-lg shadow-sm">
+          <div className="text-center py-16 bg-muted/30 rounded-lg">
             <h2 className="text-xl font-semibold mb-2">No Posts Found</h2>
             <p className="text-muted-foreground mb-4">
               {search || (categoryFilter && categoryFilter !== "all") 
@@ -226,13 +224,13 @@ export default function BlogList() {
             )}
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {filteredPosts.map((post, index) => (
-              <div key={post.id} className="flex items-start gap-4 bg-[#f8f8f0] hover:bg-white/50 transition-colors duration-200 rounded-md p-4">
+              <div key={post.id} className="flex border-b border-border pb-4 last:border-0">
                 <Link href={`/blog/${post.slug}`} className="block w-full">
                   <div className="flex items-start gap-4">
                     {/* Post image */}
-                    <div className="flex-shrink-0 w-16 h-16 overflow-hidden rounded-md border border-gray-200">
+                    <div className="flex-shrink-0 w-16 h-16 overflow-hidden rounded-md border">
                       <img 
                         src={post.featuredImage || `/blog-placeholder-${(index % 4) + 1}.svg`} 
                         alt={post.title} 
@@ -247,16 +245,16 @@ export default function BlogList() {
                     {/* Post content */}
                     <div className="flex-1">
                       <div className="flex items-baseline justify-between mb-1">
-                        <h3 className="text-xl font-bold hover:text-blue-600">{post.title}</h3>
-                        <span className="text-sm text-gray-500 whitespace-nowrap">{calculateReadingTime(post.content)} mins read</span>
+                        <h3 className="text-xl font-bold hover:text-primary transition-colors">{post.title}</h3>
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">{calculateReadingTime(post.content)} mins read</span>
                       </div>
                       
-                      <div className="text-sm text-gray-500 mb-2">
+                      <div className="text-sm text-muted-foreground mb-2">
                         {formatDate(post.publishDate)}
                         {post.publishDate && ` (${Math.floor((new Date().getTime() - new Date(post.publishDate).getTime()) / (1000 * 60 * 60 * 24 * 30))}mo ago)`}
                       </div>
                       
-                      <p className="text-gray-700 line-clamp-2">
+                      <p className="text-muted-foreground line-clamp-2">
                         {post.excerpt || post.content.replace(/<[^>]*>?/gm, '').substring(0, 120) + '...'}
                       </p>
                     </div>
@@ -264,10 +262,6 @@ export default function BlogList() {
                 </Link>
               </div>
             ))}
-            
-            {filteredPosts.length > 0 && (
-              <div className="w-full h-px bg-gray-200 my-6"></div>
-            )}
           </div>
         )}
       </div>
