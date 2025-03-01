@@ -102,9 +102,15 @@ const blogPostSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must contain only lowercase letters, numbers, and hyphens"),
   excerpt: z.string().min(10, "Excerpt must be at least 10 characters"),
   content: z.string().min(50, "Content must be at least 50 characters"),
-  categoryId: z.string().optional().transform(val => val ? parseInt(val) : null),
+  categoryId: z.union([
+    z.string().transform(val => val ? parseInt(val) : null),
+    z.number().nullable()
+  ]).nullable().optional(),
   featuredImage: z.string().optional().nullable(),
-  tags: z.string().optional().transform(val => val ? val.split(',').map(tag => tag.trim()) : []),
+  tags: z.union([
+    z.string().transform(val => val ? val.split(',').map(tag => tag.trim()) : []),
+    z.array(z.string())
+  ]),
   status: z.enum(["draft", "published"]),
   userId: z.number().default(1), // Default admin user
 });
@@ -151,9 +157,9 @@ export default function BlogManager() {
       slug: "",
       excerpt: "",
       content: "",
-      categoryId: "",
+      categoryId: null,
       featuredImage: "",
-      tags: "",
+      tags: [],
       status: "draft",
       userId: 1,
     }
@@ -331,9 +337,9 @@ export default function BlogManager() {
       slug: post.slug,
       excerpt: post.excerpt,
       content: post.content,
-      categoryId: post.categoryId ? String(post.categoryId) : "",
+      categoryId: post.categoryId,
       featuredImage: post.featuredImage || "",
-      tags: post.tags ? post.tags.join(", ") : "",
+      tags: post.tags,
       status: post.status as "draft" | "published",
       userId: post.userId,
     });
