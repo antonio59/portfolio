@@ -37,9 +37,9 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
     { name: "Contact", href: "#contact" },
   ];
   
-  // Route links (not hash links)
-  const routeLinks = [
-    { name: "Blog", href: "/blog" }
+  // External links
+  const externalLinks = [
+    { name: "Blog", href: "https://antoniosmith.me/blog" }
   ];
   
   return (
@@ -72,14 +72,16 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
                 </a>
               </li>
             ))}
-            {routeLinks.map((link, index) => (
-              <li key={`route-${index}`}>
-                <Link 
+            {externalLinks.map((link, index) => (
+              <li key={`external-${index}`}>
+                <a 
                   href={link.href}
                   className="text-gray-600 hover:text-accentColor transition-colors duration-300"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   {link.name}
-                </Link>
+                </a>
               </li>
             ))}
           </ul>
@@ -127,20 +129,22 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
                         </a>
                       </motion.li>
                     ))}
-                    {routeLinks.map((link, index) => (
+                    {externalLinks.map((link, index) => (
                       <motion.li 
-                        key={`route-mobile-${index}`}
+                        key={`external-mobile-${index}`}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: (navLinks.length + index) * 0.1 }}
                       >
-                        <Link 
+                        <a 
                           href={link.href}
                           className="text-2xl font-medium text-gray-700 hover:text-accentColor transition-colors duration-300"
                           onClick={toggleMobileMenu}
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
                           {link.name}
-                        </Link>
+                        </a>
                       </motion.li>
                     ))}
                   </ul>

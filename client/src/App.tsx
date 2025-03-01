@@ -17,8 +17,6 @@ import CustomCursor from "./components/CustomCursor";
 import AdminDashboard from "./components/admin/AdminDashboard";
 import LoginForm from "./components/admin/LoginForm";
 import NotFound from "./pages/not-found";
-import BlogPage from "./pages/blog-page";
-import BlogPostPage from "./pages/blog-post-page";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "./lib/queryClient";
 
@@ -99,8 +97,6 @@ function App() {
       <Switch>
         <Route path="/" component={PortfolioHome} />
         <Route path="/admin" component={AdminArea} />
-        <Route path="/blog" component={BlogPage} />
-        <Route path="/blog/:slug" component={BlogPostPage} />
         <Route component={NotFound} />
       </Switch>
       <Toaster />
