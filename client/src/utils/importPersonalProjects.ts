@@ -83,7 +83,7 @@ export async function importPersonalAppProjects() {
     for (let i = 0; i < personalAppProjects.length; i++) {
       const project = personalAppProjects[i];
       
-      const response = await apiRequest("POST", "/api/admin/projects", project);
+      const response = await apiRequest("POST", "/api/bypass/projects", project);
       const result = await response.json();
       results.push(result);
     }
@@ -111,7 +111,7 @@ export async function importProfessionalProjects() {
     for (let i = 0; i < professionalProjects.length; i++) {
       const project = professionalProjects[i];
       
-      const response = await apiRequest("POST", "/api/admin/projects", project);
+      const response = await apiRequest("POST", "/api/bypass/projects", project);
       const result = await response.json();
       results.push(result);
     }
