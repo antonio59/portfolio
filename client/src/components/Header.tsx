@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link } from "wouter";
 
 interface HeaderProps {
   isMobileMenuOpen: boolean;
@@ -36,6 +37,11 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
     { name: "Contact", href: "#contact" },
   ];
   
+  // Route links (not hash links)
+  const routeLinks = [
+    { name: "Blog", href: "/blog" }
+  ];
+  
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -64,6 +70,16 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
                 >
                   {link.name}
                 </a>
+              </li>
+            ))}
+            {routeLinks.map((link, index) => (
+              <li key={`route-${index}`}>
+                <Link 
+                  href={link.href}
+                  className="text-gray-600 hover:text-accentColor transition-colors duration-300"
+                >
+                  {link.name}
+                </Link>
               </li>
             ))}
           </ul>
@@ -109,6 +125,22 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
                         >
                           {link.name}
                         </a>
+                      </motion.li>
+                    ))}
+                    {routeLinks.map((link, index) => (
+                      <motion.li 
+                        key={`route-mobile-${index}`}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: (navLinks.length + index) * 0.1 }}
+                      >
+                        <Link 
+                          href={link.href}
+                          className="text-2xl font-medium text-gray-700 hover:text-accentColor transition-colors duration-300"
+                          onClick={toggleMobileMenu}
+                        >
+                          {link.name}
+                        </Link>
                       </motion.li>
                     ))}
                   </ul>
