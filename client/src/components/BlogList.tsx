@@ -149,7 +149,7 @@ export default function BlogList() {
   return (
     <div className="container mx-auto py-12">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-10">
+        <div className="text-center mb-10 pt-8 md:pt-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">My thoughts on ... everything</h1>
           
           <p className="text-lg max-w-2xl mx-auto mb-6">
