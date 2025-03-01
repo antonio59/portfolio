@@ -35,7 +35,12 @@ export async function apiRequest(
     headers['Content-Type'] = 'application/json';
   }
   
-  const res = await fetch(url, {
+  // Ensure the URL is absolute if running server-side (for syncData functionality)
+  const fullUrl = url.startsWith('/') 
+    ? (typeof window !== 'undefined' ? url : `http://localhost:5000${url}`)
+    : url;
+  
+  const res = await fetch(fullUrl, {
     method,
     headers,
     body,
@@ -55,7 +60,12 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    const url = queryKey[0] as string;
+    const fullUrl = url.startsWith('/') 
+      ? (typeof window !== 'undefined' ? url : `http://localhost:5000${url}`)
+      : url;
+    
+    const res = await fetch(fullUrl, {
       credentials: "include",
     });
 

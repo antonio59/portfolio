@@ -12,6 +12,8 @@ import {
   insertExperienceSchema,
   insertCertificationSchema
 } from "@shared/schema";
+// Import the data sync function
+import { syncAllData } from "../client/src/utils/syncFrontendData";
 
 // Define contact form schema for validation
 const contactFormSchema = z.object({
@@ -698,6 +700,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "Error fetching certification" 
+      });
+    }
+  });
+
+  // Data sync endpoint
+  app.post("/api/sync-data", async (req, res) => {
+    try {
+      console.log("Starting data sync process...");
+      const result = await syncAllData();
+      console.log("Data sync completed:", result);
+      res.json({ 
+        success: true, 
+        message: "Data sync completed successfully", 
+        result 
+      });
+    } catch (error) {
+      console.error("Error syncing data:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Error syncing data", 
+        error: error instanceof Error ? error.message : String(error) 
       });
     }
   });
