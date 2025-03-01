@@ -10,6 +10,7 @@ import ProjectsGrid from "./components/ProjectsGrid";
 import ProfessionalProjectsGrid from "./components/ProfessionalProjectsGrid";
 import About from "./components/About";
 import Experience from "./components/Experience";
+import Certifications from "./components/Certifications";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import CustomCursor from "./components/CustomCursor";
@@ -50,6 +51,7 @@ const PortfolioHome = () => {
         <ProjectsGrid />
         <About />
         <Experience />
+        <Certifications />
         <Contact />
       </main>
       <Footer />

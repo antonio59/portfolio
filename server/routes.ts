@@ -658,6 +658,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Frontend API for certifications
   app.get("/api/certifications", async (req, res) => {
     try {
       const certifications = await storage.getAllCertifications();
@@ -678,6 +679,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         success: false, 
         message: "Error fetching featured certifications" 
+      });
+    }
+  });
+  
+  app.get("/api/certifications/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const certification = await storage.getCertification(id);
+      if (!certification) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Certification not found" 
+        });
+      }
+      res.json(certification);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching certification" 
       });
     }
   });
