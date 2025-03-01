@@ -106,7 +106,7 @@ const blogPostSchema = z.object({
     z.string().transform(val => val ? parseInt(val) : null),
     z.number().nullable()
   ]).nullable().optional(),
-  featuredImage: z.string().optional().nullable(),
+  featuredImage: z.string().default("").optional(),
   tags: z.union([
     z.string().transform(val => val ? val.split(',').map(tag => tag.trim()) : []),
     z.array(z.string())
@@ -1015,6 +1015,7 @@ export default function BlogManager() {
                       <FormControl>
                         <Input 
                           {...field} 
+                          value={field.value || ""}
                           placeholder="https://example.com/image.jpg"
                         />
                       </FormControl>
