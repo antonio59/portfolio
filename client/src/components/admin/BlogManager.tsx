@@ -103,7 +103,7 @@ const blogPostSchema = z.object({
   excerpt: z.string().min(10, "Excerpt must be at least 10 characters"),
   content: z.string().min(50, "Content must be at least 50 characters"),
   categoryId: z.union([
-    z.string().transform(val => val ? parseInt(val) : null),
+    z.string().transform(val => val === "null" ? null : val ? parseInt(val) : null),
     z.number().nullable()
   ]).nullable().optional(),
   featuredImage: z.string().default("").optional(),
@@ -485,7 +485,7 @@ export default function BlogManager() {
                               <FormLabel>Category</FormLabel>
                               <Select 
                                 onValueChange={field.onChange} 
-                                value={field.value?.toString() || ""}
+                                value={field.value === null ? "null" : field.value?.toString() || "null"}
                               >
                                 <FormControl>
                                   <SelectTrigger>
@@ -493,7 +493,7 @@ export default function BlogManager() {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="">Uncategorized</SelectItem>
+                                  <SelectItem value="null">Uncategorized</SelectItem>
                                   {categories.map((category) => (
                                     <SelectItem 
                                       key={category.id} 
@@ -963,7 +963,7 @@ export default function BlogManager() {
                       <FormLabel>Category</FormLabel>
                       <Select 
                         onValueChange={field.onChange} 
-                        value={field.value?.toString() || ""}
+                        value={field.value === null ? "null" : field.value?.toString() || "null"}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -971,7 +971,7 @@ export default function BlogManager() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Uncategorized</SelectItem>
+                          <SelectItem value="null">Uncategorized</SelectItem>
                           {categories.map((category) => (
                             <SelectItem 
                               key={category.id} 
