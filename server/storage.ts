@@ -4,8 +4,6 @@ import {
   projects, 
   experiences,
   certifications,
-  blogCategories,
-  blogPosts,
   type User, 
   type InsertUser,
   type Section,
@@ -15,11 +13,7 @@ import {
   type Experience,
   type InsertExperience,
   type Certification,
-  type InsertCertification,
-  type BlogCategory,
-  type InsertBlogCategory,
-  type BlogPost,
-  type InsertBlogPost
+  type InsertCertification
 } from "@shared/schema";
 
 export interface IStorage {
@@ -59,25 +53,6 @@ export interface IStorage {
   createCertification(certification: InsertCertification): Promise<Certification>;
   updateCertification(id: number, certification: Partial<InsertCertification>): Promise<Certification | undefined>;
   deleteCertification(id: number): Promise<boolean>;
-  
-  // Blog category operations
-  getAllBlogCategories(): Promise<BlogCategory[]>;
-  getBlogCategory(id: number): Promise<BlogCategory | undefined>;
-  getBlogCategoryBySlug(slug: string): Promise<BlogCategory | undefined>;
-  createBlogCategory(category: InsertBlogCategory): Promise<BlogCategory>;
-  updateBlogCategory(id: number, category: Partial<InsertBlogCategory>): Promise<BlogCategory | undefined>;
-  deleteBlogCategory(id: number): Promise<boolean>;
-  
-  // Blog post operations
-  getAllBlogPosts(): Promise<BlogPost[]>;
-  getPublishedBlogPosts(): Promise<BlogPost[]>;
-  getBlogPostsByCategory(categoryId: number): Promise<BlogPost[]>;
-  getBlogPostsByUser(userId: number): Promise<BlogPost[]>;
-  getBlogPost(id: number): Promise<BlogPost | undefined>;
-  getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
-  createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
-  updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
-  deleteBlogPost(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -86,8 +61,6 @@ export class MemStorage implements IStorage {
   private projects: Map<number, Project>;
   private experiences: Map<number, Experience>;
   private certifications: Map<number, Certification>;
-  private blogCategories: Map<number, BlogCategory>;
-  private blogPosts: Map<number, BlogPost>;
   
   userIdCounter: number;
   sectionIdCounter: number;
@@ -95,8 +68,6 @@ export class MemStorage implements IStorage {
   experienceIdCounter: number;
   experienceOrderCounter: number;
   certificationIdCounter: number;
-  blogCategoryIdCounter: number;
-  blogPostIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -104,8 +75,6 @@ export class MemStorage implements IStorage {
     this.projects = new Map();
     this.experiences = new Map();
     this.certifications = new Map();
-    this.blogCategories = new Map();
-    this.blogPosts = new Map();
     
     this.userIdCounter = 1;
     this.sectionIdCounter = 1;
@@ -113,8 +82,6 @@ export class MemStorage implements IStorage {
     this.experienceIdCounter = 1;
     this.experienceOrderCounter = 1;
     this.certificationIdCounter = 1;
-    this.blogCategoryIdCounter = 1;
-    this.blogPostIdCounter = 1;
     
     // Initialize with admin user
     this.createUser({
@@ -355,153 +322,7 @@ export class MemStorage implements IStorage {
     return this.certifications.delete(id);
   }
 
-  // Blog category operations
-  async getAllBlogCategories(): Promise<BlogCategory[]> {
-    return Array.from(this.blogCategories.values());
-  }
 
-  async getBlogCategory(id: number): Promise<BlogCategory | undefined> {
-    return this.blogCategories.get(id);
-  }
-
-  async getBlogCategoryBySlug(slug: string): Promise<BlogCategory | undefined> {
-    return Array.from(this.blogCategories.values()).find(
-      (category) => category.slug === slug
-    );
-  }
-
-  async createBlogCategory(insertCategory: InsertBlogCategory): Promise<BlogCategory> {
-    const id = this.blogCategoryIdCounter++;
-    const now = new Date();
-    
-    const category: BlogCategory = {
-      ...insertCategory,
-      id,
-      description: insertCategory.description || null,
-      createdAt: now
-    };
-
-    this.blogCategories.set(id, category);
-    return category;
-  }
-
-  async updateBlogCategory(id: number, categoryUpdate: Partial<InsertBlogCategory>): Promise<BlogCategory | undefined> {
-    const category = this.blogCategories.get(id);
-    if (!category) return undefined;
-    
-    const updatedCategory: BlogCategory = {
-      ...category,
-      ...categoryUpdate,
-      description: categoryUpdate.description || category.description
-    };
-    
-    this.blogCategories.set(id, updatedCategory);
-    return updatedCategory;
-  }
-
-  async deleteBlogCategory(id: number): Promise<boolean> {
-    // Optional: Handle removal or reassignment of posts in this category
-    // Find posts in this category and set their categoryId to null
-    const postsInCategory = Array.from(this.blogPosts.values())
-      .filter(post => post.categoryId === id);
-    
-    for (const post of postsInCategory) {
-      post.categoryId = null;
-      this.blogPosts.set(post.id, post);
-    }
-    
-    return this.blogCategories.delete(id);
-  }
-
-  // Blog post operations
-  async getAllBlogPosts(): Promise<BlogPost[]> {
-    return Array.from(this.blogPosts.values())
-      .sort((a, b) => {
-        const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
-        const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
-        return dateB - dateA;
-      });
-  }
-
-  async getPublishedBlogPosts(): Promise<BlogPost[]> {
-    return Array.from(this.blogPosts.values())
-      .filter(post => post.status === 'published')
-      .sort((a, b) => {
-        const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
-        const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
-        return dateB - dateA;
-      });
-  }
-
-  async getBlogPostsByCategory(categoryId: number): Promise<BlogPost[]> {
-    return Array.from(this.blogPosts.values())
-      .filter(post => post.categoryId === categoryId)
-      .sort((a, b) => {
-        const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
-        const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
-        return dateB - dateA;
-      });
-  }
-
-  async getBlogPostsByUser(userId: number): Promise<BlogPost[]> {
-    return Array.from(this.blogPosts.values())
-      .filter(post => post.userId === userId)
-      .sort((a, b) => {
-        const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
-        const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
-        return dateB - dateA;
-      });
-  }
-
-  async getBlogPost(id: number): Promise<BlogPost | undefined> {
-    return this.blogPosts.get(id);
-  }
-
-  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
-    return Array.from(this.blogPosts.values()).find(
-      (post) => post.slug === slug
-    );
-  }
-
-  async createBlogPost(insertPost: InsertBlogPost): Promise<BlogPost> {
-    const id = this.blogPostIdCounter++;
-    const now = new Date();
-    
-    const post: BlogPost = {
-      ...insertPost,
-      id,
-      // Set default values for optional properties
-      categoryId: insertPost.categoryId || null,
-      featuredImage: insertPost.featuredImage || null,
-      tags: insertPost.tags || [],
-      publishDate: insertPost.publishDate || now,
-      status: insertPost.status || 'draft',
-      createdAt: now,
-      updatedAt: now
-    };
-    
-    this.blogPosts.set(id, post);
-    return post;
-  }
-
-  async updateBlogPost(id: number, postUpdate: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
-    const post = this.blogPosts.get(id);
-    if (!post) return undefined;
-    
-    const now = new Date();
-    const updatedPost: BlogPost = {
-      ...post,
-      ...postUpdate,
-      updatedAt: now
-    };
-    
-    this.blogPosts.set(id, updatedPost);
-    return updatedPost;
-  }
-
-  async deleteBlogPost(id: number): Promise<boolean> {
-    return this.blogPosts.delete(id);
-  }
 }
 
 export const storage = new MemStorage();
