@@ -139,53 +139,74 @@ export default function BlogList() {
     );
   }
 
+  // Calculate reading time (about 200 words per minute)
+  const calculateReadingTime = (content: string): number => {
+    const wordCount = content.replace(/<[^>]*>?/gm, '').split(/\s+/).length;
+    const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+    return readingTime;
+  };
+  
   return (
-    <div className="container mx-auto py-12">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold mb-6">Blog</h1>
-        
-        {/* Search and filtering */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search posts..."
-              className="pl-10"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+    <div className="container mx-auto py-12 px-4 bg-[#f8f8f0]">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-12">
+          <div className="inline-block rounded-full bg-white px-4 py-2 mb-6 shadow-sm">
+            <h2 className="text-lg font-medium">Latest Articles</h2>
           </div>
           
-          <div className="w-full md:w-[200px]">
-            <Select
-              value={categoryFilter}
-              onValueChange={setCategoryFilter}
-            >
-              <SelectTrigger className="w-full">
-                <div className="flex items-center">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="All Categories" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="uncategorized">Uncategorized</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem 
-                    key={category.id} 
-                    value={category.id.toString()}
-                  >
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <h1 className="text-5xl md:text-6xl font-bold mb-6">My thoughts on ... everything</h1>
+          
+          <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-4">
+            I love writing about tech, programming, and life in general. I hope
+            you will click on them by mistake. Here are a few of my latest
+            articles. You can find more on my <Link href="/blog" className="text-blue-500 hover:underline">blog page</Link>.
+          </p>
+        </div>
+        
+        {/* Optional search and filtering - hidden by default, can be toggled */}
+        <div className={`mb-8 ${search || categoryFilter !== 'all' ? 'block' : 'hidden'}`}>
+          <div className="flex flex-col md:flex-row gap-4 bg-white p-4 rounded-lg shadow-sm">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search posts..."
+                className="pl-10"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            
+            <div className="w-full md:w-[200px]">
+              <Select
+                value={categoryFilter}
+                onValueChange={setCategoryFilter}
+              >
+                <SelectTrigger className="w-full">
+                  <div className="flex items-center">
+                    <Filter className="mr-2 h-4 w-4" />
+                    <SelectValue placeholder="All Categories" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem 
+                      key={category.id} 
+                      value={category.id.toString()}
+                    >
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
         
         {/* Blog posts */}
         {filteredPosts.length === 0 ? (
-          <div className="text-center py-16 bg-muted/30 rounded-lg">
+          <div className="text-center py-16 bg-white rounded-lg shadow-sm">
             <h2 className="text-xl font-semibold mb-2">No Posts Found</h2>
             <p className="text-muted-foreground mb-4">
               {search || (categoryFilter && categoryFilter !== "all") 
@@ -205,74 +226,48 @@ export default function BlogList() {
             )}
           </div>
         ) : (
-          <div className="space-y-8">
-            {filteredPosts.map((post) => (
-              <Card key={post.id} className="overflow-hidden transition-all hover:shadow-md">
-                <Link href={`/blog/${post.slug}`} className="block">
-                    {post.featuredImage && (
-                      <div className="w-full h-48 overflow-hidden">
-                        <img 
-                          src={post.featuredImage} 
-                          alt={post.title} 
-                          className="w-full h-full object-cover transition-transform hover:scale-105"
-                        />
-                      </div>
-                    )}
+          <div className="space-y-6">
+            {filteredPosts.map((post, index) => (
+              <div key={post.id} className="flex items-start gap-4 bg-[#f8f8f0] hover:bg-white/50 transition-colors duration-200 rounded-md p-4">
+                <Link href={`/blog/${post.slug}`} className="block w-full">
+                  <div className="flex items-start gap-4">
+                    {/* Post image */}
+                    <div className="flex-shrink-0 w-16 h-16 overflow-hidden rounded-md border border-gray-200">
+                      <img 
+                        src={post.featuredImage || `/blog-placeholder-${(index % 4) + 1}.svg`} 
+                        alt={post.title} 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = `/blog-placeholder-${(index % 4) + 1}.svg`;
+                        }}
+                      />
+                    </div>
                     
-                    <CardHeader className={post.featuredImage ? "pt-4" : "pt-6"}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge variant="outline">
-                          {getCategoryName(post.categoryId)}
-                        </Badge>
-                        
-                        <span className="text-xs text-muted-foreground flex items-center">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          {formatDate(post.publishDate)}
-                        </span>
-                      </div>
-                      <CardTitle className="text-2xl hover:text-primary transition-colors">
-                        {post.title}
-                      </CardTitle>
-                      <CardDescription className="line-clamp-2 mt-2">
-                        {post.excerpt}
-                      </CardDescription>
-                    </CardHeader>
-                    
-                    <CardContent>
-                      <div className="line-clamp-3 text-muted-foreground">
-                        {/* Strip HTML tags for the content preview */}
-                        {post.content.replace(/<[^>]*>?/gm, '').substring(0, 200)}...
-                      </div>
-                    </CardContent>
-                    
-                    <CardFooter className="flex justify-between items-center pt-0 pb-4">
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <User className="h-3 w-3 mr-1" />
-                        Admin
+                    {/* Post content */}
+                    <div className="flex-1">
+                      <div className="flex items-baseline justify-between mb-1">
+                        <h3 className="text-xl font-bold hover:text-blue-600">{post.title}</h3>
+                        <span className="text-sm text-gray-500 whitespace-nowrap">{calculateReadingTime(post.content)} mins read</span>
                       </div>
                       
-                      {post.tags && post.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1 justify-end">
-                          {post.tags.slice(0, 3).map((tag, i) => (
-                            <span 
-                              key={i} 
-                              className="text-xs px-2 py-1 bg-muted rounded-full flex items-center"
-                            >
-                              <Tag className="h-2 w-2 mr-1" />
-                              {tag}
-                            </span>
-                          ))}
-                          {post.tags.length > 3 && (
-                            <span className="text-xs text-muted-foreground">
-                              +{post.tags.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </CardFooter>
+                      <div className="text-sm text-gray-500 mb-2">
+                        {formatDate(post.publishDate)}
+                        {post.publishDate && ` (${Math.floor((new Date().getTime() - new Date(post.publishDate).getTime()) / (1000 * 60 * 60 * 24 * 30))}mo ago)`}
+                      </div>
+                      
+                      <p className="text-gray-700 line-clamp-2">
+                        {post.excerpt || post.content.replace(/<[^>]*>?/gm, '').substring(0, 120) + '...'}
+                      </p>
+                    </div>
+                  </div>
                 </Link>
-              </Card>
+              </div>
             ))}
+            
+            {filteredPosts.length > 0 && (
+              <div className="w-full h-px bg-gray-200 my-6"></div>
+            )}
           </div>
         )}
       </div>
