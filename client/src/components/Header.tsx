@@ -29,10 +29,10 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
   
   // Navigation links
   const navLinks = [
-    { name: "Home", href: "#home" },
     { name: "Projects", href: "#projects" },
     { name: "About", href: "#about" },
     { name: "Experience", href: "#experience" },
+    { name: "Certifications", href: "#certifications" },
     { name: "Contact", href: "#contact" },
   ];
   
