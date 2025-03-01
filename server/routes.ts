@@ -704,15 +704,137 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Data sync endpoint - bypassing auth for initial data population
+  // Bypass auth endpoints for data sync operations
+  app.post("/api/bypass/projects", async (req, res) => {
+    try {
+      const validatedData = insertProjectSchema.parse(req.body);
+      const project = await storage.createProject(validatedData);
+      res.status(201).json(project);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        success: false, 
+        message: "Error creating project" 
+      });
+    }
+  });
+  
+  app.get("/api/bypass/projects", async (req, res) => {
+    try {
+      const projects = await storage.getAllProjects();
+      res.json(projects);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching projects" 
+      });
+    }
+  });
+  
+  app.put("/api/bypass/projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateSchema = insertProjectSchema.partial();
+      const validatedData = updateSchema.parse(req.body);
+      
+      const updatedProject = await storage.updateProject(id, validatedData);
+      if (!updatedProject) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Project not found" 
+        });
+      }
+      
+      res.json(updatedProject);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error updating project" 
+      });
+    }
+  });
+  
+  app.post("/api/bypass/experiences", async (req, res) => {
+    try {
+      const validatedData = insertExperienceSchema.parse(req.body);
+      const experience = await storage.createExperience(validatedData);
+      res.status(201).json(experience);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error creating experience" 
+      });
+    }
+  });
+  
+  app.post("/api/bypass/sections", async (req, res) => {
+    try {
+      const validatedData = insertSectionSchema.parse(req.body);
+      const section = await storage.createSection(validatedData);
+      res.status(201).json(section);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error creating section" 
+      });
+    }
+  });
+  
+  app.post("/api/bypass/certifications", async (req, res) => {
+    try {
+      const validatedData = insertCertificationSchema.parse(req.body);
+      const certification = await storage.createCertification(validatedData);
+      res.status(201).json(certification);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error creating certification" 
+      });
+    }
+  });
+
+  // Data sync endpoint - main coordinator
   app.post("/api/sync-data", async (req, res) => {
     try {
       console.log("Starting data sync process...");
-      
-      // Temporarily set admin session for data sync
-      req.session.userId = 1;
-      await req.session.save();
-      
       const result = await syncAllData();
       console.log("Data sync completed:", result);
       

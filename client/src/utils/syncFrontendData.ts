@@ -28,7 +28,7 @@ export async function syncProjects(): Promise<SyncResult> {
         year: new Date().getFullYear().toString()
       };
       
-      const response = await apiRequest("POST", "/api/admin/projects", formattedProject);
+      const response = await apiRequest("POST", "/api/bypass/projects", formattedProject);
       const result = await response.json();
       results.push(result);
     }
@@ -66,7 +66,7 @@ export async function syncExperiences(): Promise<SyncResult> {
         order: i + 1
       };
       
-      const response = await apiRequest("POST", "/api/admin/experiences", formattedExperience);
+      const response = await apiRequest("POST", "/api/bypass/experiences", formattedExperience);
       const result = await response.json();
       results.push(result);
     }
@@ -120,7 +120,7 @@ export async function createBasicSections(): Promise<SyncResult> {
     // Using a traditional for loop for async operations
     for (let i = 0; i < basicSections.length; i++) {
       const section = basicSections[i];
-      const response = await apiRequest("POST", "/api/admin/sections", { ...section, order: i });
+      const response = await apiRequest("POST", "/api/bypass/sections", { ...section, order: i });
       const result = await response.json();
       results.push(result);
     }
@@ -186,7 +186,7 @@ export async function createSampleCertifications(): Promise<SyncResult> {
     // Using a traditional for loop for async operations
     for (let i = 0; i < sampleCertifications.length; i++) {
       const certification = sampleCertifications[i];
-      const response = await apiRequest("POST", "/api/admin/certifications", certification);
+      const response = await apiRequest("POST", "/api/bypass/certifications", certification);
       const result = await response.json();
       results.push(result);
     }
@@ -216,7 +216,7 @@ export async function createFeaturedProjectsSection(): Promise<SyncResult> {
       type: "featuredProject"
     };
     
-    const response = await apiRequest("POST", "/api/admin/sections", featuredSection);
+    const response = await apiRequest("POST", "/api/bypass/sections", featuredSection);
     const result = await response.json();
     
     return { 
@@ -244,7 +244,7 @@ export async function createCertificationSection(): Promise<SyncResult> {
       type: "certification"
     };
     
-    const response = await apiRequest("POST", "/api/admin/sections", certificationSection);
+    const response = await apiRequest("POST", "/api/bypass/sections", certificationSection);
     const result = await response.json();
     
     return { 
@@ -298,7 +298,7 @@ export async function syncAllData() {
   let featuredProjectsResult: SyncResult = { success: true, count: 0, message: "" };
   try {
     // Get all projects first
-    const projectsResponse = await apiRequest("GET", "/api/admin/projects");
+    const projectsResponse = await apiRequest("GET", "/api/bypass/projects");
     const allProjects = await projectsResponse.json();
     
     // Select up to 3 projects to mark as featured
@@ -307,7 +307,7 @@ export async function syncAllData() {
     
     for (let i = 0; i < projectsToFeature.length; i++) {
       const project = projectsToFeature[i];
-      const updateResponse = await apiRequest("PUT", `/api/admin/projects/${project.id}`, {
+      const updateResponse = await apiRequest("PUT", `/api/bypass/projects/${project.id}`, {
         featured: true,
         featuredOrder: i + 1
       });
