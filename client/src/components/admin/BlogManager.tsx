@@ -537,6 +537,7 @@ export default function BlogManager() {
                               <FormControl>
                                 <Input 
                                   {...field} 
+                                  value={field.value || ""}
                                   placeholder="https://example.com/image.jpg"
                                 />
                               </FormControl>
