@@ -416,25 +416,41 @@ export class MemStorage implements IStorage {
   // Blog post operations
   async getAllBlogPosts(): Promise<BlogPost[]> {
     return Array.from(this.blogPosts.values())
-      .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
+      .sort((a, b) => {
+        const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
+        const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
+        return dateB - dateA;
+      });
   }
 
   async getPublishedBlogPosts(): Promise<BlogPost[]> {
     return Array.from(this.blogPosts.values())
       .filter(post => post.status === 'published')
-      .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
+      .sort((a, b) => {
+        const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
+        const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
+        return dateB - dateA;
+      });
   }
 
   async getBlogPostsByCategory(categoryId: number): Promise<BlogPost[]> {
     return Array.from(this.blogPosts.values())
       .filter(post => post.categoryId === categoryId)
-      .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
+      .sort((a, b) => {
+        const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
+        const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
+        return dateB - dateA;
+      });
   }
 
   async getBlogPostsByUser(userId: number): Promise<BlogPost[]> {
     return Array.from(this.blogPosts.values())
       .filter(post => post.userId === userId)
-      .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
+      .sort((a, b) => {
+        const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
+        const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
+        return dateB - dateA;
+      });
   }
 
   async getBlogPost(id: number): Promise<BlogPost | undefined> {

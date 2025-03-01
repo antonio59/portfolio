@@ -864,7 +864,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Data sync endpoint - main coordinator
   // Blog Categories CRUD
   app.get("/api/admin/blog-categories", isAuthenticated, async (req, res) => {
     try {
