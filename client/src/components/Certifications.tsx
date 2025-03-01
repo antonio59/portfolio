@@ -161,6 +161,26 @@ export default function Certifications() {
               <p className="text-sm text-gray-500 mt-2">
                 Total certifications: {certifications.length}, Featured: {certifications.filter(c => c.featured).length}
               </p>
+              <button 
+                onClick={async () => {
+                  try {
+                    console.log("Triggering data sync...");
+                    const response = await fetch("/api/admin/sync-data", {
+                      method: "POST",
+                      headers: { 'Content-Type': 'application/json' }
+                    });
+                    const result = await response.json();
+                    console.log("Sync result:", result);
+                    // Invalidate the cache and trigger a refetch
+                    window.location.reload();
+                  } catch (err) {
+                    console.error("Sync error:", err);
+                  }
+                }}
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+              >
+                Load Sample Data
+              </button>
             </div>
           )}
         </div>

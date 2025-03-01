@@ -12,8 +12,8 @@ import {
   insertExperienceSchema,
   insertCertificationSchema
 } from "@shared/schema";
-// Import the data sync function
-import { syncAllData } from "../client/src/utils/syncFrontendData";
+// Import the data sync function and specific certification creation function
+import { syncAllData, createSampleCertifications } from "../client/src/utils/syncFrontendData";
 
 // Define contact form schema for validation
 const contactFormSchema = z.object({
@@ -663,12 +663,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Frontend API for certifications
   app.get("/api/certifications", async (req, res) => {
     try {
+      console.log("Fetching all certifications...");
       const certifications = await storage.getAllCertifications();
+      console.log(`Found ${certifications.length} certifications`);
       res.json(certifications);
     } catch (error) {
+      console.error("Error fetching certifications:", error);
       res.status(500).json({ 
         success: false, 
         message: "Error fetching certifications" 
+      });
+    }
+  });
+  
+  // Data sync API endpoint
+  app.post("/api/admin/sync-data", async (req, res) => {
+    try {
+      console.log("Starting data sync process...");
+      
+      // Focus on certifications first
+      const certResult = await createSampleCertifications();
+      console.log(`Certification sync result: ${certResult.success ? 'success' : 'failed'}, ${certResult.count} items`);
+      
+      // Then sync all remaining data if needed
+      /*
+      const fullResult = await syncAllData();
+      console.log("Full data sync completed");
+      */
+      
+      res.status(200).json({
+        success: true,
+        message: `Successfully synced data. Added ${certResult.count} certifications.`
+      });
+    } catch (error) {
+      console.error("Error during data sync:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error syncing data"
       });
     }
   });
