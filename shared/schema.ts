@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, json, timestamp, pgEnum, boolean, integer } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, json, timestamp, pgEnum, boolean, integer, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -28,6 +28,7 @@ export const sectionTypeEnum = pgEnum("section_type", [
   "contact",
   "certification",
   "featuredProject",
+  "blog",
 ]);
 
 // Content sections schema
@@ -147,3 +148,54 @@ export const insertCertificationSchema = createInsertSchema(certifications).pick
 
 export type InsertCertification = z.infer<typeof insertCertificationSchema>;
 export type Certification = typeof certifications.$inferSelect;
+
+// Blog post categories schema
+export const blogCategories = pgTable("blog_categories", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 50 }).notNull().unique(),
+  slug: varchar("slug", { length: 50 }).notNull().unique(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertBlogCategorySchema = createInsertSchema(blogCategories).pick({
+  name: true,
+  slug: true,
+  description: true,
+});
+
+export type InsertBlogCategory = z.infer<typeof insertBlogCategorySchema>;
+export type BlogCategory = typeof blogCategories.$inferSelect;
+
+// Blog posts schema
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  excerpt: text("excerpt").notNull(),
+  content: text("content").notNull(),
+  categoryId: integer("category_id").references(() => blogCategories.id, { onDelete: 'set null' }),
+  featuredImage: varchar("featured_image", { length: 255 }),
+  tags: json("tags").default([]), // Array of tags
+  publishDate: timestamp("publish_date").defaultNow(),
+  status: varchar("status", { length: 20 }).default("draft").notNull(), // draft, published
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertBlogPostSchema = createInsertSchema(blogPosts).pick({
+  title: true,
+  slug: true,
+  excerpt: true,
+  content: true,
+  categoryId: true,
+  featuredImage: true,
+  tags: true,
+  publishDate: true,
+  status: true,
+  userId: true,
+});
+
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+export type BlogPost = typeof blogPosts.$inferSelect;
