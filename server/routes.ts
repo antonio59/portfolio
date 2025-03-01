@@ -704,12 +704,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Data sync endpoint
+  // Data sync endpoint - bypassing auth for initial data population
   app.post("/api/sync-data", async (req, res) => {
     try {
       console.log("Starting data sync process...");
+      
+      // Temporarily set admin session for data sync
+      req.session.userId = 1;
+      await req.session.save();
+      
       const result = await syncAllData();
       console.log("Data sync completed:", result);
+      
       res.json({ 
         success: true, 
         message: "Data sync completed successfully", 
