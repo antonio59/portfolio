@@ -10,7 +10,9 @@ import {
   insertSectionSchema, 
   insertProjectSchema, 
   insertExperienceSchema,
-  insertCertificationSchema
+  insertCertificationSchema,
+  insertBlogCategorySchema,
+  insertBlogPostSchema
 } from "@shared/schema";
 // Import the data sync function and specific certification creation function
 import { syncAllData, createSampleCertifications } from "../client/src/utils/syncFrontendData";
@@ -863,6 +865,292 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Data sync endpoint - main coordinator
+  // Blog Categories CRUD
+  app.get("/api/admin/blog-categories", isAuthenticated, async (req, res) => {
+    try {
+      const categories = await storage.getAllBlogCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog categories" 
+      });
+    }
+  });
+  
+  app.get("/api/admin/blog-categories/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const category = await storage.getBlogCategory(id);
+      if (!category) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog category not found" 
+        });
+      }
+      res.json(category);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog category" 
+      });
+    }
+  });
+  
+  app.post("/api/admin/blog-categories", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertBlogCategorySchema.parse(req.body);
+      const category = await storage.createBlogCategory(validatedData);
+      res.status(201).json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error creating blog category" 
+      });
+    }
+  });
+  
+  app.put("/api/admin/blog-categories/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      // Partial validation of the update data
+      const updateSchema = insertBlogCategorySchema.partial();
+      const validatedData = updateSchema.parse(req.body);
+      
+      const updatedCategory = await storage.updateBlogCategory(id, validatedData);
+      if (!updatedCategory) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog category not found" 
+        });
+      }
+      
+      res.json(updatedCategory);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error updating blog category" 
+      });
+    }
+  });
+  
+  app.delete("/api/admin/blog-categories/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteBlogCategory(id);
+      if (!success) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog category not found" 
+        });
+      }
+      
+      res.json({ success: true, message: "Blog category deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error deleting blog category" 
+      });
+    }
+  });
+  
+  // Blog Posts CRUD
+  app.get("/api/admin/blog-posts", isAuthenticated, async (req, res) => {
+    try {
+      const posts = await storage.getAllBlogPosts();
+      res.json(posts);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog posts" 
+      });
+    }
+  });
+  
+  app.get("/api/admin/blog-posts/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const post = await storage.getBlogPost(id);
+      if (!post) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog post not found" 
+        });
+      }
+      res.json(post);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog post" 
+      });
+    }
+  });
+  
+  app.post("/api/admin/blog-posts", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertBlogPostSchema.parse(req.body);
+      const post = await storage.createBlogPost(validatedData);
+      res.status(201).json(post);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error creating blog post" 
+      });
+    }
+  });
+  
+  app.put("/api/admin/blog-posts/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      // Partial validation of the update data
+      const updateSchema = insertBlogPostSchema.partial();
+      const validatedData = updateSchema.parse(req.body);
+      
+      const updatedPost = await storage.updateBlogPost(id, validatedData);
+      if (!updatedPost) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog post not found" 
+        });
+      }
+      
+      res.json(updatedPost);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error updating blog post" 
+      });
+    }
+  });
+  
+  app.delete("/api/admin/blog-posts/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteBlogPost(id);
+      if (!success) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog post not found" 
+        });
+      }
+      
+      res.json({ success: true, message: "Blog post deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error deleting blog post" 
+      });
+    }
+  });
+  
+  // Public Blog API routes
+  app.get("/api/blog/categories", async (req, res) => {
+    try {
+      const categories = await storage.getAllBlogCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog categories" 
+      });
+    }
+  });
+  
+  app.get("/api/blog/categories/:slug", async (req, res) => {
+    try {
+      const slug = req.params.slug;
+      const category = await storage.getBlogCategoryBySlug(slug);
+      if (!category) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog category not found" 
+        });
+      }
+      res.json(category);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog category" 
+      });
+    }
+  });
+  
+  app.get("/api/blog/posts", async (req, res) => {
+    try {
+      const posts = await storage.getPublishedBlogPosts();
+      res.json(posts);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog posts" 
+      });
+    }
+  });
+  
+  app.get("/api/blog/posts/:slug", async (req, res) => {
+    try {
+      const slug = req.params.slug;
+      const post = await storage.getBlogPostBySlug(slug);
+      if (!post) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog post not found" 
+        });
+      }
+      res.json(post);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog post" 
+      });
+    }
+  });
+  
+  app.get("/api/blog/category/:id/posts", async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const posts = await storage.getBlogPostsByCategory(categoryId);
+      res.json(posts);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching category blog posts" 
+      });
+    }
+  });
+
   app.post("/api/sync-data", async (req, res) => {
     try {
       console.log("Starting data sync process...");
