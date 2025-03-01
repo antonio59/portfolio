@@ -50,7 +50,7 @@ interface BlogPost {
 
 export default function BlogList() {
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   
   // Fetch blog posts and categories
   const { 
@@ -88,7 +88,7 @@ export default function BlogList() {
       post.excerpt.toLowerCase().includes(search.toLowerCase()) ||
       (post.tags && post.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase())));
       
-    const matchesCategory = categoryFilter === "" || 
+    const matchesCategory = categoryFilter === "all" || categoryFilter === "" || 
       (categoryFilter === "uncategorized" && !post.categoryId) ||
       (post.categoryId && post.categoryId.toString() === categoryFilter);
       
@@ -168,7 +168,7 @@ export default function BlogList() {
                 </div>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 <SelectItem value="uncategorized">Uncategorized</SelectItem>
                 {categories.map((category) => (
                   <SelectItem 
@@ -188,15 +188,15 @@ export default function BlogList() {
           <div className="text-center py-16 bg-muted/30 rounded-lg">
             <h2 className="text-xl font-semibold mb-2">No Posts Found</h2>
             <p className="text-muted-foreground mb-4">
-              {search || categoryFilter 
+              {search || (categoryFilter && categoryFilter !== "all") 
                 ? "Try a different search term or category filter."
                 : "There are no blog posts published yet. Check back later!"}
             </p>
-            {(search || categoryFilter) && (
+            {(search || (categoryFilter && categoryFilter !== "all")) && (
               <Button
                 onClick={() => {
                   setSearch("");
-                  setCategoryFilter("");
+                  setCategoryFilter("all");
                 }}
                 variant="outline"
               >
