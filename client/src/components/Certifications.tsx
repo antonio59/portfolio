@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
+import React, { useEffect } from "react";
 
 interface Certification {
   id: number;
@@ -17,17 +18,40 @@ interface Certification {
 }
 
 export default function Certifications() {
-  // Use React Query to fetch certifications
+  // Use React Query to fetch certifications with explicit debugging
   const { 
     data: certifications = [], 
     isLoading, 
-    error
+    error,
+    status,
+    fetchStatus
   } = useQuery<Certification[]>({
     queryKey: ["/api/certifications"],
     staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 2, // Add retry attempts
+    refetchOnMount: true, // Force a refetch when the component mounts
   });
   
+  console.log("Certifications Query Status:", { status, fetchStatus });
   console.log("Certifications data:", certifications);
+  console.log("Error fetching certifications:", error);
+  
+  // Make a direct fetch to debug
+  useEffect(() => {
+    const debugFetch = async () => {
+      try {
+        console.log("Attempting direct fetch of certifications...");
+        const response = await fetch("/api/certifications");
+        console.log("Direct fetch status:", response.status);
+        const data = await response.json();
+        console.log("Direct fetch result:", data);
+      } catch (err) {
+        console.error("Direct fetch error:", err);
+      }
+    };
+    
+    debugFetch();
+  }, []);
   
   // Get only featured certifications for display
   const featuredCertifications = certifications.filter((cert: Certification) => cert.featured);
