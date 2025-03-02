@@ -74,8 +74,10 @@ export default function Contact() {
   }
   
   return (
-    <section id="contact" className="py-20 bg-primaryBg">
-      <div className="container mx-auto px-6">
+    <section id="contact" className="py-20 bg-primaryBg shadow-lg border-t border-gray-200 relative">
+      {/* Top decorative pattern */}
+      <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-blue-100 via-gray-200 to-green-100 opacity-60"></div>
+      <div className="container mx-auto px-6 pt-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

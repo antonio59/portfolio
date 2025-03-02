@@ -85,8 +85,10 @@ export default function Certifications() {
   // This helps with debugging
   
   return (
-    <section className="py-16 bg-gray-50" id="certifications">
-      <div className="container mx-auto px-4">
+    <section className="pt-16 pb-20 bg-gray-50 shadow-inner relative" id="certifications">
+      {/* Decorative bottom edge */}
+      <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-b from-transparent to-gray-100"></div>
+      <div className="container mx-auto px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
