@@ -46,10 +46,10 @@ const PortfolioHome = () => {
       />
       <main>
         <Hero />
+        <About />
         <ProjectShowcase />
         <ProfessionalProjectsGrid />
         <ProjectsGrid />
-        <About />
         <Experience />
         <Certifications />
         <Contact />
