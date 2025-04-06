@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Debug Show Workflow File Content
+        run: cat .github/workflows/firebase-hosting-pull-request.yml
       - name: Install Dependencies
         run: yarn install --frozen-lockfile
       - name: Run TypeScript Checks
