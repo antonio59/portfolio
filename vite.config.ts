@@ -9,6 +9,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
+  // Tell Vite to load .env files from the project root, not the 'client' directory
+  envDir: path.resolve(__dirname),
   plugins: [
     react(),
     runtimeErrorOverlay(),
@@ -32,5 +34,6 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
+    // Removed manualChunks configuration to let Vite handle chunking
   },
 });

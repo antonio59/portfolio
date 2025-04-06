@@ -1,35 +1,37 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+// Removed useQuery, apiRequest, queryClient imports
+import { auth } from "@/lib/firebaseConfig"; // Import Firebase auth
+import { signOut } from "firebase/auth"; // Import Firebase signOut
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectsManager from "./ProjectsManager";
 import ExperienceManager from "./ExperienceManager";
-import SectionsManager from "./SectionsManager";
-import CertificationsManager from "./CertificationsManager";
+// import SectionsManager from "./SectionsManager"; // Remove SectionsManager import
+// import CertificationsManager from "./CertificationsManager"; // Remove old import
+import EducationCertManager from "./EducationManager"; // Rename import to reflect component name
+import AboutManager from "./AboutManager"; // Import the new AboutManager
+import HeroManager from "./HeroManager"; // Import the new HeroManager
+import ContactManager from "./ContactManager"; // Import the new ContactManager
+import BlogManager from "./BlogManager"; // Import the existing BlogManager
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Import Card components
 import { LogOut, RotateCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState("projects");
+  const [activeTab, setActiveTab] = useState("projects"); // Keep default or change if needed
   const { toast } = useToast();
   
-  // Check session status
-  const { data: sessionData, isLoading: sessionLoading } = useQuery({
-    queryKey: ["/api/session"],
-  });
-  
+  // Session check is now handled globally in App.tsx
+  // Removed sessionData and sessionLoading useQuery
   // Logout function with redirection to home page
   const handleLogout = async () => {
     try {
-      const response = await apiRequest("GET", "/api/logout");
-      await response.json();
+      await signOut(auth); // Use Firebase signOut
       toast({
         title: "Logged out",
         description: "You have been logged out successfully.",
       });
-      // Redirect to home page
-      window.location.href = "/";
+      // No need to manually redirect, onAuthStateChanged in App.tsx will handle UI update
     } catch (error) {
       console.error("Logout error:", error);
       toast({
@@ -40,183 +42,19 @@ export default function AdminDashboard() {
     }
   };
   
-  if (sessionLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
+  // Removed loading state based on sessionLoading
   
-  // Import data from antoniosmith.me
-  const [isImporting, setIsImporting] = useState(false);
-  const [importResult, setImportResult] = useState<any>(null);
+  // Removed state related to old import/sync functionality
   
-  // Sync frontend data to admin
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<any>(null);
-  
-  // Import specialized app and project management projects
-  const [isImportingSpecialized, setIsImportingSpecialized] = useState(false);
-  const [specializedImportResult, setSpecializedImportResult] = useState<any>(null);
-  
-  // Function to import sample content
-  const handleImportContent = async () => {
-    // Dynamically import to avoid loading this unnecessarily
-    try {
-      setIsImporting(true);
-      const { importAllContent } = await import("@/utils/importData");
-      const result = await importAllContent();
-      setImportResult(result);
-      
-      // Show success or error message
-      if (result.success) {
-        toast({
-          title: "Import successful",
-          description: `Imported ${result.projects.count} projects, ${result.experiences.count} experiences, and ${result.sections.count} sections.`,
-        });
-        
-        // Refresh data
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/experiences"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/sections"] });
-      } else {
-        toast({
-          title: "Import failed",
-          description: "Some content could not be imported. Check the console for details.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Import error:", error);
-      toast({
-        title: "Import error",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsImporting(false);
-    }
-  };
-  
-  // Function to sync frontend data with admin
-  const handleSyncFrontendData = async () => {
-    try {
-      setIsSyncing(true);
-      const { syncAllData } = await import("@/utils/syncFrontendData");
-      const result = await syncAllData();
-      setSyncResult(result);
-      
-      // Show success or error message
-      if (result.success) {
-        // Check if specialized projects were imported
-        const specializedCount = result.specializedProjects?.count || 0;
-        const specializedMsg = specializedCount > 0 
-          ? ` (including ${specializedCount} app & project management projects)` 
-          : '';
-        
-        toast({
-          title: "Sync successful",
-          description: `Synced ${result.projects.count} projects${specializedMsg}, ${result.experiences.count} experiences, and ${result.sections.count} sections.`,
-        });
-        
-        // Refresh data
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/experiences"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/sections"] });
-      } else {
-        toast({
-          title: "Sync failed",
-          description: "Some frontend content could not be synced. Check the console for details.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Sync error:", error);
-      toast({
-        title: "Sync error",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-  
-  // Function to import specialized app and project management projects
-  const handleImportSpecializedProjects = async () => {
-    try {
-      setIsImportingSpecialized(true);
-      const { importAllSpecializedProjects } = await import("@/utils/importPersonalProjects");
-      const result = await importAllSpecializedProjects();
-      setSpecializedImportResult(result);
-      
-      // Show success or error message
-      if (result.success) {
-        toast({
-          title: "Import successful",
-          description: `Imported ${result.personal.count} app development projects and ${result.professional.count} project management projects.`,
-        });
-        
-        // Refresh projects data
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
-      } else {
-        toast({
-          title: "Import failed",
-          description: "Some projects could not be imported. Check the console for details.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Specialized import error:", error);
-      toast({
-        title: "Import error",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsImportingSpecialized(false);
-    }
-  };
+  // Removed old import/sync handler functions (handleImportContent, handleSyncFrontendData, handleImportSpecializedProjects)
+  // These relied on backend API calls and are not compatible with the current Firestore setup.
   
   return (
     <div className="container mx-auto p-6 max-w-7xl">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
           <h1 className="text-3xl font-bold">Portfolio Admin Dashboard</h1>
-          <div className="flex space-x-2 ml-4">
-            <Button 
-              variant="outline" 
-              onClick={handleImportContent}
-              disabled={isImporting}
-            >
-              {isImporting ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Importing...
-                </>
-              ) : (
-                "Import Sample Content"
-              )}
-            </Button>
-            
-            <Button 
-              variant="default" 
-              onClick={handleSyncFrontendData}
-              disabled={isSyncing}
-            >
-              {isSyncing ? (
-                <>
-                  <RotateCw className="mr-2 h-4 w-4 animate-spin" />
-                  Syncing...
-                </>
-              ) : (
-                <>
-                  <RotateCw className="mr-2 h-4 w-4" />
-                  Sync All Data
-                </>
-              )}
-            </Button>
-          </div>
+          {/* Removed Import/Sync buttons */}
         </div>
         <Button variant="outline" onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
@@ -226,11 +64,15 @@ export default function AdminDashboard() {
       
       <div className="bg-white rounded-lg shadow-md p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid grid-cols-4 mb-8">
+          {/* Adjust grid columns for new tabs */}
+          <TabsList className="grid grid-cols-7 mb-8"> {/* Increased columns */}
             <TabsTrigger value="projects">Projects</TabsTrigger>
             <TabsTrigger value="experience">Experience</TabsTrigger>
-            <TabsTrigger value="certifications">Certifications</TabsTrigger>
-            <TabsTrigger value="sections">Content Sections</TabsTrigger>
+            <TabsTrigger value="educationCerts">Education & Certs</TabsTrigger>
+            <TabsTrigger value="hero">Hero</TabsTrigger>
+            <TabsTrigger value="about">About</TabsTrigger>
+            <TabsTrigger value="contact">Contact</TabsTrigger>
+            <TabsTrigger value="blog">Blog</TabsTrigger> {/* Add Blog if needed */}
           </TabsList>
           
           <TabsContent value="projects">
@@ -241,12 +83,35 @@ export default function AdminDashboard() {
             <ExperienceManager />
           </TabsContent>
           
-          <TabsContent value="certifications">
+          {/* Remove Certifications Content */}
+          {/* <TabsContent value="certifications">
             <CertificationsManager />
+          </TabsContent> */}
+
+          {/* Combined Content Tab */}
+          <TabsContent value="educationCerts">
+            <div> {/* Wrap the manager component */}
+              <EducationCertManager /> {/* Use the combined manager */}
+            </div>
           </TabsContent>
           
-          <TabsContent value="sections">
-            <SectionsManager />
+          {/* Remove Sections Content */}
+          {/* <TabsContent value="sections">
+             <SectionsManager />
+          </TabsContent> */}
+
+          {/* Add new TabsContent for promoted sections */}
+          <TabsContent value="hero">
+            <HeroManager /> {/* Use the HeroManager component */}
+          </TabsContent>
+          <TabsContent value="about">
+            <AboutManager /> {/* Use the AboutManager component */}
+          </TabsContent>
+          <TabsContent value="contact">
+             <ContactManager /> {/* Use the ContactManager component */}
+          </TabsContent>
+          <TabsContent value="blog">
+             <BlogManager /> {/* Use the existing BlogManager component */}
           </TabsContent>
         </Tabs>
       </div>

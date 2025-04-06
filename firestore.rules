@@ -1,0 +1,65 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Allow public read access for collections needed by the portfolio
+    match /projects/{projectId} {
+      allow read: if true; // Anyone can read projects
+      allow write: if request.auth != null && request.auth.uid == 'jcvZ5ucoqXXpvaIHXvESP7XZB3K3'; // Only specific admin UID can write
+    }
+    match /experiences/{experienceId} {
+      allow read: if true; // Anyone can read experiences
+      allow write: if request.auth != null && request.auth.uid == 'jcvZ5ucoqXXpvaIHXvESP7XZB3K3'; // Only specific admin UID can write
+    }
+    match /certifications/{certificationId} {
+      allow read: if true; // Anyone can read certifications
+      allow write: if request.auth != null && request.auth.uid == 'jcvZ5ucoqXXpvaIHXvESP7XZB3K3'; // Only specific admin UID can write
+    }
+    // Removed rules for /sections collection as it's no longer used for primary content
+    // match /sections/{sectionId} {
+    //  allow read: if true;
+    //   allow write: if request.auth != null && request.auth.uid == 'jcvZ5ucoqXXpvaIHXvESP7XZB3K3';
+    // }
+    match /blog/{postId} { // Add rules for blog collection
+      allow read: if true; // Allow public read for blog posts
+      allow write: if request.auth != null && request.auth.uid == 'jcvZ5ucoqXXpvaIHXvESP7XZB3K3'; // Only admin can write
+    }
+    match /education/{educationId} {
+      allow read: if true; // Anyone can read education
+      allow write: if request.auth != null && request.auth.uid == 'jcvZ5ucoqXXpvaIHXvESP7XZB3K3'; // Only specific admin UID can write
+    }
+    match /educationAndCerts/{itemId} {
+      allow read: if true; // Anyone can read education & certs
+      allow write: if request.auth != null && request.auth.uid == 'jcvZ5ucoqXXpvaIHXvESP7XZB3K3'; // Only specific admin UID can write
+    }
+
+    // Rules for new top-level section collections
+    match /hero/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == 'jcvZ5ucoqXXpvaIHXvESP7XZB3K3';
+    }
+    match /about/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == 'jcvZ5ucoqXXpvaIHXvESP7XZB3K3';
+    }
+    match /contact/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == 'jcvZ5ucoqXXpvaIHXvESP7XZB3K3';
+    }
+    match /categories/{categoryId} { // Add rules for categories collection
+      allow read: if true; // Allow public read for categories
+      allow write: if request.auth != null && request.auth.uid == 'jcvZ5ucoqXXpvaIHXvESP7XZB3K3'; // Only admin can write
+    }
+
+    // Example: Restrict a 'users' collection (if needed)
+    // match /users/{userId} {
+    //   allow read, write: if request.auth != null && request.auth.uid == userId;
+    // }
+
+    // Default deny for any other paths not explicitly matched
+    match /{document=**} {
+      allow read, write: if false; // Deny all other reads/writes
+    }
+  }
+}

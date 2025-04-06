@@ -1,6 +1,18 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; // Added useQueryClient
+// Removed apiRequest import
+import { db } from "@/lib/firebaseConfig"; // Import Firestore instance
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  // Timestamp // Keep if needed for date fields later
+} from "firebase/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +23,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, Plus, MoveUp, MoveDown } from "lucide-react";
-import type { Experience } from "@shared/schema";
+import { Pencil, Trash2, Plus } from "lucide-react"; // Removed MoveUp, MoveDown
+import type { Experience as ExperienceSchemaType } from "@shared/schema";
+
+// Define Firestore Experience type including string ID
+interface Experience extends Omit<ExperienceSchemaType, 'id'> {
+  id: string; // Firestore uses string IDs
+}
+
+// Define Firestore collection reference
+const experiencesCollectionRef = collection(db, "experiences");
 
 // Form validation schema
 const experienceSchema = z.object({
@@ -22,7 +42,7 @@ const experienceSchema = z.object({
   description: z.array(z.string()).min(1, "At least one description point is required"),
   achievements: z.array(z.string()).optional().default([]),
   methodologies: z.array(z.string()).optional().default([]),
-  order: z.number().int().optional(),
+  order: z.number().int().default(1), // Removed optional
 });
 
 type ExperienceFormValues = z.infer<typeof experienceSchema>;
@@ -32,10 +52,21 @@ export default function ExperienceManager() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient(); // Get query client instance
 
-  // Fetch experiences
-  const { data: experiences = [], isLoading } = useQuery({
-    queryKey: ["/api/admin/experiences"],
+  // --- Firestore Data Fetching ---
+  const fetchExperiences = async (): Promise<Experience[]> => {
+    const q = query(experiencesCollectionRef, orderBy("order", "asc")); // Order by 'order' field
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      ...(doc.data() as ExperienceSchemaType), // Spread Firestore data
+      id: doc.id, // Add Firestore document ID
+    }));
+  };
+
+  const { data: experiences = [], isLoading } = useQuery<Experience[]>({
+    queryKey: ["experiences"], // Use Firestore-specific query key
+    queryFn: fetchExperiences, // Use Firestore fetch function
   });
 
   const addForm = useForm<ExperienceFormValues>({
@@ -67,25 +98,17 @@ export default function ExperienceManager() {
   // Add experience mutation
   const addMutation = useMutation({
     mutationFn: async (data: ExperienceFormValues) => {
-      // Ensure arrays are properly formatted
-      const formattedData = {
+      // Data should already be in the correct format (arrays)
+      // Ensure order is a number
+      const dataToSave = {
         ...data,
-        description: Array.isArray(data.description) 
-          ? data.description
-          : [data.description as unknown as string],
-        achievements: typeof data.achievements === 'string' 
-          ? data.achievements.split(',').map(a => a.trim()) 
-          : data.achievements,
-        methodologies: typeof data.methodologies === 'string'
-          ? data.methodologies.split(',').map(m => m.trim())
-          : data.methodologies,
+        order: Number(data.order) || 1,
       };
-      
-      const response = await apiRequest("POST", "/api/admin/experiences", formattedData);
-      return response.json();
+      const docRef = await addDoc(experiencesCollectionRef, dataToSave);
+      return docRef.id; // Return the new document ID
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/experiences"] });
+      queryClient.invalidateQueries({ queryKey: ["experiences"] }); // Invalidate Firestore query key
       setIsAdding(false);
       addForm.reset({
         company: "",
@@ -113,27 +136,20 @@ export default function ExperienceManager() {
   // Edit experience mutation
   const editMutation = useMutation({
     mutationFn: async (data: ExperienceFormValues) => {
-      if (!selectedExperience) return null;
+      if (!selectedExperience?.id) throw new Error("No experience selected for editing.");
       
-      // Ensure arrays are properly formatted
-      const formattedData = {
+      const experienceDocRef = doc(db, "experiences", selectedExperience.id);
+      // Data should already be in the correct format (arrays)
+      // Ensure order is a number
+      const dataToSave = {
         ...data,
-        description: Array.isArray(data.description) 
-          ? data.description 
-          : [data.description as unknown as string],
-        achievements: typeof data.achievements === 'string' 
-          ? data.achievements.split(',').map(a => a.trim()) 
-          : data.achievements,
-        methodologies: typeof data.methodologies === 'string'
-          ? data.methodologies.split(',').map(m => m.trim())
-          : data.methodologies,
+        order: Number(data.order) || 1,
       };
-      
-      const response = await apiRequest("PUT", `/api/admin/experiences/${selectedExperience.id}`, formattedData);
-      return response.json();
+      await updateDoc(experienceDocRef, dataToSave);
+      return selectedExperience.id; // Return the updated document ID
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/experiences"] });
+      queryClient.invalidateQueries({ queryKey: ["experiences"] }); // Invalidate Firestore query key
       setIsEditing(false);
       setSelectedExperience(null);
       editForm.reset();
@@ -153,12 +169,14 @@ export default function ExperienceManager() {
 
   // Delete experience mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/admin/experiences/${id}`);
-      return response.ok;
+    mutationFn: async (id: string) => { // ID is now string
+      if (!id) throw new Error("No experience ID provided for deletion.");
+      const experienceDocRef = doc(db, "experiences", id);
+      await deleteDoc(experienceDocRef);
+      return id; // Return the deleted document ID
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/experiences"] });
+      queryClient.invalidateQueries({ queryKey: ["experiences"] }); // Invalidate Firestore query key
       toast({
         title: "Experience deleted",
         description: "The experience has been deleted successfully.",
@@ -173,27 +191,7 @@ export default function ExperienceManager() {
     }
   });
   
-  // Reorder experience mutation (move up or down)
-  const reorderMutation = useMutation({
-    mutationFn: async ({ id, direction }: { id: number; direction: 'up' | 'down' }) => {
-      const response = await apiRequest("PUT", `/api/admin/experiences/${id}/reorder`, { direction });
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/experiences"] });
-      toast({
-        title: "Experience reordered",
-        description: "The experience order has been updated.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error reordering experience",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
-    }
-  });
+  // Removed reorderMutation as Firestore reordering is complex and handled via 'order' field
 
   const onSubmitAdd = (data: ExperienceFormValues) => {
     addMutation.mutate(data);
@@ -206,24 +204,10 @@ export default function ExperienceManager() {
   const handleEditExperience = (experience: Experience) => {
     setSelectedExperience(experience);
     
-    // Parse JSON strings if needed
-    const description = Array.isArray(experience.description) 
-      ? experience.description 
-      : typeof experience.description === 'string' 
-        ? JSON.parse(experience.description)
-        : [experience.description];
-        
-    const achievements = Array.isArray(experience.achievements) 
-      ? experience.achievements 
-      : experience.achievements 
-        ? JSON.parse(experience.achievements)
-        : [];
-        
-    const methodologies = Array.isArray(experience.methodologies) 
-      ? experience.methodologies 
-      : experience.methodologies 
-        ? JSON.parse(experience.methodologies)
-        : [];
+    // Data from Firestore should already have arrays
+    const description = (Array.isArray(experience.description) ? experience.description : []) as string[];
+    const achievements = (Array.isArray(experience.achievements) ? experience.achievements : []) as string[];
+    const methodologies = (Array.isArray(experience.methodologies) ? experience.methodologies : []) as string[];
     
     // Set form values
     editForm.reset({
@@ -240,12 +224,14 @@ export default function ExperienceManager() {
   };
 
   const handleDeleteExperience = (experience: Experience) => {
-    deleteMutation.mutate(experience.id);
+    if (experience.id) { // Ensure ID exists
+      deleteMutation.mutate(experience.id); // Use string ID
+    } else {
+      toast({ title: "Error", description: "Experience ID is missing.", variant: "destructive" });
+    }
   };
   
-  const handleMoveExperience = (experience: Experience, direction: 'up' | 'down') => {
-    reorderMutation.mutate({ id: experience.id, direction });
-  };
+  // Removed handleMoveExperience function
 
   // Helper function to add a new description field
   const addDescriptionField = (formHook: any) => {
@@ -413,16 +399,16 @@ export default function ExperienceManager() {
                     <FormItem>
                       <FormLabel>Key Achievements</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Achievement 1, Achievement 2, etc. (comma separated)" 
-                          className="min-h-[80px]" 
-                          {...field} 
-                          value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                          onChange={e => field.onChange(e.target.value.split(",").map(a => a.trim()))}
+                        <Textarea
+                          placeholder="Achievement 1&#10;Achievement 2"
+                          className="min-h-[80px]"
+                          {...field}
+                          value={Array.isArray(field.value) ? field.value.join("\n") : ""} // Display newline separated
+                          onChange={e => field.onChange(e.target.value.split("\n").map(a => a.trim()).filter(a => a))} // Store as array
                         />
                       </FormControl>
                       <FormDescription>
-                        Enter key achievements separated by commas
+                        Enter each achievement on a new line
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -436,16 +422,16 @@ export default function ExperienceManager() {
                     <FormItem>
                       <FormLabel>Methodologies & Tools</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Agile, Scrum, Kanban, etc. (comma separated)" 
-                          className="min-h-[80px]" 
-                          {...field} 
-                          value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                          onChange={e => field.onChange(e.target.value.split(",").map(m => m.trim()))}
+                        <Textarea
+                          placeholder="Agile&#10;Scrum&#10;Jira"
+                          className="min-h-[80px]"
+                          {...field}
+                          value={Array.isArray(field.value) ? field.value.join("\n") : ""} // Display newline separated
+                          onChange={e => field.onChange(e.target.value.split("\n").map(m => m.trim()).filter(m => m))} // Store as array
                         />
                       </FormControl>
                       <FormDescription>
-                        Enter methodologies and tools separated by commas
+                        Enter each methodology/tool on a new line
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -591,16 +577,16 @@ export default function ExperienceManager() {
                     <FormItem>
                       <FormLabel>Key Achievements</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Achievement 1, Achievement 2, etc. (comma separated)" 
-                          className="min-h-[80px]" 
-                          {...field} 
-                          value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                          onChange={e => field.onChange(e.target.value.split(",").map(a => a.trim()))}
+                        <Textarea
+                          placeholder="Achievement 1&#10;Achievement 2"
+                          className="min-h-[80px]"
+                          {...field}
+                          value={Array.isArray(field.value) ? field.value.join("\n") : ""} // Display newline separated
+                          onChange={e => field.onChange(e.target.value.split("\n").map(a => a.trim()).filter(a => a))} // Store as array
                         />
                       </FormControl>
                       <FormDescription>
-                        Enter key achievements separated by commas
+                        Enter each achievement on a new line
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -614,16 +600,16 @@ export default function ExperienceManager() {
                     <FormItem>
                       <FormLabel>Methodologies & Tools</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Agile, Scrum, Kanban, etc. (comma separated)" 
-                          className="min-h-[80px]" 
-                          {...field} 
-                          value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                          onChange={e => field.onChange(e.target.value.split(",").map(m => m.trim()))}
+                        <Textarea
+                          placeholder="Agile&#10;Scrum&#10;Jira"
+                          className="min-h-[80px]"
+                          {...field}
+                          value={Array.isArray(field.value) ? field.value.join("\n") : ""} // Display newline separated
+                          onChange={e => field.onChange(e.target.value.split("\n").map(m => m.trim()).filter(m => m))} // Store as array
                         />
                       </FormControl>
                       <FormDescription>
-                        Enter methodologies and tools separated by commas
+                        Enter each methodology/tool on a new line
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -634,11 +620,12 @@ export default function ExperienceManager() {
                   <Button variant="outline" onClick={() => {
                     setIsEditing(false);
                     setSelectedExperience(null);
+                    editForm.reset();
                   }}>
                     Cancel
                   </Button>
                   <Button type="submit" disabled={editMutation.isPending}>
-                    {editMutation.isPending ? "Updating..." : "Update Experience"}
+                    {editMutation.isPending ? "Saving..." : "Save Changes"}
                   </Button>
                 </div>
               </form>
@@ -647,83 +634,66 @@ export default function ExperienceManager() {
         </Card>
       )}
 
-      <div className="grid grid-cols-1 gap-4">
+      {/* Display Experiences */}
+      <div className="space-y-4">
         {sortedExperiences.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            No experiences found. Add a new experience to get started.
-          </div>
+          <p className="text-center text-gray-500">No experiences added yet.</p>
         ) : (
-          sortedExperiences.map((experience: Experience) => (
+          sortedExperiences.map((experience: Experience, index: number) => (
             <Card key={experience.id} className="overflow-hidden">
-              <div className="p-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="flex items-center">
-                      <h3 className="text-lg font-semibold">{experience.role}</h3>
-                      <span className="text-sm ml-2 text-gray-500">at</span>
-                      <h4 className="text-lg ml-2">{experience.company}</h4>
-                    </div>
-                    <p className="text-sm text-gray-500 mb-2">{experience.period}</p>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleMoveExperience(experience, 'up')}
-                      disabled={experience.order === 1}
-                    >
-                      <MoveUp className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleMoveExperience(experience, 'down')}
-                    >
-                      <MoveDown className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleEditExperience(experience)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete this experience. This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction className="bg-red-500 hover:bg-red-600" onClick={() => handleDeleteExperience(experience)}>
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+              <CardHeader className="flex flex-row justify-between items-start bg-gray-50 p-4">
+                <div>
+                  <CardTitle className="text-lg">{experience.role}</CardTitle>
+                  <CardDescription>{experience.company} ({experience.period}) - Order: {experience.order}</CardDescription>
                 </div>
-                
-                <div className="mt-4">
-                  <h5 className="text-sm font-semibold mb-2">Description</h5>
+                <div className="flex items-center space-x-1">
+                  {/* Reorder buttons removed */}
+                  <Button variant="ghost" size="sm" onClick={() => handleEditExperience(experience)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Experience?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the experience entry for "{experience.role}" at "{experience.company}".
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => handleDeleteExperience(experience)}
+                          className="bg-red-600 hover:bg-red-700" // Destructive style
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 text-sm">
+                <div className="mt-2">
+                  <h5 className="text-sm font-semibold mb-1">Description</h5>
                   <ul className="list-disc list-inside space-y-1 text-sm ml-2">
-                    {Array.isArray(experience.description) ? (
-                      experience.description.map((desc, i) => (
-                        <li key={i}>{desc}</li>
-                      ))
-                    ) : (
-                      <li>{experience.description}</li>
-                    )}
+                    {/* Ensure description is an array before mapping */}
+                    {Array.isArray(experience.description) 
+                      ? experience.description.map((point, i) => (
+                          <li key={i}>{point}</li>
+                        ))
+                      : <li>No description points available.</li> /* Handle case if not an array */
+                    }
                   </ul>
                 </div>
                 
                 {(Array.isArray(experience.achievements) && experience.achievements.length > 0) && (
                   <div className="mt-4">
-                    <h5 className="text-sm font-semibold mb-2">Key Achievements</h5>
+                    <h5 className="text-sm font-semibold mb-1">Key Achievements</h5>
                     <ul className="list-disc list-inside space-y-1 text-sm ml-2">
                       {experience.achievements.map((achievement, i) => (
                         <li key={i}>{achievement}</li>
@@ -734,7 +704,7 @@ export default function ExperienceManager() {
                 
                 {(Array.isArray(experience.methodologies) && experience.methodologies.length > 0) && (
                   <div className="mt-4">
-                    <h5 className="text-sm font-semibold mb-2">Methodologies & Tools</h5>
+                    <h5 className="text-sm font-semibold mb-1">Methodologies & Tools</h5>
                     <div className="flex flex-wrap gap-1">
                       {experience.methodologies.map((methodology, i) => (
                         <span key={i} className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
@@ -744,7 +714,7 @@ export default function ExperienceManager() {
                     </div>
                   </div>
                 )}
-              </div>
+              </CardContent>
             </Card>
           ))
         )}

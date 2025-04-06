@@ -3,11 +3,30 @@
 @tailwind utilities;
 
 @layer base {
+  /* Restore original base layer setup */
+  :root {
+    /* Define variables here if they were originally here */
+    /* Example (adjust based on your original setup): */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    /* ... other light theme variables ... */
+    --border: 214.3 31.8% 91.4%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+     /* Example (adjust based on your original setup): */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    /* ... other dark theme variables ... */
+     --border: 217.2 32.6% 17.5%;
+  }
+ 
   * {
-    @apply border-border;
+    @apply border-border; /* Restore default border */
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-background text-foreground; /* Restore original body apply */
   }
 }

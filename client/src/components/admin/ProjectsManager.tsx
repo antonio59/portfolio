@@ -1,6 +1,18 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; // Added useQueryClient
+// Removed apiRequest import
+import { db } from "@/lib/firebaseConfig"; // Import Firestore instance
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  Timestamp // Import Timestamp for potential date fields
+} from "firebase/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -16,7 +28,17 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Plus, Star, GripVertical } from "lucide-react";
-import type { Project } from "@shared/schema";
+// Assuming Project type can handle string id or we adapt it
+import type { Project as ProjectSchemaType } from "@shared/schema";
+
+// Define Firestore Project type including string ID
+// Define Firestore Project type by omitting the original ID and adding the string ID
+interface Project extends Omit<ProjectSchemaType, 'id'> {
+  id: string; // Firestore uses string IDs
+}
+
+// Define Firestore collection reference
+const projectsCollectionRef = collection(db, "projects");
 
 // Form validation schema
 const projectSchema = z.object({
@@ -30,8 +52,10 @@ const projectSchema = z.object({
   imageUrl: z.string().url().optional().nullable(),
   challenges: z.array(z.string()).optional().default([]),
   outcomes: z.array(z.string()).optional().default([]),
-  featured: z.boolean().optional().default(false),
+  featured: z.boolean().default(false), // Removed optional as default is provided
   featuredOrder: z.number().optional().nullable(),
+  // Add any Firestore specific fields if needed, e.g., createdAt
+  // createdAt: z.instanceof(Timestamp).optional(),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -42,10 +66,22 @@ export default function ProjectsManager() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [filter, setFilter] = useState("all");
   const { toast } = useToast();
+  const queryClient = useQueryClient(); // Get query client instance
 
-  // Fetch projects
-  const { data: projects = [], isLoading } = useQuery({
-    queryKey: ["/api/admin/projects"],
+  // --- Firestore Data Fetching ---
+  const fetchProjects = async (): Promise<Project[]> => {
+    // Example: Order by title, adjust as needed
+    const q = query(projectsCollectionRef, orderBy("title"));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({
+      ...(doc.data() as ProjectSchemaType), // Spread Firestore data
+      id: doc.id, // Add Firestore document ID
+    }));
+  };
+
+  const { data: projects = [], isLoading } = useQuery<Project[]>({
+    queryKey: ["projects"], // Use Firestore-specific query key
+    queryFn: fetchProjects, // Use Firestore fetch function
   });
 
   // Filter projects based on the active tab
@@ -94,25 +130,13 @@ export default function ProjectsManager() {
   // Add project mutation
   const addMutation = useMutation({
     mutationFn: async (data: ProjectFormValues) => {
-      // Convert string arrays if needed
-      const formattedData = {
-        ...data,
-        technologies: typeof data.technologies === 'string' 
-          ? data.technologies.split(',').map(t => t.trim()) 
-          : data.technologies,
-        challenges: typeof data.challenges === 'string'
-          ? data.challenges.split(',').map(c => c.trim())
-          : data.challenges,
-        outcomes: typeof data.outcomes === 'string'
-          ? data.outcomes.split(',').map(o => o.trim())
-          : data.outcomes,
-      };
-      
-      const response = await apiRequest("POST", "/api/admin/projects", formattedData);
-      return response.json();
+      // Data should already be in the correct format (arrays) due to form changes below
+      // Add server timestamp if needed: { ...data, createdAt: serverTimestamp() }
+      const docRef = await addDoc(projectsCollectionRef, data);
+      return docRef.id; // Return the new document ID
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] }); // Invalidate Firestore query key
       setIsAdding(false);
       addForm.reset();
       toast({
@@ -132,27 +156,15 @@ export default function ProjectsManager() {
   // Edit project mutation
   const editMutation = useMutation({
     mutationFn: async (data: ProjectFormValues) => {
-      if (!selectedProject) return null;
+      if (!selectedProject?.id) throw new Error("No project selected for editing.");
       
-      // Convert string arrays if needed
-      const formattedData = {
-        ...data,
-        technologies: typeof data.technologies === 'string' 
-          ? data.technologies.split(',').map(t => t.trim()) 
-          : data.technologies,
-        challenges: typeof data.challenges === 'string'
-          ? data.challenges.split(',').map(c => c.trim())
-          : data.challenges,
-        outcomes: typeof data.outcomes === 'string'
-          ? data.outcomes.split(',').map(o => o.trim())
-          : data.outcomes,
-      };
-      
-      const response = await apiRequest("PUT", `/api/admin/projects/${selectedProject.id}`, formattedData);
-      return response.json();
+      const projectDocRef = doc(db, "projects", selectedProject.id);
+      // Data should already be in the correct format (arrays)
+      await updateDoc(projectDocRef, data);
+      return selectedProject.id; // Return the updated document ID
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] }); // Invalidate Firestore query key
       setIsEditing(false);
       setSelectedProject(null);
       editForm.reset();
@@ -172,12 +184,14 @@ export default function ProjectsManager() {
 
   // Delete project mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/admin/projects/${id}`);
-      return response.ok;
+    mutationFn: async (id: string) => { // ID is now string
+      if (!id) throw new Error("No project ID provided for deletion.");
+      const projectDocRef = doc(db, "projects", id);
+      await deleteDoc(projectDocRef);
+      return id; // Return the deleted document ID
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] }); // Invalidate Firestore query key
       toast({
         title: "Project deleted",
         description: "The project has been deleted successfully.",
@@ -203,25 +217,11 @@ export default function ProjectsManager() {
   const handleEditProject = (project: Project) => {
     setSelectedProject(project);
     
-    // Format technologies for the form if it's JSON or array
-    const technologies = Array.isArray(project.technologies) 
-      ? project.technologies 
-      : typeof project.technologies === 'string' 
-        ? JSON.parse(project.technologies)
-        : [];
-    
-    // Format challenges and outcomes similarly
-    const challenges = Array.isArray(project.challenges) 
-      ? project.challenges 
-      : project.challenges 
-        ? JSON.parse(project.challenges)
-        : [];
-        
-    const outcomes = Array.isArray(project.outcomes) 
-      ? project.outcomes 
-      : project.outcomes 
-        ? JSON.parse(project.outcomes)
-        : [];
+    // Data from Firestore should already have arrays, no JSON parsing needed
+    // Ensure arrays are correctly typed as string[] for the form
+    const technologies = (Array.isArray(project.technologies) ? project.technologies : []) as string[];
+    const challenges = (Array.isArray(project.challenges) ? project.challenges : []) as string[];
+    const outcomes = (Array.isArray(project.outcomes) ? project.outcomes : []) as string[];
         
     // Set form values
     editForm.reset({
@@ -243,7 +243,11 @@ export default function ProjectsManager() {
   };
 
   const handleDeleteProject = (project: Project) => {
-    deleteMutation.mutate(project.id);
+    if (project.id) { // Ensure ID exists
+       deleteMutation.mutate(project.id); // Use string ID
+    } else {
+      toast({ title: "Error", description: "Project ID is missing.", variant: "destructive" });
+    }
   };
 
   if (isLoading) {
@@ -340,15 +344,17 @@ export default function ProjectsManager() {
                       <FormItem>
                         <FormLabel>Technologies</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="React, Node.js, etc. (comma separated)" 
-                            {...field} 
-                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          {/* Use Textarea for easier multi-line/list input */}
+                          <Textarea
+                            placeholder="React&#10;Node.js&#10;TypeScript"
+                            {...field}
+                            value={Array.isArray(field.value) ? field.value.join("\n") : ""} // Display as newline separated
+                            onChange={e => field.onChange(e.target.value.split("\n").map(t => t.trim()).filter(t => t))} // Store as array
+                            className="min-h-[80px]"
                           />
                         </FormControl>
                         <FormDescription>
-                          Enter technologies separated by commas
+                          Enter each technology on a new line
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -378,7 +384,7 @@ export default function ProjectsManager() {
                       <FormItem>
                         <FormLabel>GitHub Link</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://github.com/username/repo" {...field} />
+                          <Input placeholder="https://github.com/username/repo" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -392,7 +398,7 @@ export default function ProjectsManager() {
                       <FormItem>
                         <FormLabel>External Link</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://example.com" {...field} />
+                          <Input placeholder="https://example.com" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -407,7 +413,7 @@ export default function ProjectsManager() {
                     <FormItem>
                       <FormLabel>Image URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} />
+                        <Input placeholder="https://example.com/image.jpg" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormDescription>
                         URL to a screenshot or logo for this project
@@ -425,16 +431,16 @@ export default function ProjectsManager() {
                       <FormItem>
                         <FormLabel>Challenges</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Challenge 1, Challenge 2, etc. (comma separated)" 
-                            className="min-h-[80px]" 
-                            {...field} 
-                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          <Textarea
+                            placeholder="Challenge 1&#10;Challenge 2"
+                            className="min-h-[80px]"
+                            {...field}
+                            value={Array.isArray(field.value) ? field.value.join("\n") : ""} // Display as newline separated
+                            onChange={e => field.onChange(e.target.value.split("\n").map(t => t.trim()).filter(t => t))} // Store as array
                           />
                         </FormControl>
                         <FormDescription>
-                          Enter challenges separated by commas
+                          Enter each challenge on a new line
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -448,16 +454,16 @@ export default function ProjectsManager() {
                       <FormItem>
                         <FormLabel>Outcomes</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Outcome 1, Outcome 2, etc. (comma separated)" 
-                            className="min-h-[80px]" 
-                            {...field} 
-                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          <Textarea
+                            placeholder="Outcome 1&#10;Outcome 2"
+                            className="min-h-[80px]"
+                            {...field}
+                            value={Array.isArray(field.value) ? field.value.join("\n") : ""} // Display as newline separated
+                            onChange={e => field.onChange(e.target.value.split("\n").map(t => t.trim()).filter(t => t))} // Store as array
                           />
                         </FormControl>
                         <FormDescription>
-                          Enter outcomes separated by commas
+                          Enter each outcome on a new line
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -602,15 +608,17 @@ export default function ProjectsManager() {
                       <FormItem>
                         <FormLabel>Technologies</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="React, Node.js, etc. (comma separated)" 
-                            {...field} 
-                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          {/* Use Textarea for easier multi-line/list input */}
+                           <Textarea
+                            placeholder="React&#10;Node.js&#10;TypeScript"
+                            {...field}
+                            value={Array.isArray(field.value) ? field.value.join("\n") : ""} // Display as newline separated
+                            onChange={e => field.onChange(e.target.value.split("\n").map(t => t.trim()).filter(t => t))} // Store as array
+                            className="min-h-[80px]"
                           />
                         </FormControl>
                         <FormDescription>
-                          Enter technologies separated by commas
+                          Enter each technology on a new line
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -640,7 +648,7 @@ export default function ProjectsManager() {
                       <FormItem>
                         <FormLabel>GitHub Link</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://github.com/username/repo" {...field} />
+                          <Input placeholder="https://github.com/username/repo" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -654,7 +662,7 @@ export default function ProjectsManager() {
                       <FormItem>
                         <FormLabel>External Link</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://example.com" {...field} />
+                          <Input placeholder="https://example.com" {...field} value={field.value ?? ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -669,7 +677,7 @@ export default function ProjectsManager() {
                     <FormItem>
                       <FormLabel>Image URL</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} />
+                        <Input placeholder="https://example.com/image.jpg" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormDescription>
                         URL to a screenshot or logo for this project
@@ -687,16 +695,16 @@ export default function ProjectsManager() {
                       <FormItem>
                         <FormLabel>Challenges</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Challenge 1, Challenge 2, etc. (comma separated)" 
-                            className="min-h-[80px]" 
-                            {...field} 
-                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          <Textarea
+                            placeholder="Challenge 1&#10;Challenge 2"
+                            className="min-h-[80px]"
+                            {...field}
+                            value={Array.isArray(field.value) ? field.value.join("\n") : ""} // Display as newline separated
+                            onChange={e => field.onChange(e.target.value.split("\n").map(t => t.trim()).filter(t => t))} // Store as array
                           />
                         </FormControl>
                         <FormDescription>
-                          Enter challenges separated by commas
+                          Enter each challenge on a new line
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -710,16 +718,16 @@ export default function ProjectsManager() {
                       <FormItem>
                         <FormLabel>Outcomes</FormLabel>
                         <FormControl>
-                          <Textarea 
-                            placeholder="Outcome 1, Outcome 2, etc. (comma separated)" 
-                            className="min-h-[80px]" 
-                            {...field} 
-                            value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                            onChange={e => field.onChange(e.target.value.split(",").map(t => t.trim()))}
+                          <Textarea
+                            placeholder="Outcome 1&#10;Outcome 2"
+                            className="min-h-[80px]"
+                            {...field}
+                            value={Array.isArray(field.value) ? field.value.join("\n") : ""} // Display as newline separated
+                            onChange={e => field.onChange(e.target.value.split("\n").map(t => t.trim()).filter(t => t))} // Store as array
                           />
                         </FormControl>
                         <FormDescription>
-                          Enter outcomes separated by commas
+                          Enter each outcome on a new line
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -855,7 +863,7 @@ export default function ProjectsManager() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                            <AlertDialogTitle>Delete Project?</AlertDialogTitle>
                             <AlertDialogDescription>
                               This will permanently delete this project. This action cannot be undone.
                             </AlertDialogDescription>
