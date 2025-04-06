@@ -14,7 +14,7 @@ jobs:
       - name: Install Yarn
         run: npm install -g yarn # Ensure yarn is available
       - name: Install Dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile --ignore-platform
       - name: Build Project
         run: yarn build
       - uses: FirebaseExtended/action-hosting-deploy@v0
