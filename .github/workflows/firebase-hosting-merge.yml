@@ -11,7 +11,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci && npm run build
+      - name: Install Yarn
+        run: npm install -g yarn # Ensure yarn is available
+      - name: Install Dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build Project
+        run: yarn build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
