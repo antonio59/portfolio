@@ -53,72 +53,14 @@ export default function BlogList() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [showAllCategories, setShowAllCategories] = useState(false);
-  
-  // Fake data for demo purposes since we're implementing a new UI
-  const samplePosts: BlogPost[] = [
-    {
-      id: 1,
-      title: "Building a Self-Hosted Home Automation System with Node.js",
-      slug: "self-hosted-home-automation",
-      excerpt: "A complete guide to creating your own smart home system without relying on third-party services.",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac aliquam nisi. Duis aliquam, lectus vitae eleifend elementum, purus eros finibus dolor, vitae tincidunt nisi felis sed leo. Cras id est in mi condimentum sagittis.",
-      categoryId: 1,
-      featuredImage: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
-      tags: ["IoT", "Home Automation", "Node.js", "Self-Hosted"],
-      publishDate: new Date("2025-05-01"),
-      status: "published",
-      userId: 1,
-      createdAt: new Date("2025-05-01"),
-      updatedAt: new Date("2025-05-01")
-    },
-    {
-      id: 2,
-      title: "How I Built a Portfolio Site with React and TypeScript",
-      slug: "portfolio-react-typescript",
-      excerpt: "A deep dive into the architecture and design decisions behind my personal portfolio website.",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac aliquam nisi. Duis aliquam, lectus vitae eleifend elementum, purus eros finibus dolor, vitae tincidunt nisi felis sed leo. Cras id est in mi condimentum sagittis.",
-      categoryId: 2,
-      featuredImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80",
-      tags: ["React", "TypeScript", "Portfolio", "Web Development"],
-      publishDate: new Date("2025-04-15"),
-      status: "published",
-      userId: 1,
-      createdAt: new Date("2025-04-15"),
-      updatedAt: new Date("2025-04-15")
-    },
-    {
-      id: 3,
-      title: "Migrating from AWS to a Self-Hosted Solution: A Case Study",
-      slug: "aws-to-self-hosted",
-      excerpt: "How I reduced costs and increased control by moving my projects from AWS to a self-hosted environment.",
-      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac aliquam nisi. Duis aliquam, lectus vitae eleifend elementum, purus eros finibus dolor, vitae tincidunt nisi felis sed leo. Cras id est in mi condimentum sagittis.",
-      categoryId: 3,
-      featuredImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1472&q=80",
-      tags: ["AWS", "Self-Hosted", "DevOps", "Cost Optimization"],
-      publishDate: new Date("2025-04-01"),
-      status: "published",
-      userId: 1,
-      createdAt: new Date("2025-04-01"),
-      updatedAt: new Date("2025-04-01")
-    }
-  ];
-
-  const sampleCategories: BlogCategory[] = [
-    { id: 1, name: "Self-Hosted Solutions", slug: "self-hosted", description: "Projects and guides for hosting your own applications" },
-    { id: 2, name: "Web Development", slug: "web-dev", description: "All about building great websites and web applications" },
-    { id: 3, name: "DevOps", slug: "devops", description: "Streamlining development and operations" },
-    { id: 4, name: "Project Showcase", slug: "projects", description: "Detailed looks at my personal and professional projects" }
-  ];
-  
-  // Use the sample data or fetch real data if available
+  // Fetch real data from the API
   const { 
     data: posts = [], 
     isLoading: postsLoading,
     error: postsError
   } = useQuery<BlogPost[]>({
     queryKey: ["/api/blog/posts"],
-    enabled: true,
-    placeholderData: samplePosts // Use sample data as placeholder while loading
+    enabled: true
   });
   
   const { 
@@ -126,8 +68,7 @@ export default function BlogList() {
     isLoading: categoriesLoading 
   } = useQuery<BlogCategory[]>({
     queryKey: ["/api/blog/categories"],
-    enabled: true,
-    placeholderData: sampleCategories // Use sample data as placeholder while loading
+    enabled: true
   });
 
   // Format date helper function
