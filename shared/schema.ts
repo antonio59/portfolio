@@ -184,18 +184,26 @@ export const blogPosts = pgTable("blog_posts", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const insertBlogPostSchema = createInsertSchema(blogPosts).pick({
-  title: true,
-  slug: true,
-  excerpt: true,
-  content: true,
-  categoryId: true,
-  featuredImage: true,
-  tags: true,
-  publishDate: true,
-  status: true,
-  userId: true,
-});
+export const insertBlogPostSchema = createInsertSchema(blogPosts)
+  .pick({
+    title: true,
+    slug: true,
+    excerpt: true,
+    content: true,
+    categoryId: true,
+    featuredImage: true,
+    tags: true,
+    status: true,
+    userId: true,
+  })
+  // Optional publishDate with string support that gets converted to Date
+  .extend({
+    publishDate: z.union([
+      z.date(),
+      z.string().transform((str) => new Date(str)),
+      z.undefined()
+    ]).optional()
+  });
 
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
