@@ -480,6 +480,7 @@ export class MemStorage implements IStorage {
       featuredImage: post.featuredImage || null,
       tags: post.tags || [],
       publishDate: post.publishDate || now,
+      status: post.status || 'draft',
       createdAt: now,
       updatedAt: now
     };

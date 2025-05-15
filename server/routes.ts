@@ -906,6 +906,371 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Blog API endpoints
+  
+  // Blog Categories
+  app.get("/api/blog/categories", async (req, res) => {
+    try {
+      const categories = await storage.getAllBlogCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog categories" 
+      });
+    }
+  });
+  
+  app.get("/api/blog/categories/:slug", async (req, res) => {
+    try {
+      const category = await storage.getBlogCategoryBySlug(req.params.slug);
+      if (!category) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog category not found" 
+        });
+      }
+      res.json(category);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog category" 
+      });
+    }
+  });
+  
+  app.post("/api/admin/blog/categories", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertBlogCategorySchema.parse(req.body);
+      const category = await storage.createBlogCategory(validatedData);
+      res.status(201).json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error creating blog category" 
+      });
+    }
+  });
+  
+  app.put("/api/admin/blog/categories/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateSchema = insertBlogCategorySchema.partial();
+      const validatedData = updateSchema.parse(req.body);
+      
+      const updatedCategory = await storage.updateBlogCategory(id, validatedData);
+      if (!updatedCategory) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog category not found" 
+        });
+      }
+      
+      res.json(updatedCategory);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error updating blog category" 
+      });
+    }
+  });
+  
+  app.delete("/api/admin/blog/categories/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteBlogCategory(id);
+      if (!success) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog category not found" 
+        });
+      }
+      
+      res.json({ success: true, message: "Blog category deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error deleting blog category" 
+      });
+    }
+  });
+  
+  // Blog Posts
+  app.get("/api/blog/posts", async (req, res) => {
+    try {
+      const posts = await storage.getPublishedBlogPosts();
+      res.json(posts);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog posts" 
+      });
+    }
+  });
+  
+  app.get("/api/blog/posts/:slug", async (req, res) => {
+    try {
+      const post = await storage.getBlogPostBySlug(req.params.slug);
+      if (!post) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog post not found" 
+        });
+      }
+      res.json(post);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog post" 
+      });
+    }
+  });
+  
+  app.get("/api/blog/categories/:id/posts", async (req, res) => {
+    try {
+      const categoryId = parseInt(req.params.id);
+      const posts = await storage.getBlogPostsByCategory(categoryId);
+      res.json(posts);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog posts by category" 
+      });
+    }
+  });
+  
+  app.get("/api/blog/tags/:tag/posts", async (req, res) => {
+    try {
+      const tag = req.params.tag;
+      const posts = await storage.getBlogPostsByTag(tag);
+      res.json(posts);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching blog posts by tag" 
+      });
+    }
+  });
+  
+  app.post("/api/admin/blog/posts", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertBlogPostSchema.parse(req.body);
+      // Set the user ID to the admin user
+      validatedData.userId = 1;
+      const post = await storage.createBlogPost(validatedData);
+      res.status(201).json(post);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error creating blog post" 
+      });
+    }
+  });
+  
+  app.put("/api/admin/blog/posts/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateSchema = insertBlogPostSchema.partial();
+      const validatedData = updateSchema.parse(req.body);
+      
+      const updatedPost = await storage.updateBlogPost(id, validatedData);
+      if (!updatedPost) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog post not found" 
+        });
+      }
+      
+      res.json(updatedPost);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error updating blog post" 
+      });
+    }
+  });
+  
+  app.delete("/api/admin/blog/posts/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteBlogPost(id);
+      if (!success) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog post not found" 
+        });
+      }
+      
+      res.json({ success: true, message: "Blog post deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error deleting blog post" 
+      });
+    }
+  });
+  
+  // Blog Subscriptions
+  app.post("/api/blog/subscribe", async (req, res) => {
+    try {
+      const { email, name } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({
+          success: false,
+          message: "Email is required"
+        });
+      }
+      
+      // Check if subscription already exists
+      const existingSubscription = await storage.getBlogSubscriptionByEmail(email);
+      if (existingSubscription) {
+        if (existingSubscription.status === 'unsubscribed') {
+          // Reactivate subscription
+          await storage.updateBlogSubscription(existingSubscription.id, {
+            status: 'active',
+            name: name || existingSubscription.name,
+          });
+          
+          return res.json({
+            success: true,
+            message: "Your subscription has been reactivated."
+          });
+        } else {
+          return res.json({
+            success: true,
+            message: "You're already subscribed to our blog updates."
+          });
+        }
+      }
+      
+      // Generate confirmation token (in a real app, this would be more secure)
+      const confirmationToken = Math.random().toString(36).substring(2, 15);
+      
+      // Create new subscription
+      await storage.createBlogSubscription({
+        email,
+        name: name || null,
+        status: 'active',
+        confirmationToken,
+        confirmed: false
+      });
+      
+      // In a real app, send confirmation email using Resend
+      // await resend.emails.send({
+      //   from: 'blog@antoniosmith.me',
+      //   to: email,
+      //   subject: 'Confirm your blog subscription',
+      //   html: `<p>Thank you for subscribing to my blog. Please confirm your subscription by clicking <a href="${process.env.APP_URL}/api/blog/confirm-subscription/${confirmationToken}">here</a>.</p>`
+      // });
+      
+      res.json({
+        success: true,
+        message: "Thank you for subscribing! Please check your email to confirm your subscription."
+      });
+    } catch (error) {
+      console.error("Error subscribing to blog:", error);
+      res.status(500).json({
+        success: false,
+        message: "An error occurred while subscribing. Please try again later."
+      });
+    }
+  });
+  
+  app.get("/api/blog/confirm-subscription/:token", async (req, res) => {
+    try {
+      const token = req.params.token;
+      const subscription = await storage.confirmBlogSubscription(token);
+      
+      if (!subscription) {
+        return res.status(404).json({
+          success: false,
+          message: "Invalid or expired confirmation link."
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: "Your subscription has been confirmed. Thank you!"
+      });
+    } catch (error) {
+      console.error("Error confirming subscription:", error);
+      res.status(500).json({
+        success: false,
+        message: "An error occurred while confirming your subscription. Please try again later."
+      });
+    }
+  });
+  
+  app.get("/api/blog/unsubscribe/:email", async (req, res) => {
+    try {
+      const email = decodeURIComponent(req.params.email);
+      const success = await storage.unsubscribe(email);
+      
+      if (!success) {
+        return res.status(404).json({
+          success: false,
+          message: "Subscription not found."
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: "You have been unsubscribed from our blog updates."
+      });
+    } catch (error) {
+      console.error("Error unsubscribing:", error);
+      res.status(500).json({
+        success: false,
+        message: "An error occurred while unsubscribing. Please try again later."
+      });
+    }
+  });
+  
+  app.get("/api/admin/blog/subscriptions", isAuthenticated, async (req, res) => {
+    try {
+      const subscriptions = await storage.getAllBlogSubscriptions();
+      res.json(subscriptions);
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Error fetching blog subscriptions"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
