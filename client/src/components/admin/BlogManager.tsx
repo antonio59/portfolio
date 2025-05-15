@@ -139,14 +139,14 @@ export default function BlogManager() {
     data: posts = [], 
     isLoading: postsLoading 
   } = useQuery<BlogPost[]>({
-    queryKey: ["/api/admin/blog-posts"],
+    queryKey: ["/api/admin/blog/posts"],
   });
   
   const { 
     data: categories = [], 
     isLoading: categoriesLoading 
   } = useQuery<BlogCategory[]>({
-    queryKey: ["/api/admin/blog-categories"],
+    queryKey: ["/api/admin/blog/categories"],
   });
 
   // Initialize forms
