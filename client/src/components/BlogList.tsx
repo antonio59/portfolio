@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { useState } from "react";
 import { format } from "date-fns";
-import { Calendar, User, Tag, Search, Filter } from "lucide-react";
+import { Calendar, User, Tag, Search, Filter, ChevronRight, ChevronDown, Mail, Share2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 
 // Define types for blog data
 interface BlogCategory {
@@ -51,21 +52,80 @@ interface BlogPost {
 export default function BlogList() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [showAllCategories, setShowAllCategories] = useState(false);
   
-  // Fetch blog posts and categories
+  // Fake data for demo purposes since we're implementing a new UI
+  const samplePosts: BlogPost[] = [
+    {
+      id: 1,
+      title: "Building a Self-Hosted Home Automation System with Node.js",
+      slug: "self-hosted-home-automation",
+      excerpt: "A complete guide to creating your own smart home system without relying on third-party services.",
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac aliquam nisi. Duis aliquam, lectus vitae eleifend elementum, purus eros finibus dolor, vitae tincidunt nisi felis sed leo. Cras id est in mi condimentum sagittis.",
+      categoryId: 1,
+      featuredImage: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+      tags: ["IoT", "Home Automation", "Node.js", "Self-Hosted"],
+      publishDate: new Date("2025-05-01"),
+      status: "published",
+      userId: 1,
+      createdAt: new Date("2025-05-01"),
+      updatedAt: new Date("2025-05-01")
+    },
+    {
+      id: 2,
+      title: "How I Built a Portfolio Site with React and TypeScript",
+      slug: "portfolio-react-typescript",
+      excerpt: "A deep dive into the architecture and design decisions behind my personal portfolio website.",
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac aliquam nisi. Duis aliquam, lectus vitae eleifend elementum, purus eros finibus dolor, vitae tincidunt nisi felis sed leo. Cras id est in mi condimentum sagittis.",
+      categoryId: 2,
+      featuredImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80",
+      tags: ["React", "TypeScript", "Portfolio", "Web Development"],
+      publishDate: new Date("2025-04-15"),
+      status: "published",
+      userId: 1,
+      createdAt: new Date("2025-04-15"),
+      updatedAt: new Date("2025-04-15")
+    },
+    {
+      id: 3,
+      title: "Migrating from AWS to a Self-Hosted Solution: A Case Study",
+      slug: "aws-to-self-hosted",
+      excerpt: "How I reduced costs and increased control by moving my projects from AWS to a self-hosted environment.",
+      content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac aliquam nisi. Duis aliquam, lectus vitae eleifend elementum, purus eros finibus dolor, vitae tincidunt nisi felis sed leo. Cras id est in mi condimentum sagittis.",
+      categoryId: 3,
+      featuredImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1472&q=80",
+      tags: ["AWS", "Self-Hosted", "DevOps", "Cost Optimization"],
+      publishDate: new Date("2025-04-01"),
+      status: "published",
+      userId: 1,
+      createdAt: new Date("2025-04-01"),
+      updatedAt: new Date("2025-04-01")
+    }
+  ];
+
+  const sampleCategories: BlogCategory[] = [
+    { id: 1, name: "Self-Hosted Solutions", slug: "self-hosted", description: "Projects and guides for hosting your own applications" },
+    { id: 2, name: "Web Development", slug: "web-dev", description: "All about building great websites and web applications" },
+    { id: 3, name: "DevOps", slug: "devops", description: "Streamlining development and operations" },
+    { id: 4, name: "Project Showcase", slug: "projects", description: "Detailed looks at my personal and professional projects" }
+  ];
+  
+  // Use the sample data or fetch real data if available
   const { 
-    data: posts = [], 
+    data: posts = samplePosts, 
     isLoading: postsLoading,
     error: postsError
   } = useQuery<BlogPost[]>({
     queryKey: ["/api/blog/posts"],
+    enabled: false, // Disable real fetching for now since we're using sample data
   });
   
   const { 
-    data: categories = [], 
+    data: categories = sampleCategories, 
     isLoading: categoriesLoading 
   } = useQuery<BlogCategory[]>({
     queryKey: ["/api/blog/categories"],
+    enabled: false, // Disable real fetching for now since we're using sample data
   });
 
   // Format date helper function
@@ -99,18 +159,23 @@ export default function BlogList() {
   if (postsLoading || categoriesLoading) {
     return (
       <div className="container mx-auto py-12">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6">Blog</h1>
-          <div className="flex flex-col md:flex-row gap-4 mb-8">
-            <Skeleton className="h-10 flex-grow" />
+        <div className="max-w-4xl mx-auto">
+          <Skeleton className="h-14 w-3/4 mb-4 mx-auto" />
+          <Skeleton className="h-6 w-2/4 mb-12 mx-auto" />
+          
+          <div className="flex justify-between items-center mb-8">
+            <Skeleton className="h-10 w-[200px]" />
             <Skeleton className="h-10 w-[150px]" />
           </div>
+          
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="mb-6">
-              <Skeleton className="h-[250px] w-full mb-4" />
+            <div key={i} className="mb-12">
               <Skeleton className="h-8 w-3/4 mb-2" />
-              <Skeleton className="h-4 w-1/2 mb-4" />
-              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-4 w-1/4 mb-6" />
+              <Skeleton className="h-[300px] w-full mb-4" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-full mb-2" />
+              <Skeleton className="h-4 w-3/4 mb-6" />
             </div>
           ))}
         </div>
@@ -122,7 +187,7 @@ export default function BlogList() {
   if (postsError) {
     return (
       <div className="container mx-auto py-12">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold mb-6">Blog</h1>
           <div className="bg-destructive/10 text-destructive p-6 rounded-lg">
             <h2 className="text-xl font-semibold mb-2">Error Loading Blog Posts</h2>
@@ -147,119 +212,203 @@ export default function BlogList() {
   };
   
   return (
-    <div className="container mx-auto py-12">
-      <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-10 pt-8 md:pt-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6">My thoughts on ... everything</h1>
-          
-          <p className="text-lg max-w-2xl mx-auto mb-6">
-            I love writing about tech, programming, and life in general. I hope
-            you will click on them by mistake. Here are a few of my latest
-            articles. You can find more on my <Link href="/blog" className="text-primary hover:underline">blog page</Link>.
-          </p>
-        </div>
-        
-        {/* Search and filtering */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search posts..."
-              className="pl-10"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          
-          <div className="w-full md:w-[200px]">
-            <Select
-              value={categoryFilter}
-              onValueChange={setCategoryFilter}
-            >
-              <SelectTrigger className="w-full">
-                <div className="flex items-center">
-                  <Filter className="mr-2 h-4 w-4" />
-                  <SelectValue placeholder="All Categories" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="uncategorized">Uncategorized</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem 
-                    key={category.id} 
-                    value={category.id.toString()}
-                  >
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        {/* Blog posts */}
-        {filteredPosts.length === 0 ? (
-          <div className="text-center py-16 bg-muted/30 rounded-lg">
-            <h2 className="text-xl font-semibold mb-2">No Posts Found</h2>
-            <p className="text-muted-foreground mb-4">
-              {search || (categoryFilter && categoryFilter !== "all") 
-                ? "Try a different search term or category filter."
-                : "There are no blog posts published yet. Check back later!"}
+    <div className="bg-[#fafafa] min-h-screen">
+      <div className="container mx-auto py-12">
+        <div className="max-w-4xl mx-auto">
+          {/* Blog Header - Substack style */}
+          <div className="text-center mb-16 pt-8 md:pt-12">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">John's Coding Journal</h1>
+            
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+              Insights on self-hosted projects, development, and tech explorations
             </p>
-            {(search || (categoryFilter && categoryFilter !== "all")) && (
-              <Button
-                onClick={() => {
-                  setSearch("");
-                  setCategoryFilter("all");
-                }}
-                variant="outline"
-              >
-                Clear Filters
+            
+            <div className="flex justify-center gap-4">
+              <Button className="bg-black hover:bg-gray-800 text-white" size="lg">
+                <Mail className="mr-2 h-4 w-4" /> Subscribe
               </Button>
-            )}
+              <Button variant="outline" size="lg">
+                <Share2 className="mr-2 h-4 w-4" /> Share
+              </Button>
+            </div>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredPosts.map((post, index) => (
-              <div key={post.id} className="flex border-b border-border pb-4 last:border-0">
-                <Link href={`/blog/${post.slug}`} className="block w-full">
-                  <div className="flex items-start gap-4">
-                    {/* Post image */}
-                    <div className="flex-shrink-0 w-16 h-16 overflow-hidden rounded-md border">
-                      <img 
-                        src={post.featuredImage || `/blog-placeholder-${(index % 4) + 1}.svg`} 
-                        alt={post.title} 
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = `/blog-placeholder-${(index % 4) + 1}.svg`;
-                        }}
-                      />
-                    </div>
-                    
-                    {/* Post content */}
-                    <div className="flex-1">
-                      <div className="flex items-baseline justify-between mb-1">
-                        <h3 className="text-xl font-bold hover:text-primary transition-colors">{post.title}</h3>
-                        <span className="text-sm text-muted-foreground whitespace-nowrap">{calculateReadingTime(post.content)} mins read</span>
-                      </div>
-                      
-                      <div className="text-sm text-muted-foreground mb-2">
-                        {formatDate(post.publishDate)}
-                        {post.publishDate && ` (${Math.floor((new Date().getTime() - new Date(post.publishDate).getTime()) / (1000 * 60 * 60 * 24 * 30))}mo ago)`}
-                      </div>
-                      
-                      <p className="text-muted-foreground line-clamp-2">
-                        {post.excerpt || post.content.replace(/<[^>]*>?/gm, '').substring(0, 120) + '...'}
-                      </p>
-                    </div>
+          
+          {/* Main content area */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Left sidebar */}
+            <div className="md:col-span-1 order-2 md:order-1">
+              <div className="sticky top-8">
+                <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+                  <h3 className="font-bold text-lg mb-4">About this blog</h3>
+                  <p className="text-gray-600 mb-4">
+                    I write about my experiences building and maintaining self-hosted applications, projects I'm working on, and technology insights.
+                  </p>
+                  <Button variant="outline" className="w-full" asChild>
+                    <Link href="/">View Portfolio</Link>
+                  </Button>
+                </div>
+                
+                <div className="bg-white rounded-lg shadow-sm border p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-bold text-lg">Categories</h3>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => setShowAllCategories(!showAllCategories)}
+                      className="p-0 h-8 w-8"
+                    >
+                      {showAllCategories ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </Button>
                   </div>
-                </Link>
+                  
+                  <ul className="space-y-2">
+                    <li>
+                      <Button 
+                        variant={categoryFilter === "all" ? "default" : "ghost"} 
+                        className="w-full justify-start" 
+                        onClick={() => setCategoryFilter("all")}
+                      >
+                        All Posts
+                      </Button>
+                    </li>
+                    {categories.slice(0, showAllCategories ? categories.length : 3).map((category) => (
+                      <li key={category.id}>
+                        <Button 
+                          variant={categoryFilter === category.id.toString() ? "default" : "ghost"} 
+                          className="w-full justify-start" 
+                          onClick={() => setCategoryFilter(category.id.toString())}
+                        >
+                          {category.name}
+                        </Button>
+                      </li>
+                    ))}
+                    {!showAllCategories && categories.length > 3 && (
+                      <li>
+                        <Button 
+                          variant="link" 
+                          className="w-full justify-start text-blue-600" 
+                          onClick={() => setShowAllCategories(true)}
+                        >
+                          Show all ({categories.length})
+                        </Button>
+                      </li>
+                    )}
+                  </ul>
+                </div>
               </div>
-            ))}
+            </div>
+            
+            {/* Main content */}
+            <div className="md:col-span-2 order-1 md:order-2">
+              {/* Search */}
+              <div className="relative mb-8">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search posts..."
+                  className="pl-10 bg-white"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              
+              {/* Blog posts */}
+              {filteredPosts.length === 0 ? (
+                <div className="text-center py-16 bg-white rounded-lg shadow-sm">
+                  <h2 className="text-xl font-semibold mb-2">No Posts Found</h2>
+                  <p className="text-gray-500 mb-4">
+                    {search || (categoryFilter && categoryFilter !== "all") 
+                      ? "Try a different search term or category filter."
+                      : "There are no blog posts published yet. Check back later!"}
+                  </p>
+                  {(search || (categoryFilter && categoryFilter !== "all")) && (
+                    <Button
+                      onClick={() => {
+                        setSearch("");
+                        setCategoryFilter("all");
+                      }}
+                      variant="outline"
+                    >
+                      Clear Filters
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-12">
+                  {filteredPosts.map((post, index) => (
+                    <Card key={post.id} className="border-0 shadow-sm overflow-hidden bg-white">
+                      <Link href={`/blog/${post.slug}`} className="block">
+                        <CardHeader className="p-6">
+                          <div className="text-sm text-gray-500 mb-2 flex items-center">
+                            <span className="mr-3">
+                              {formatDate(post.publishDate)}
+                            </span>
+                            ·
+                            <span className="mx-3">
+                              {calculateReadingTime(post.content)} min read
+                            </span>
+                            {post.categoryId && (
+                              <>
+                                ·
+                                <Badge variant="outline" className="ml-3">
+                                  {getCategoryName(post.categoryId)}
+                                </Badge>
+                              </>
+                            )}
+                          </div>
+                          
+                          <CardTitle className="text-2xl font-bold hover:text-blue-600 transition-colors">
+                            {post.title}
+                          </CardTitle>
+                          
+                          <CardDescription className="text-base text-gray-600 mt-2">
+                            {post.excerpt}
+                          </CardDescription>
+                        </CardHeader>
+                        
+                        {post.featuredImage && (
+                          <div className="px-6">
+                            <div className="w-full aspect-[16/9] rounded-lg overflow-hidden">
+                              <img 
+                                src={post.featuredImage} 
+                                alt={post.title} 
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </div>
+                        )}
+                        
+                        <CardContent className="py-4 px-6">
+                          <div className="line-clamp-3 text-gray-700">
+                            {post.content.replace(/<[^>]*>?/gm, '')}
+                          </div>
+                        </CardContent>
+                        
+                        <CardFooter className="px-6 pb-6 pt-2 justify-between items-center">
+                          <div className="flex gap-2 flex-wrap">
+                            {post.tags && post.tags.slice(0, 3).map((tag, i) => (
+                              <span key={i} className="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600">
+                                {tag}
+                              </span>
+                            ))}
+                            {post.tags && post.tags.length > 3 && (
+                              <span className="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600">
+                                +{post.tags.length - 3} more
+                              </span>
+                            )}
+                          </div>
+                          
+                          <Button variant="ghost" size="sm" className="text-blue-600 font-medium">
+                            Read more <ChevronRight className="ml-1 h-4 w-4" />
+                          </Button>
+                        </CardFooter>
+                      </Link>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
