@@ -4,6 +4,9 @@ import {
   projects, 
   experiences,
   certifications,
+  blogCategories,
+  blogPosts,
+  blogSubscriptions,
   type User, 
   type InsertUser,
   type Section,
@@ -13,8 +16,15 @@ import {
   type Experience,
   type InsertExperience,
   type Certification,
-  type InsertCertification
+  type InsertCertification,
+  type BlogCategory,
+  type InsertBlogCategory,
+  type BlogPost,
+  type InsertBlogPost,
+  type BlogSubscription,
+  type InsertBlogSubscription
 } from "@shared/schema";
+import { createClient } from '@supabase/supabase-js';
 
 export interface IStorage {
   // User operations
@@ -53,6 +63,36 @@ export interface IStorage {
   createCertification(certification: InsertCertification): Promise<Certification>;
   updateCertification(id: number, certification: Partial<InsertCertification>): Promise<Certification | undefined>;
   deleteCertification(id: number): Promise<boolean>;
+  
+  // Blog Category operations
+  getAllBlogCategories(): Promise<BlogCategory[]>;
+  getBlogCategory(id: number): Promise<BlogCategory | undefined>;
+  getBlogCategoryBySlug(slug: string): Promise<BlogCategory | undefined>;
+  createBlogCategory(category: InsertBlogCategory): Promise<BlogCategory>;
+  updateBlogCategory(id: number, category: Partial<InsertBlogCategory>): Promise<BlogCategory | undefined>;
+  deleteBlogCategory(id: number): Promise<boolean>;
+  
+  // Blog Post operations
+  getAllBlogPosts(): Promise<BlogPost[]>;
+  getPublishedBlogPosts(): Promise<BlogPost[]>;
+  getBlogPost(id: number): Promise<BlogPost | undefined>;
+  getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
+  getBlogPostsByCategory(categoryId: number): Promise<BlogPost[]>;
+  getBlogPostsByTag(tag: string): Promise<BlogPost[]>;
+  createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
+  deleteBlogPost(id: number): Promise<boolean>;
+  
+  // Blog Subscription operations
+  getAllBlogSubscriptions(): Promise<BlogSubscription[]>;
+  getActiveBlogSubscriptions(): Promise<BlogSubscription[]>;
+  getBlogSubscription(id: number): Promise<BlogSubscription | undefined>;
+  getBlogSubscriptionByEmail(email: string): Promise<BlogSubscription | undefined>;
+  createBlogSubscription(subscription: InsertBlogSubscription): Promise<BlogSubscription>;
+  updateBlogSubscription(id: number, subscription: Partial<InsertBlogSubscription>): Promise<BlogSubscription | undefined>;
+  deleteBlogSubscription(id: number): Promise<boolean>;
+  confirmBlogSubscription(token: string): Promise<BlogSubscription | undefined>;
+  unsubscribe(email: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -61,6 +101,9 @@ export class MemStorage implements IStorage {
   private projects: Map<number, Project>;
   private experiences: Map<number, Experience>;
   private certifications: Map<number, Certification>;
+  private blogCategories: Map<number, BlogCategory>;
+  private blogPosts: Map<number, BlogPost>;
+  private blogSubscriptions: Map<number, BlogSubscription>;
   
   userIdCounter: number;
   sectionIdCounter: number;
@@ -68,6 +111,9 @@ export class MemStorage implements IStorage {
   experienceIdCounter: number;
   experienceOrderCounter: number;
   certificationIdCounter: number;
+  blogCategoryIdCounter: number;
+  blogPostIdCounter: number;
+  blogSubscriptionIdCounter: number;
 
   constructor() {
     this.users = new Map();

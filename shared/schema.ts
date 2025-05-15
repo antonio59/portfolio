@@ -1,4 +1,4 @@
-import { pgTable, serial, text, varchar, json, timestamp, pgEnum, boolean, integer, date } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, varchar, json, timestamp, pgEnum, boolean, integer, date, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -199,3 +199,31 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).pick({
 
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
+
+// Blog subscriptions schema
+export const blogSubscriptions = pgTable("blog_subscriptions", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  name: varchar("name", { length: 100 }),
+  status: varchar("status", { length: 20 }).default("active").notNull(), // active, unsubscribed
+  confirmationToken: varchar("confirmation_token", { length: 255 }),
+  confirmed: boolean("confirmed").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  lastEmailSentAt: timestamp("last_email_sent_at"),
+}, (table) => {
+  return {
+    emailIdx: unique("email_idx").on(table.email),
+  }
+});
+
+export const insertBlogSubscriptionSchema = createInsertSchema(blogSubscriptions).pick({
+  email: true,
+  name: true,
+  status: true,
+  confirmationToken: true,
+  confirmed: true,
+});
+
+export type InsertBlogSubscription = z.infer<typeof insertBlogSubscriptionSchema>;
+export type BlogSubscription = typeof blogSubscriptions.$inferSelect;
