@@ -116,11 +116,12 @@ export async function postToSocialMedia(
   blogPost: BlogPost, 
   category?: BlogCategory
 ): Promise<{twitter?: {success: boolean, message?: string}, bluesky?: {success: boolean, message?: string}}> {
+  const tags = Array.isArray(blogPost.tags) ? blogPost.tags : []; 
   const postContent: SocialMediaPost = {
     title: blogPost.title,
     excerpt: blogPost.excerpt,
     url: `${currentConfig.baseUrl}${blogPost.slug}`,
-    tags: currentConfig.includeTags ? (blogPost.tags as string[]) : undefined,
+    tags: currentConfig.includeTags ? tags as string[] : undefined,
     image: currentConfig.includeImage ? (blogPost.featuredImage || undefined) : undefined,
   };
   

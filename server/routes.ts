@@ -1081,6 +1081,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set the user ID to the admin user
       validatedData.userId = 1;
       const post = await storage.createBlogPost(validatedData);
+      
+      // If the post is published, attempt to post to social media
+      if (post.status === "published") {
+        try {
+          const category = post.categoryId 
+            ? await storage.getBlogCategory(post.categoryId) 
+            : undefined;
+          
+          const socialMediaResults = await postToSocialMedia(post, category);
+          
+          // Add social media results to the response
+          return res.status(201).json({
+            ...post, 
+            socialMedia: socialMediaResults
+          });
+        } catch (socialError) {
+          console.error("Error posting to social media:", socialError);
+          // Still return success for post creation even if social media posting fails
+          return res.status(201).json({
+            ...post,
+            socialMedia: { error: "Failed to post to social media platforms" }
+          });
+        }
+      }
+      
       res.status(201).json(post);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1104,12 +1129,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updateSchema = insertBlogPostSchema.partial();
       const validatedData = updateSchema.parse(req.body);
       
+      // Get the existing post to check if status is changing to published
+      const existingPost = await storage.getBlogPost(id);
+      if (!existingPost) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Blog post not found" 
+        });
+      }
+      
       const updatedPost = await storage.updateBlogPost(id, validatedData);
       if (!updatedPost) {
         return res.status(404).json({ 
           success: false, 
           message: "Blog post not found" 
         });
+      }
+      
+      // If status is changing to published, post to social media
+      const statusChangedToPublished = 
+        existingPost.status !== "published" && 
+        validatedData.status === "published";
+      
+      if (statusChangedToPublished) {
+        try {
+          const category = updatedPost.categoryId 
+            ? await storage.getBlogCategory(updatedPost.categoryId) 
+            : undefined;
+          
+          const socialMediaResults = await postToSocialMedia(updatedPost, category);
+          
+          // Add social media results to the response
+          return res.json({
+            ...updatedPost, 
+            socialMedia: socialMediaResults
+          });
+        } catch (socialError) {
+          console.error("Error posting to social media:", socialError);
+          // Still return success for update even if social media posting fails
+          return res.json({
+            ...updatedPost,
+            socialMedia: { error: "Failed to post to social media platforms" }
+          });
+        }
       }
       
       res.json(updatedPost);
@@ -1274,6 +1336,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: "Error fetching blog subscriptions"
+      });
+    }
+  });
+  
+  // Social Media Configuration API
+  app.get("/api/admin/social-media/config", isAuthenticated, async (req, res) => {
+    try {
+      const config = getSocialMediaConfig();
+      // Don't send sensitive credentials to the client
+      const safeConfig = {
+        ...config,
+        twitter: {
+          ...config.twitter,
+          apiSecret: config.twitter.apiSecret ? "[HIDDEN]" : undefined,
+          accessTokenSecret: config.twitter.accessTokenSecret ? "[HIDDEN]" : undefined,
+        },
+        bluesky: {
+          ...config.bluesky,
+          password: config.bluesky.password ? "[HIDDEN]" : undefined,
+        }
+      };
+      res.json(safeConfig);
+    } catch (error) {
+      console.error("Error getting social media config:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error getting social media configuration"
+      });
+    }
+  });
+  
+  app.put("/api/admin/social-media/config", isAuthenticated, async (req, res) => {
+    try {
+      const updatedConfig = updateSocialMediaConfig(req.body);
+      // Don't send sensitive credentials to the client
+      const safeConfig = {
+        ...updatedConfig,
+        twitter: {
+          ...updatedConfig.twitter,
+          apiSecret: updatedConfig.twitter.apiSecret ? "[HIDDEN]" : undefined,
+          accessTokenSecret: updatedConfig.twitter.accessTokenSecret ? "[HIDDEN]" : undefined,
+        },
+        bluesky: {
+          ...updatedConfig.bluesky,
+          password: updatedConfig.bluesky.password ? "[HIDDEN]" : undefined,
+        }
+      };
+      res.json(safeConfig);
+    } catch (error) {
+      console.error("Error updating social media config:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error updating social media configuration"
+      });
+    }
+  });
+  
+  app.post("/api/admin/social-media/test", isAuthenticated, async (req, res) => {
+    try {
+      const results = await testSocialMediaConnection();
+      res.json({
+        success: true,
+        results
+      });
+    } catch (error) {
+      console.error("Error testing social media connections:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error testing social media connections"
       });
     }
   });
