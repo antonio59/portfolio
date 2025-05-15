@@ -1,5 +1,5 @@
 import BlogList from "@/components/BlogList";
-import Header from "@/components/Header";
+import BlogHeader from "@/components/BlogHeader";
 import { useState } from "react";
 import Footer from "@/components/Footer";
 
@@ -12,8 +12,8 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header isMobileMenuOpen={isMobileMenuOpen} toggleMobileMenu={toggleMobileMenu} />
-      <main className="flex-grow">
+      <BlogHeader isMobileMenuOpen={isMobileMenuOpen} toggleMobileMenu={toggleMobileMenu} />
+      <main className="flex-grow pt-20">
         <BlogList />
       </main>
       <Footer />
