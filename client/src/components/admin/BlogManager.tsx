@@ -29,6 +29,7 @@ import {
   FormLabel, 
   FormMessage 
 } from "@/components/ui/form";
+import SocialMediaSettings from "./SocialMediaSettings";
 import {
   Dialog,
   DialogContent,
@@ -394,6 +395,10 @@ export default function BlogManager() {
               <TabsTrigger value="categories" className="flex items-center">
                 <Folder className="h-4 w-4 mr-2" />
                 Categories
+              </TabsTrigger>
+              <TabsTrigger value="social" className="flex items-center">
+                <Share className="h-4 w-4 mr-2" />
+                Social Media
               </TabsTrigger>
             </TabsList>
             
@@ -877,6 +882,10 @@ export default function BlogManager() {
                 </Table>
               </div>
             )}
+          </TabsContent>
+          
+          <TabsContent value="social">
+            <SocialMediaSettings />
           </TabsContent>
         </Tabs>
       </CardContent>
