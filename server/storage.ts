@@ -121,6 +121,9 @@ export class MemStorage implements IStorage {
     this.projects = new Map();
     this.experiences = new Map();
     this.certifications = new Map();
+    this.blogCategories = new Map();
+    this.blogPosts = new Map();
+    this.blogSubscriptions = new Map();
     
     this.userIdCounter = 1;
     this.sectionIdCounter = 1;
@@ -128,6 +131,9 @@ export class MemStorage implements IStorage {
     this.experienceIdCounter = 1;
     this.experienceOrderCounter = 1;
     this.certificationIdCounter = 1;
+    this.blogCategoryIdCounter = 1;
+    this.blogPostIdCounter = 1;
+    this.blogSubscriptionIdCounter = 1;
     
     // Initialize with admin user
     this.createUser({
@@ -368,7 +374,234 @@ export class MemStorage implements IStorage {
     return this.certifications.delete(id);
   }
 
+  // Blog Category operations
+  async getAllBlogCategories(): Promise<BlogCategory[]> {
+    return Array.from(this.blogCategories.values());
+  }
 
+  async getBlogCategory(id: number): Promise<BlogCategory | undefined> {
+    return this.blogCategories.get(id);
+  }
+
+  async getBlogCategoryBySlug(slug: string): Promise<BlogCategory | undefined> {
+    return Array.from(this.blogCategories.values()).find(
+      (category) => category.slug === slug
+    );
+  }
+
+  async createBlogCategory(category: InsertBlogCategory): Promise<BlogCategory> {
+    const id = this.blogCategoryIdCounter++;
+    const now = new Date();
+    
+    const blogCategory: BlogCategory = {
+      ...category,
+      id,
+      description: category.description || null,
+      createdAt: now
+    };
+    
+    this.blogCategories.set(id, blogCategory);
+    return blogCategory;
+  }
+
+  async updateBlogCategory(id: number, categoryUpdate: Partial<InsertBlogCategory>): Promise<BlogCategory | undefined> {
+    const category = this.blogCategories.get(id);
+    if (!category) return undefined;
+    
+    const updatedCategory: BlogCategory = {
+      ...category,
+      ...categoryUpdate,
+    };
+    
+    this.blogCategories.set(id, updatedCategory);
+    return updatedCategory;
+  }
+
+  async deleteBlogCategory(id: number): Promise<boolean> {
+    return this.blogCategories.delete(id);
+  }
+
+  // Blog Post operations
+  async getAllBlogPosts(): Promise<BlogPost[]> {
+    return Array.from(this.blogPosts.values());
+  }
+
+  async getPublishedBlogPosts(): Promise<BlogPost[]> {
+    return Array.from(this.blogPosts.values())
+      .filter(post => post.status === 'published')
+      .sort((a, b) => {
+        const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
+        const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
+        return dateB - dateA;
+      });
+  }
+
+  async getBlogPost(id: number): Promise<BlogPost | undefined> {
+    return this.blogPosts.get(id);
+  }
+
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    return Array.from(this.blogPosts.values()).find(
+      (post) => post.slug === slug
+    );
+  }
+
+  async getBlogPostsByCategory(categoryId: number): Promise<BlogPost[]> {
+    return Array.from(this.blogPosts.values())
+      .filter(post => post.categoryId === categoryId && post.status === 'published')
+      .sort((a, b) => {
+        const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
+        const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
+        return dateB - dateA;
+      });
+  }
+
+  async getBlogPostsByTag(tag: string): Promise<BlogPost[]> {
+    return Array.from(this.blogPosts.values())
+      .filter(post => {
+        if (!post.tags || !Array.isArray(post.tags)) return false;
+        return post.tags.includes(tag) && post.status === 'published';
+      })
+      .sort((a, b) => {
+        const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
+        const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
+        return dateB - dateA;
+      });
+  }
+
+  async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+    const id = this.blogPostIdCounter++;
+    const now = new Date();
+    
+    const blogPost: BlogPost = {
+      ...post,
+      id,
+      categoryId: post.categoryId || null,
+      featuredImage: post.featuredImage || null,
+      tags: post.tags || [],
+      publishDate: post.publishDate || now,
+      createdAt: now,
+      updatedAt: now
+    };
+    
+    this.blogPosts.set(id, blogPost);
+    return blogPost;
+  }
+
+  async updateBlogPost(id: number, postUpdate: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    const post = this.blogPosts.get(id);
+    if (!post) return undefined;
+    
+    const now = new Date();
+    const updatedPost: BlogPost = {
+      ...post,
+      ...postUpdate,
+      updatedAt: now
+    };
+    
+    this.blogPosts.set(id, updatedPost);
+    return updatedPost;
+  }
+
+  async deleteBlogPost(id: number): Promise<boolean> {
+    return this.blogPosts.delete(id);
+  }
+
+  // Blog Subscription operations
+  async getAllBlogSubscriptions(): Promise<BlogSubscription[]> {
+    return Array.from(this.blogSubscriptions.values());
+  }
+
+  async getActiveBlogSubscriptions(): Promise<BlogSubscription[]> {
+    return Array.from(this.blogSubscriptions.values())
+      .filter(sub => sub.status === 'active' && sub.confirmed === true);
+  }
+
+  async getBlogSubscription(id: number): Promise<BlogSubscription | undefined> {
+    return this.blogSubscriptions.get(id);
+  }
+
+  async getBlogSubscriptionByEmail(email: string): Promise<BlogSubscription | undefined> {
+    return Array.from(this.blogSubscriptions.values()).find(
+      (sub) => sub.email === email
+    );
+  }
+
+  async createBlogSubscription(subscription: InsertBlogSubscription): Promise<BlogSubscription> {
+    const id = this.blogSubscriptionIdCounter++;
+    const now = new Date();
+    
+    const blogSubscription: BlogSubscription = {
+      ...subscription,
+      id,
+      name: subscription.name || null,
+      status: subscription.status || 'active',
+      confirmationToken: subscription.confirmationToken || null,
+      confirmed: subscription.confirmed || false,
+      createdAt: now,
+      updatedAt: now,
+      lastEmailSentAt: null
+    };
+    
+    this.blogSubscriptions.set(id, blogSubscription);
+    return blogSubscription;
+  }
+
+  async updateBlogSubscription(id: number, subscriptionUpdate: Partial<InsertBlogSubscription>): Promise<BlogSubscription | undefined> {
+    const subscription = this.blogSubscriptions.get(id);
+    if (!subscription) return undefined;
+    
+    const now = new Date();
+    const updatedSubscription: BlogSubscription = {
+      ...subscription,
+      ...subscriptionUpdate,
+      updatedAt: now
+    };
+    
+    this.blogSubscriptions.set(id, updatedSubscription);
+    return updatedSubscription;
+  }
+
+  async deleteBlogSubscription(id: number): Promise<boolean> {
+    return this.blogSubscriptions.delete(id);
+  }
+
+  async confirmBlogSubscription(token: string): Promise<BlogSubscription | undefined> {
+    const subscription = Array.from(this.blogSubscriptions.values()).find(
+      (sub) => sub.confirmationToken === token
+    );
+    
+    if (!subscription) return undefined;
+    
+    const now = new Date();
+    const confirmedSubscription: BlogSubscription = {
+      ...subscription,
+      confirmed: true,
+      confirmationToken: null,
+      updatedAt: now
+    };
+    
+    this.blogSubscriptions.set(subscription.id, confirmedSubscription);
+    return confirmedSubscription;
+  }
+
+  async unsubscribe(email: string): Promise<boolean> {
+    const subscription = Array.from(this.blogSubscriptions.values()).find(
+      (sub) => sub.email === email
+    );
+    
+    if (!subscription) return false;
+    
+    const now = new Date();
+    const unsubscribedSubscription: BlogSubscription = {
+      ...subscription,
+      status: 'unsubscribed',
+      updatedAt: now
+    };
+    
+    this.blogSubscriptions.set(subscription.id, unsubscribedSubscription);
+    return true;
+  }
 }
 
 export const storage = new MemStorage();
