@@ -1,0 +1,12 @@
+{
+  "title": "Building a Self-Hosted Home Automation System with Node.js",
+  "slug": "self-hosted-home-automation",
+  "excerpt": "A complete guide to creating your own smart home system without relying on third-party services.",
+  "content": "<p>When I first started exploring home automation, I was drawn to the convenience of smart home products but concerned about privacy, reliability, and vendor lock-in. After trying several commercial solutions, I decided to build my own system that would run entirely on my local network.</p><h2>Why Self-Host Your Home Automation?</h2><p>Commercial smart home platforms like Google Home or Amazon Alexa are convenient, but they come with drawbacks:</p><ul><li>Privacy concerns - your data and usage patterns are stored on third-party servers</li><li>Internet dependency - if your connection goes down, your smart home may become unavailable</li><li>Limited customization - you are restricted to the features and integrations the vendor chooses to support</li><li>Subscription costs - many platforms are moving toward subscription models</li></ul><p>By self-hosting, you maintain complete control over your smart home system, data, and can customize it to your exact needs.</p>",
+  "categoryId": 1,
+  "featuredImage": "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+  "tags": ["IoT", "Home Automation", "Node.js", "Self-Hosted"],
+  "publishDate": "2025-05-01",
+  "status": "published",
+  "userId": 1
+}

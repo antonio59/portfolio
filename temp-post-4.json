@@ -1,0 +1,12 @@
+{
+  "title": "How I Built a Portfolio Site with React and TypeScript",
+  "slug": "portfolio-react-typescript",
+  "excerpt": "A deep dive into the architecture and design decisions behind my personal portfolio website.",
+  "content": "<p>After years of having a basic portfolio website, I decided it was time for a complete overhaul. As a developer who works with React daily, I wanted to create something that would showcase both my design sensibilities and technical capabilities.</p><h2>Design Philosophy</h2><p>For this project, I embraced minimalism with purpose. My goals were:</p><ul><li>Focus on content and projects rather than flashy animations</li><li>Create a responsive design that works beautifully on all devices</li><li>Implement accessibility best practices from the ground up</li><li>Optimize for performance and SEO</li></ul><h2>Technical Stack</h2><p>I chose the following technologies:</p><ul><li>React with TypeScript for type safety</li><li>Tailwind CSS for styling</li><li>React Query for data fetching</li><li>Express backend with Node.js</li></ul><p>TypeScript was particularly valuable as it helped me catch errors early and made refactoring much safer.</p>",
+  "categoryId": 2,
+  "featuredImage": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80",
+  "tags": ["React", "TypeScript", "Portfolio", "Web Development"],
+  "publishDate": "2025-04-15",
+  "status": "published",
+  "userId": 1
+}
