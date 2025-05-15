@@ -149,19 +149,21 @@ export default function BlogPost() {
 
   // Use the real data if available, otherwise use the sample data
   const { 
-    data: post = samplePost, 
+    data: post = null, 
     isLoading: postLoading,
     error: postError
   } = useQuery<BlogPost>({
     queryKey: [`/api/blog/posts/${slug}`],
-    enabled: false, // Disable real fetching for now since we're using sample data
+    enabled: true,
+    placeholderData: samplePost // Use sample post as placeholder while loading
   });
 
   const { 
-    data: categories = sampleCategories
+    data: categories = []
   } = useQuery<BlogCategory[]>({
     queryKey: ["/api/blog/categories"],
-    enabled: false, // Disable real fetching for now since we're using sample data
+    enabled: true,
+    placeholderData: sampleCategories // Use sample categories as placeholder while loading
   });
 
   // Function to get category name by ID
