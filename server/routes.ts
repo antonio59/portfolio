@@ -17,6 +17,13 @@ import {
 } from "@shared/schema";
 // Import the data sync function and specific certification creation function
 import { syncAllData, createSampleCertifications } from "../client/src/utils/syncFrontendData";
+// Import social media services
+import { 
+  getSocialMediaConfig, 
+  updateSocialMediaConfig, 
+  testSocialMediaConnection,
+  postToSocialMedia 
+} from "./services/social-media";
 
 // Define contact form schema for validation
 const contactFormSchema = z.object({
