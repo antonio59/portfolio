@@ -112,20 +112,22 @@ export default function BlogList() {
   
   // Use the sample data or fetch real data if available
   const { 
-    data: posts = samplePosts, 
+    data: posts = [], 
     isLoading: postsLoading,
     error: postsError
   } = useQuery<BlogPost[]>({
     queryKey: ["/api/blog/posts"],
-    enabled: false, // Disable real fetching for now since we're using sample data
+    enabled: true,
+    placeholderData: samplePosts // Use sample data as placeholder while loading
   });
   
   const { 
-    data: categories = sampleCategories, 
+    data: categories = [], 
     isLoading: categoriesLoading 
   } = useQuery<BlogCategory[]>({
     queryKey: ["/api/blog/categories"],
-    enabled: false, // Disable real fetching for now since we're using sample data
+    enabled: true,
+    placeholderData: sampleCategories // Use sample data as placeholder while loading
   });
 
   // Format date helper function
