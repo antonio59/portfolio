@@ -7,6 +7,7 @@ import {
   blogCategories,
   blogPosts,
   blogSubscriptions,
+  caseStudyDetails,
   type User, 
   type InsertUser,
   type Section,
@@ -22,7 +23,9 @@ import {
   type BlogPost,
   type InsertBlogPost,
   type BlogSubscription,
-  type InsertBlogSubscription
+  type InsertBlogSubscription,
+  type CaseStudyDetail,
+  type InsertCaseStudyDetail
 } from "@shared/schema";
 import { createClient } from '@supabase/supabase-js';
 
@@ -93,6 +96,15 @@ export interface IStorage {
   deleteBlogSubscription(id: number): Promise<boolean>;
   confirmBlogSubscription(token: string): Promise<BlogSubscription | undefined>;
   unsubscribe(email: string): Promise<boolean>;
+  
+  // Case Study Details operations
+  getAllCaseStudyDetails(): Promise<CaseStudyDetail[]>;
+  getCaseStudyDetail(id: number): Promise<CaseStudyDetail | undefined>;
+  getCaseStudyDetailByBlogPostId(blogPostId: number): Promise<CaseStudyDetail | undefined>;
+  getCaseStudyDetailsByProjectType(projectType: string): Promise<CaseStudyDetail[]>;
+  createCaseStudyDetail(caseStudyDetail: InsertCaseStudyDetail): Promise<CaseStudyDetail>;
+  updateCaseStudyDetail(id: number, caseStudyDetail: Partial<InsertCaseStudyDetail>): Promise<CaseStudyDetail | undefined>;
+  deleteCaseStudyDetail(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -104,6 +116,7 @@ export class MemStorage implements IStorage {
   private blogCategories: Map<number, BlogCategory>;
   private blogPosts: Map<number, BlogPost>;
   private blogSubscriptions: Map<number, BlogSubscription>;
+  private caseStudyDetails: Map<number, CaseStudyDetail>;
   
   userIdCounter: number;
   sectionIdCounter: number;

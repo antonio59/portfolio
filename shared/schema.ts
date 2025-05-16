@@ -235,3 +235,59 @@ export const insertBlogSubscriptionSchema = createInsertSchema(blogSubscriptions
 
 export type InsertBlogSubscription = z.infer<typeof insertBlogSubscriptionSchema>;
 export type BlogSubscription = typeof blogSubscriptions.$inferSelect;
+
+// Case Study Details schema - Extended metadata for blog posts that are case studies
+export const caseStudyDetails = pgTable("case_study_details", {
+  id: serial("id").primaryKey(),
+  blogPostId: integer("blog_post_id").references(() => blogPosts.id, { onDelete: 'cascade' }).notNull().unique(),
+  clientName: varchar("client_name", { length: 100 }),
+  industry: varchar("industry", { length: 100 }),
+  projectDuration: varchar("project_duration", { length: 100 }),
+  completionDate: varchar("completion_date", { length: 100 }),
+  challengesFaced: json("challenges_faced"), // Array of challenges faced
+  solutionsProvided: json("solutions_provided"), // Array of solutions provided
+  outcomesResults: json("outcomes_results"), // Array of outcomes/results
+  methodologyApproach: text("methodology_approach"),
+  keyFeatures: json("key_features"), // Array of key features
+  technologies: json("technologies"), // Array of technologies used
+  teamSize: varchar("team_size", { length: 50 }),
+  role: varchar("role", { length: 100 }),
+  testimonial: text("testimonial"),
+  testimonialAuthor: varchar("testimonial_author", { length: 100 }),
+  testimonialPosition: varchar("testimonial_position", { length: 100 }),
+  clientLogo: varchar("client_logo", { length: 255 }),
+  images: json("images"), // Array of image URLs for gallery
+  videoUrl: varchar("video_url", { length: 255 }),
+  projectType: varchar("project_type", { length: 50 }).notNull(), // Project category or type
+  relatedProjectIds: json("related_project_ids"), // Array of related project IDs
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertCaseStudyDetailSchema = createInsertSchema(caseStudyDetails)
+  .pick({
+    blogPostId: true,
+    clientName: true,
+    industry: true,
+    projectDuration: true,
+    completionDate: true,
+    challengesFaced: true,
+    solutionsProvided: true,
+    outcomesResults: true,
+    methodologyApproach: true,
+    keyFeatures: true,
+    technologies: true,
+    teamSize: true,
+    role: true,
+    testimonial: true,
+    testimonialAuthor: true,
+    testimonialPosition: true,
+    clientLogo: true,
+    images: true,
+    videoUrl: true,
+    projectType: true,
+    relatedProjectIds: true,
+  });
+
+export type InsertCaseStudyDetail = z.infer<typeof insertCaseStudyDetailSchema>;
+export type CaseStudyDetail = typeof caseStudyDetails.$inferSelect;
