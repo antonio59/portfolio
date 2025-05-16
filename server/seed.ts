@@ -414,7 +414,7 @@ jobs:
       - name: Deploy to production
         uses: some-deployment-action@v1
         with:
-          api-key: ${{ secrets.DEPLOY_API_KEY }}
+          api-key: $DEPLOY_API_KEY
 </code></pre>
           
           <p>This workflow will run whenever code is pushed to the main branch. It first executes tests, and if they pass, it proceeds to deploy the application.</p>
@@ -430,7 +430,7 @@ jobs:
             <li>Add your secrets (like API keys, tokens, etc.)</li>
           </ol>
           
-          <p>These secrets can then be accessed in your workflow files using <code>${{ secrets.SECRET_NAME }}</code> syntax.</p>`,
+          <p>These secrets can then be accessed in your workflow files using <code>$SECRET_NAME</code> syntax.</p>`,
           categoryId: devOpsCategory?.id ?? null,
           featuredImage: "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1488&q=80",
           tags: ["DevOps", "CI/CD", "GitHub", "Automation"],

@@ -3,6 +3,8 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import session from "express-session";
 import { seedDatabase } from "./seed";
+import { initializeStorage } from "./storage";
+import { initializeDatabase } from "./db";
 
 declare module "express-session" {
   interface SessionData {
@@ -14,6 +16,35 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Initialize the database if DATABASE_URL is present
+async function initDatabase() {
+  try {
+    // Initialize the database connection if DATABASE_URL exists
+    if (process.env.DATABASE_URL) {
+      console.log("Database URL found, initializing database connection...");
+      await initializeDatabase();
+    }
+    
+    // Initialize the appropriate storage implementation
+    await initializeStorage();
+    
+    // Seed the database with sample data
+    console.log("Seeding database with sample content...");
+    const result = await seedDatabase();
+    
+    if (result.success) {
+      console.log("Database seeding completed successfully");
+    } else {
+      console.error("Error seeding database:", result.error);
+    }
+  } catch (error) {
+    console.error("Error initializing database:", error);
+  }
+}
+
+// Initialize database and seed data
+initDatabase().catch(console.error);
+
 // Set up session middleware
 app.use(session({
   secret: "portfolio-session-secret",
@@ -23,6 +54,7 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
     secure: process.env.NODE_ENV === "production"
   }
+  // Session store will be configured after storage is initialized
 }));
 
 app.use((req, res, next) => {
