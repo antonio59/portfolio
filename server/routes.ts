@@ -13,7 +13,8 @@ import {
   insertCertificationSchema,
   insertBlogCategorySchema,
   insertBlogPostSchema,
-  insertBlogSubscriptionSchema
+  insertBlogSubscriptionSchema,
+  insertCaseStudyDetailSchema
 } from "@shared/schema";
 // Import the data sync function and specific certification creation function
 import { syncAllData, createSampleCertifications } from "../client/src/utils/syncFrontendData";

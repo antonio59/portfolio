@@ -127,6 +127,7 @@ export class MemStorage implements IStorage {
   blogCategoryIdCounter: number;
   blogPostIdCounter: number;
   blogSubscriptionIdCounter: number;
+  caseStudyDetailIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -137,6 +138,7 @@ export class MemStorage implements IStorage {
     this.blogCategories = new Map();
     this.blogPosts = new Map();
     this.blogSubscriptions = new Map();
+    this.caseStudyDetails = new Map();
     
     this.userIdCounter = 1;
     this.sectionIdCounter = 1;
@@ -147,6 +149,7 @@ export class MemStorage implements IStorage {
     this.blogCategoryIdCounter = 1;
     this.blogPostIdCounter = 1;
     this.blogSubscriptionIdCounter = 1;
+    this.caseStudyDetailIdCounter = 1;
     
     // Initialize with admin user
     this.createUser({
@@ -615,6 +618,62 @@ export class MemStorage implements IStorage {
     
     this.blogSubscriptions.set(subscription.id, unsubscribedSubscription);
     return true;
+  }
+
+  // Case Study Detail operations
+  async getAllCaseStudyDetails(): Promise<CaseStudyDetail[]> {
+    return Array.from(this.caseStudyDetails.values());
+  }
+
+  async getCaseStudyDetail(id: number): Promise<CaseStudyDetail | undefined> {
+    return this.caseStudyDetails.get(id);
+  }
+
+  async getCaseStudyDetailByBlogPostId(blogPostId: number): Promise<CaseStudyDetail | undefined> {
+    return Array.from(this.caseStudyDetails.values()).find(detail => detail.blogPostId === blogPostId);
+  }
+
+  async getCaseStudyDetailsByProjectType(projectType: string): Promise<CaseStudyDetail[]> {
+    return Array.from(this.caseStudyDetails.values()).filter(detail => detail.projectType === projectType);
+  }
+
+  async createCaseStudyDetail(caseStudyDetail: InsertCaseStudyDetail): Promise<CaseStudyDetail> {
+    const id = this.caseStudyDetailIdCounter++;
+    const now = new Date();
+    
+    const newCaseStudyDetail: CaseStudyDetail = {
+      ...caseStudyDetail,
+      id,
+      createdAt: now,
+      updatedAt: now
+    };
+    
+    this.caseStudyDetails.set(id, newCaseStudyDetail);
+    return newCaseStudyDetail;
+  }
+
+  async updateCaseStudyDetail(id: number, caseStudyDetailUpdate: Partial<InsertCaseStudyDetail>): Promise<CaseStudyDetail | undefined> {
+    const existingDetail = await this.getCaseStudyDetail(id);
+    if (!existingDetail) {
+      return undefined;
+    }
+    
+    const updatedDetail: CaseStudyDetail = {
+      ...existingDetail,
+      ...caseStudyDetailUpdate,
+      updatedAt: new Date()
+    };
+    
+    this.caseStudyDetails.set(id, updatedDetail);
+    return updatedDetail;
+  }
+
+  async deleteCaseStudyDetail(id: number): Promise<boolean> {
+    const exists = this.caseStudyDetails.has(id);
+    if (exists) {
+      this.caseStudyDetails.delete(id);
+    }
+    return exists;
   }
 }
 
