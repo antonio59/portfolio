@@ -1583,7 +1583,205 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
-
+  
+  // Case Study Details API endpoints
+  
+  // Public case study details endpoints
+  app.get("/api/blog/case-studies", async (req, res) => {
+    try {
+      const caseStudyDetails = await storage.getAllCaseStudyDetails();
+      
+      // For each case study detail, get the associated blog post
+      const result = await Promise.all(
+        caseStudyDetails.map(async (detail) => {
+          const blogPost = await storage.getBlogPost(detail.blogPostId);
+          return {
+            ...detail,
+            blogPost: blogPost || null
+          };
+        })
+      );
+      
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching case studies" 
+      });
+    }
+  });
+  
+  app.get("/api/blog/posts/:id/case-study", async (req, res) => {
+    try {
+      const blogPostId = parseInt(req.params.id);
+      const caseStudyDetail = await storage.getCaseStudyDetailByBlogPostId(blogPostId);
+      
+      if (!caseStudyDetail) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Case study details not found for this blog post" 
+        });
+      }
+      
+      res.json(caseStudyDetail);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching case study details" 
+      });
+    }
+  });
+  
+  app.get("/api/blog/case-studies/project-type/:type", async (req, res) => {
+    try {
+      const projectType = req.params.type;
+      const caseStudies = await storage.getCaseStudyDetailsByProjectType(projectType);
+      
+      // For each case study detail, get the associated blog post
+      const result = await Promise.all(
+        caseStudies.map(async (detail) => {
+          const blogPost = await storage.getBlogPost(detail.blogPostId);
+          return {
+            ...detail,
+            blogPost: blogPost || null
+          };
+        })
+      );
+      
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching case studies by project type" 
+      });
+    }
+  });
+  
+  // Admin case study details endpoints
+  app.get("/api/admin/blog/case-studies", isAuthenticated, async (req, res) => {
+    try {
+      const caseStudyDetails = await storage.getAllCaseStudyDetails();
+      res.json(caseStudyDetails);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching case study details" 
+      });
+    }
+  });
+  
+  app.get("/api/admin/blog/case-studies/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const caseStudyDetail = await storage.getCaseStudyDetail(id);
+      
+      if (!caseStudyDetail) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Case study detail not found" 
+        });
+      }
+      
+      res.json(caseStudyDetail);
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error fetching case study detail" 
+      });
+    }
+  });
+  
+  app.post("/api/admin/blog/case-studies", isAuthenticated, async (req, res) => {
+    try {
+      const validatedData = insertCaseStudyDetailSchema.parse(req.body);
+      
+      // Check if the blog post exists
+      const blogPost = await storage.getBlogPost(validatedData.blogPostId);
+      if (!blogPost) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Blog post not found for the given ID" 
+        });
+      }
+      
+      // Check if case study details already exist for this blog post
+      const existingDetail = await storage.getCaseStudyDetailByBlogPostId(validatedData.blogPostId);
+      if (existingDetail) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Case study details already exist for this blog post" 
+        });
+      }
+      
+      const caseStudyDetail = await storage.createCaseStudyDetail(validatedData);
+      res.status(201).json(caseStudyDetail);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error creating case study detail" 
+      });
+    }
+  });
+  
+  app.put("/api/admin/blog/case-studies/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updateSchema = insertCaseStudyDetailSchema.partial();
+      const validatedData = updateSchema.parse(req.body);
+      
+      const updatedDetail = await storage.updateCaseStudyDetail(id, validatedData);
+      if (!updatedDetail) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Case study detail not found" 
+        });
+      }
+      
+      res.json(updatedDetail);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      
+      res.status(500).json({ 
+        success: false, 
+        message: "Error updating case study detail" 
+      });
+    }
+  });
+  
+  app.delete("/api/admin/blog/case-studies/:id", isAuthenticated, async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteCaseStudyDetail(id);
+      if (!success) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "Case study detail not found" 
+        });
+      }
+      
+      res.json({ success: true, message: "Case study detail deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ 
+        success: false, 
+        message: "Error deleting case study detail" 
+      });
+    }
+  });
+  
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -10,7 +10,8 @@ import {
   certifications,
   blogCategories,
   blogPosts,
-  blogSubscriptions
+  blogSubscriptions,
+  caseStudyDetails
 } from '../shared/schema';
 import {
   InsertUser,
