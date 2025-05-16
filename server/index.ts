@@ -16,19 +16,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Initialize the database if DATABASE_URL is present
+// Run when app starts up to seed the database with sample data
 async function initDatabase() {
   try {
-    // Initialize the database connection if DATABASE_URL exists
-    if (process.env.DATABASE_URL) {
-      console.log("Database URL found, initializing database connection...");
-      await initializeDatabase();
-    }
-    
-    // Initialize the appropriate storage implementation
-    await initializeStorage();
-    
-    // Seed the database with sample data
     console.log("Seeding database with sample content...");
     const result = await seedDatabase();
     
@@ -42,7 +32,7 @@ async function initDatabase() {
   }
 }
 
-// Initialize database and seed data
+// Initialize sample data
 initDatabase().catch(console.error);
 
 // Set up session middleware
