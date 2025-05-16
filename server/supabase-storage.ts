@@ -29,7 +29,9 @@ import {
   InsertBlogPost,
   BlogPost,
   InsertBlogSubscription,
-  BlogSubscription
+  BlogSubscription,
+  InsertCaseStudyDetail,
+  CaseStudyDetail
 } from '../shared/schema';
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -661,6 +663,94 @@ export class SupabaseStorage implements IStorage {
       return result.length > 0;
     } catch (error) {
       console.error('Error unsubscribing:', error);
+      return false;
+    }
+  }
+  
+  // Case Study Detail operations
+  async getAllCaseStudyDetails(): Promise<CaseStudyDetail[]> {
+    try {
+      const db = getDb();
+      return await db.select().from(caseStudyDetails);
+    } catch (error) {
+      console.error('Error fetching all case study details:', error);
+      return [];
+    }
+  }
+
+  async getCaseStudyDetail(id: number): Promise<CaseStudyDetail | undefined> {
+    try {
+      const db = getDb();
+      const result = await db.select().from(caseStudyDetails)
+        .where(eq(caseStudyDetails.id, id))
+        .limit(1);
+      return result[0];
+    } catch (error) {
+      console.error('Error fetching case study detail by ID:', error);
+      return undefined;
+    }
+  }
+
+  async getCaseStudyDetailByBlogPostId(blogPostId: number): Promise<CaseStudyDetail | undefined> {
+    try {
+      const db = getDb();
+      const result = await db.select().from(caseStudyDetails)
+        .where(eq(caseStudyDetails.blogPostId, blogPostId))
+        .limit(1);
+      return result[0];
+    } catch (error) {
+      console.error('Error fetching case study detail by blog post ID:', error);
+      return undefined;
+    }
+  }
+
+  async getCaseStudyDetailsByProjectType(projectType: string): Promise<CaseStudyDetail[]> {
+    try {
+      const db = getDb();
+      return await db.select().from(caseStudyDetails)
+        .where(eq(caseStudyDetails.projectType, projectType));
+    } catch (error) {
+      console.error('Error fetching case study details by project type:', error);
+      return [];
+    }
+  }
+
+  async createCaseStudyDetail(caseStudyDetail: InsertCaseStudyDetail): Promise<CaseStudyDetail> {
+    try {
+      const db = getDb();
+      const result = await db.insert(caseStudyDetails)
+        .values(caseStudyDetail)
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error creating case study detail:', error);
+      throw error;
+    }
+  }
+
+  async updateCaseStudyDetail(id: number, caseStudyDetailUpdate: Partial<InsertCaseStudyDetail>): Promise<CaseStudyDetail | undefined> {
+    try {
+      const db = getDb();
+      const result = await db.update(caseStudyDetails)
+        .set(caseStudyDetailUpdate)
+        .where(eq(caseStudyDetails.id, id))
+        .returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error updating case study detail:', error);
+      return undefined;
+    }
+  }
+
+  async deleteCaseStudyDetail(id: number): Promise<boolean> {
+    try {
+      const db = getDb();
+      const result = await db.delete(caseStudyDetails)
+        .where(eq(caseStudyDetails.id, id))
+        .returning();
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error deleting case study detail:', error);
       return false;
     }
   }
