@@ -20,23 +20,23 @@ export default function About() {
   const artists = [
     {
       name: "James Blake",
-      imageUrl: "https://i.scdn.co/image/ab6761610000e5ebda2a587c1ed26ccf8c26bd5f"
+      imageUrl: "https://static.wikia.nocookie.net/jamming_universe/images/3/33/JamesBlake.jpg/revision/latest?cb=20171102235746"
     },
     {
       name: "Beyonce",
-      imageUrl: "https://i.scdn.co/image/ab6761610000e5eb12e3f20d05a8d2e899a7c8b5"
+      imageUrl: "https://cdn.britannica.com/51/188751-050-D4E1CFBC/Beyonce-2010.jpg"
     },
     {
       name: "Black Eyed Peas",
-      imageUrl: "https://i.scdn.co/image/ab6761610000e5eb975a9bb5d73f606ed484d554"
+      imageUrl: "https://i.pinimg.com/736x/44/2a/0c/442a0c54ce00e6b7965d06027735c7c2.jpg"
     },
     {
       name: "Robyn",
-      imageUrl: "https://i.scdn.co/image/ab6761610000e5ebb99d1e12e50c5f6c6e7a9b8d"
+      imageUrl: "https://upload.wikimedia.org/wikipedia/commons/b/bc/Robyn_-_Jingle_Bell_Ball_2018.png"
     },
     {
       name: "Calvin Harris",
-      imageUrl: "https://i.scdn.co/image/ab6761610000e5eb3ef779aa0d271adb2b6a3ded"
+      imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Calvin_Harris_-_Rock_in_Rio_Madrid_2012_-_09.jpg/640px-Calvin_Harris_-_Rock_in_Rio_Madrid_2012_-_09.jpg"
     }
   ];
   
@@ -45,27 +45,27 @@ export default function About() {
     {
       title: "Butter",
       author: "Asako Yuzuki",
-      coverUrl: "https://m.media-amazon.com/images/I/71xMttNhr4L._AC_UF1000,1000_QL80_.jpg"
+      coverUrl: "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1686160520i/172499454.jpg"
     },
     {
       title: "Think and Grow Rich",
       author: "Napoleon Hill",
-      coverUrl: "https://m.media-amazon.com/images/I/71UypkUjStL._AC_UF1000,1000_QL80_.jpg"
+      coverUrl: "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1463241782i/30186948.jpg"
     },
     {
       title: "Steve Jobs",
       author: "Walter Isaacson",
-      coverUrl: "https://m.media-amazon.com/images/I/41n1edvVlLL._AC_UF1000,1000_QL80_.jpg"
+      coverUrl: "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1511288482i/11084145.jpg"
     },
     {
       title: "The Design of Everyday Things",
       author: "Don Norman",
-      coverUrl: "https://m.media-amazon.com/images/I/71S+IcNSOcL._AC_UF1000,1000_QL80_.jpg"
+      coverUrl: "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1442460745i/840.jpg"
     },
     {
       title: "Atomic Habits",
       author: "James Clear",
-      coverUrl: "https://m.media-amazon.com/images/I/81bGKUa1e0L._AC_UF1000,1000_QL80_.jpg"
+      coverUrl: "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1655988385i/40121378.jpg"
     }
   ];
   
@@ -196,26 +196,11 @@ export default function About() {
             <div className="bg-white rounded-xl shadow-md p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4">My bookshelf</h3>
               
-              <div className="relative">
-                <div className="flex items-end justify-center py-3 mb-3 border-b-2 border-gray-100">
-                  {books.slice(0, 3).map((book, index) => (
-                    <div key={index} className="mx-1 relative transition-transform hover:scale-105 hover:-translate-y-1">
-                      <div className="h-32 w-20 shadow-md rounded-sm overflow-hidden">
-                        <img 
-                          src={book.coverUrl} 
-                          alt={book.title} 
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="absolute bottom-0 w-full h-2 bg-gray-200"></div>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="flex items-end justify-center py-3">
-                  {books.slice(3).map((book, index) => (
-                    <div key={index} className="mx-1 relative transition-transform hover:scale-105 hover:-translate-y-1">
-                      <div className="h-32 w-20 shadow-md rounded-sm overflow-hidden">
+              <div className="relative py-4">
+                <div className="flex items-end justify-center py-3 overflow-x-auto scrollbar-hide">
+                  {books.map((book, index) => (
+                    <div key={index} className="mx-2 relative transition-transform hover:scale-105 hover:-translate-y-1">
+                      <div className="h-36 w-24 shadow-md rounded-sm overflow-hidden">
                         <img 
                           src={book.coverUrl} 
                           alt={book.title} 
