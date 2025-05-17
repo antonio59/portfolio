@@ -340,16 +340,9 @@ export function CaseStudyManager() {
                 industry: selectedCaseStudy.industry ?? undefined,
                 projectDuration: selectedCaseStudy.projectDuration ?? undefined,
                 completionDate: selectedCaseStudy.completionDate ?? undefined,
-                projectSize: selectedCaseStudy.projectSize ?? undefined,
                 teamSize: selectedCaseStudy.teamSize ?? undefined,
-                budget: selectedCaseStudy.budget ?? undefined,
-                objectives: selectedCaseStudy.objectives ?? undefined,
-                challenges: selectedCaseStudy.challenges ?? undefined,
-                solutions: selectedCaseStudy.solutions ?? undefined,
-                results: selectedCaseStudy.results ?? undefined,
                 testimonial: selectedCaseStudy.testimonial ?? undefined,
                 testimonialAuthor: selectedCaseStudy.testimonialAuthor ?? undefined,
-                testimonialRole: selectedCaseStudy.testimonialRole ?? undefined,
                 relatedProjectIds: Array.isArray(selectedCaseStudy.relatedProjectIds) 
                   ? selectedCaseStudy.relatedProjectIds as number[] 
                   : []

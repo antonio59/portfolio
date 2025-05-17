@@ -99,7 +99,7 @@ export class SupabaseStorage implements IStorage {
   async getSectionsByType(type: string): Promise<Section[]> {
     try {
       const db = getDb();
-      return await db.select().from(sections).where(eq(sections.type, type));
+      return await db.select().from(sections).where(eq(sections.type, type as any));
     } catch (error) {
       console.error(`Error fetching sections by type ${type}:`, error);
       return [];
