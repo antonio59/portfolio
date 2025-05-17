@@ -36,12 +36,12 @@ export function CaseStudyManager() {
   
   // Calculate which blog posts already have case studies
   const blogPostsWithCaseStudies = new Set(
-    caseStudies?.map(study => study.blogPostId) || []
+    caseStudies?.map((study: CaseStudyDetail) => study.blogPostId) || []
   );
   
   // Filter blog posts that don't have case studies yet
   const eligibleBlogPosts = blogPosts?.filter(
-    post => !blogPostsWithCaseStudies.has(post.id)
+    (post: BlogPost) => !blogPostsWithCaseStudies.has(post.id)
   ) || [];
   
   // Mutation to create a case study
@@ -136,7 +136,7 @@ export function CaseStudyManager() {
   
   // Find the blog post associated with a case study
   const getBlogPostForCaseStudy = (blogPostId: number) => {
-    return blogPosts?.find(post => post.id === blogPostId) || null;
+    return blogPosts?.find((post: BlogPost) => post.id === blogPostId) || null;
   };
   
   // Handle form submission for adding a case study
@@ -195,7 +195,7 @@ export function CaseStudyManager() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {caseStudies.map((caseStudy) => {
+                  {caseStudies.map((caseStudy: CaseStudyDetail) => {
                     const blogPost = getBlogPostForCaseStudy(caseStudy.blogPostId);
                     return (
                       <TableRow key={caseStudy.id}>
@@ -254,7 +254,7 @@ export function CaseStudyManager() {
           
           {eligibleBlogPosts.length > 0 ? (
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {eligibleBlogPosts.map((post) => (
+              {eligibleBlogPosts.map((post: BlogPost) => (
                 <Card key={post.id} className="overflow-hidden">
                   <CardHeader>
                     <CardTitle className="line-clamp-2">{post.title}</CardTitle>
@@ -329,7 +329,31 @@ export function CaseStudyManager() {
           
           {selectedCaseStudy && (
             <CaseStudyForm 
-              initialData={selectedCaseStudy}
+              initialData={{
+                blogPostId: selectedCaseStudy.blogPostId,
+                projectType: selectedCaseStudy.projectType,
+                role: selectedCaseStudy.role ?? undefined,
+                technologies: Array.isArray(selectedCaseStudy.technologies) 
+                  ? selectedCaseStudy.technologies as string[] 
+                  : [],
+                clientName: selectedCaseStudy.clientName ?? undefined,
+                industry: selectedCaseStudy.industry ?? undefined,
+                projectDuration: selectedCaseStudy.projectDuration ?? undefined,
+                completionDate: selectedCaseStudy.completionDate ?? undefined,
+                projectSize: selectedCaseStudy.projectSize ?? undefined,
+                teamSize: selectedCaseStudy.teamSize ?? undefined,
+                budget: selectedCaseStudy.budget ?? undefined,
+                objectives: selectedCaseStudy.objectives ?? undefined,
+                challenges: selectedCaseStudy.challenges ?? undefined,
+                solutions: selectedCaseStudy.solutions ?? undefined,
+                results: selectedCaseStudy.results ?? undefined,
+                testimonial: selectedCaseStudy.testimonial ?? undefined,
+                testimonialAuthor: selectedCaseStudy.testimonialAuthor ?? undefined,
+                testimonialRole: selectedCaseStudy.testimonialRole ?? undefined,
+                relatedProjectIds: Array.isArray(selectedCaseStudy.relatedProjectIds) 
+                  ? selectedCaseStudy.relatedProjectIds as number[] 
+                  : []
+              }}
               blogPostId={selectedCaseStudy.blogPostId}
               onSubmit={handleEditSubmit}
               isSubmitting={updateCaseStudyMutation.isPending}
