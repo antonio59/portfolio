@@ -20,12 +20,11 @@ import NotFound from "./pages/not-found";
 import BlogPage from "./pages/blog-page";
 import BlogPostPage from "./pages/blog-post-page";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "./lib/queryClient";
 
 // Main portfolio homepage component
 const PortfolioHome = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   // Prevent scrolling when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -33,7 +32,7 @@ const PortfolioHome = () => {
     } else {
       document.body.style.overflow = "";
     }
-    
+
     return () => {
       document.body.style.overflow = "";
     };
@@ -42,9 +41,9 @@ const PortfolioHome = () => {
   return (
     <>
       <CustomCursor />
-      <Header 
-        isMobileMenuOpen={isMobileMenuOpen} 
-        toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+      <Header
+        isMobileMenuOpen={isMobileMenuOpen}
+        toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       />
       <main>
         <Hero />
@@ -65,23 +64,27 @@ const PortfolioHome = () => {
 const AdminArea = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [, navigate] = useLocation();
-  
+
   // Check if user is already authenticated
-  const { data: sessionData, isLoading } = useQuery({ 
-    queryKey: ["/api/session"] 
+  const { data: sessionData, isLoading } = useQuery({
+    queryKey: ["/api/session"],
   });
-  
+
   // Effect to handle session data changes
   useEffect(() => {
-    if (sessionData && typeof sessionData === 'object' && 'isAuthenticated' in sessionData) {
+    if (
+      sessionData &&
+      typeof sessionData === "object" &&
+      "isAuthenticated" in sessionData
+    ) {
       setIsAuthenticated(!!sessionData.isAuthenticated);
     }
   }, [sessionData]);
-  
+
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
   };
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -89,8 +92,19 @@ const AdminArea = () => {
       </div>
     );
   }
-  
-  return isAuthenticated ? <AdminDashboard /> : <LoginForm onLoginSuccess={handleLoginSuccess} />;
+
+  return isAuthenticated ? (
+    <AdminDashboard />
+  ) : (
+    <LoginForm onLoginSuccess={handleLoginSuccess} />
+  );
+};
+
+const navigate = () => {
+  // Example usage of navigate
+   
+
+  console.info('Using navigate');
 };
 
 function App() {

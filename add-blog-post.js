@@ -1,61 +1,69 @@
-import http from 'http';
+import http from "http";
 
 async function createRequest(method, path, data) {
   return new Promise((resolve, reject) => {
     const options = {
-      hostname: 'localhost',
+      hostname: "localhost",
       port: 5000,
       path,
       method,
       headers: {
-        'Content-Type': 'application/json',
-      }
+        "Content-Type": "application/json",
+      },
     };
 
     if (data) {
-      options.headers['Content-Length'] = Buffer.byteLength(JSON.stringify(data));
+      options.headers["Content-Length"] = Buffer.byteLength(
+        JSON.stringify(data),
+      );
     }
 
     const req = http.request(options, (res) => {
-      let responseData = '';
-      
-      res.on('data', (chunk) => {
+      let responseData = "";
+
+      res.on("data", (chunk) => {
         responseData += chunk;
       });
-      
-      res.on('end', () => {
+
+      res.on("end", () => {
         try {
           const parsedData = JSON.parse(responseData);
           resolve({ statusCode: res.statusCode, body: parsedData });
         } catch (error) {
-          console.log('Error parsing response:', responseData.substring(0, 100) + '...');
+          console.log(
+            "Error parsing response:",
+            responseData.substring(0, 100) + "...",
+          );
           resolve({ statusCode: res.statusCode, body: responseData });
         }
       });
     });
-    
-    req.on('error', (error) => {
+
+    req.on("error", (error) => {
       reject(error);
     });
-    
+
     if (data) {
       req.write(JSON.stringify(data));
     }
-    
+
     req.end();
   });
 }
 
 const categoryData = {
-  name: "Self-Hosting", 
-  slug: "self-hosting", 
-  description: "Articles about self-hosted services, home servers, and DIY tech solutions."
+  name: "Self-Hosting",
+  slug: "self-hosting",
+  description:
+    "Articles about self-hosted services, home servers, and DIY tech solutions.",
 };
 
 const blogPostData = {
-  title: "Building a Home Media Server with Synology NAS, Docker, and Self-Hosted Services",
+  title:
+    "Building a Home Media Server with Synology NAS, Docker, and Self-Hosted Services",
   slug: "home-media-server-synology-nas-docker",
-  excerpt: "A comprehensive guide to setting up a powerful home media and productivity ecosystem using a Synology NAS, Docker containers, and various self-hosted services.",
+  excerpt:
+    "A comprehensive guide to setting up a powerful home media and productivity ecosystem using a Synology NAS, Docker containers, and various self-hosted services.",
   content: `
 # Building a Home Media Server with Synology NAS, Docker, and Self-Hosted Services
 
@@ -186,40 +194,49 @@ Building a self-hosted environment has been both challenging and rewarding. Whil
 Whether you're looking to create a simple media server or a comprehensive home cloud, I hope this overview helps you on your self-hosting journey. Feel free to reach out with questions or share your own self-hosting experiences!
   `,
   categoryId: 1,
-  featuredImage: "https://images.unsplash.com/photo-1586772002345-339f8042a777?q=80&w=1200",
+  featuredImage:
+    "https://images.unsplash.com/photo-1586772002345-339f8042a777?q=80&w=1200",
   tags: ["synology", "nas", "docker", "self-hosting", "plex", "home-server"],
   status: "published",
-  userId: 1
+  userId: 1,
 };
 
 async function run() {
   try {
     // Login first
-    console.log('Logging in...');
-    const loginResponse = await createRequest('POST', '/api/login', {
-      username: 'admin',
-      password: 'password123'
+    console.log("Logging in...");
+    const loginResponse = await createRequest("POST", "/api/login", {
+      username: "admin",
+      password: "password123",
     });
-    console.log('Login response:', loginResponse);
-    
+    console.log("Login response:", loginResponse);
+
     if (loginResponse.statusCode !== 200) {
-      console.error('Login failed');
+      console.error("Login failed");
       return;
     }
-    
+
     // Create category
-    console.log('Creating blog category...');
-    const categoryResponse = await createRequest('POST', '/api/admin/blog/categories', categoryData);
-    console.log('Category response:', categoryResponse);
-    
+    console.log("Creating blog category...");
+    const categoryResponse = await createRequest(
+      "POST",
+      "/api/admin/blog/categories",
+      categoryData,
+    );
+    console.log("Category response:", categoryResponse);
+
     // Create blog post
-    console.log('Creating blog post...');
-    const postResponse = await createRequest('POST', '/api/admin/blog/posts', blogPostData);
-    console.log('Post response:', postResponse);
-    
-    console.log('Done!');
+    console.log("Creating blog post...");
+    const postResponse = await createRequest(
+      "POST",
+      "/api/admin/blog/posts",
+      blogPostData,
+    );
+    console.log("Post response:", postResponse);
+
+    console.log("Done!");
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
   }
 }
 

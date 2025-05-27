@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Get current directory (ESM equivalent of __dirname)
 const __filename = fileURLToPath(import.meta.url);
@@ -8,17 +8,24 @@ const __dirname = path.dirname(__filename);
 
 // Fix CaseStudyManager initialData property in TypeScript
 function fixCaseStudyManagerTypes() {
-  console.log('Fixing CaseStudyManager TypeScript issues...');
-  
-  const caseStudyManagerPath = path.join(__dirname, 'client', 'src', 'components', 'admin', 'CaseStudyManager.tsx');
-  
+  console.log("Fixing CaseStudyManager TypeScript issues...");
+
+  const caseStudyManagerPath = path.join(
+    __dirname,
+    "client",
+    "src",
+    "components",
+    "admin",
+    "CaseStudyManager.tsx",
+  );
+
   if (!fs.existsSync(caseStudyManagerPath)) {
-    console.warn('CaseStudyManager.tsx not found. Skipping fix.');
+    console.warn("CaseStudyManager.tsx not found. Skipping fix.");
     return;
   }
-  
-  let content = fs.readFileSync(caseStudyManagerPath, 'utf8');
-  
+
+  let content = fs.readFileSync(caseStudyManagerPath, "utf8");
+
   // Fix initialData TypeScript issues
   // Replace the complex object mapping with a more TypeScript-friendly approach
   content = content.replace(
@@ -40,29 +47,30 @@ function fixCaseStudyManagerTypes() {
       relatedProjectIds: Array.isArray(selectedCaseStudy.relatedProjectIds) 
         ? selectedCaseStudy.relatedProjectIds 
         : []
-    }}`
+    }}`,
   );
-  
+
   fs.writeFileSync(caseStudyManagerPath, content);
-  console.log('Fixed CaseStudyManager.tsx TypeScript issues');
+  console.log("Fixed CaseStudyManager.tsx TypeScript issues");
 }
 
 // Fix storage.ts TypeScript issues
 function fixStorageTypeIssues() {
-  console.log('Fixing storage TypeScript issues...');
-  
-  const storageFilePath = path.join(__dirname, 'server', 'storage.ts');
-  
+  console.log("Fixing storage TypeScript issues...");
+
+  const storageFilePath = path.join(__dirname, "server", "storage.ts");
+
   if (!fs.existsSync(storageFilePath)) {
-    console.warn('storage.ts not found. Skipping fix.');
+    console.warn("storage.ts not found. Skipping fix.");
     return;
   }
-  
-  let content = fs.readFileSync(storageFilePath, 'utf8');
-  
+
+  let content = fs.readFileSync(storageFilePath, "utf8");
+
   // Fix the createCaseStudyDetail method to handle null values properly
-  const createCaseStudyDetailRegex = /async createCaseStudyDetail\(caseStudyDetail: InsertCaseStudyDetail\): Promise<CaseStudyDetail> \{[\s\S]*?const newCaseStudyDetail: CaseStudyDetail[\s\S]*?\};/;
-  
+  const createCaseStudyDetailRegex =
+    /async createCaseStudyDetail\(caseStudyDetail: InsertCaseStudyDetail\): Promise<CaseStudyDetail> \{[\s\S]*?const newCaseStudyDetail: CaseStudyDetail[\s\S]*?\};/;
+
   if (createCaseStudyDetailRegex.test(content)) {
     content = content.replace(
       createCaseStudyDetailRegex,
@@ -95,47 +103,51 @@ function fixStorageTypeIssues() {
     
     this.caseStudyDetails.set(id, newCaseStudyDetail);
     return newCaseStudyDetail;
-  };`
+  };`,
     );
   }
-  
+
   fs.writeFileSync(storageFilePath, content);
-  console.log('Fixed storage.ts TypeScript issues');
+  console.log("Fixed storage.ts TypeScript issues");
 }
 
 // Fix supabase-storage.ts TypeScript issues
 function fixSupabaseStorageTypeIssues() {
-  console.log('Fixing supabase-storage.ts TypeScript issues...');
-  
-  const supabaseStorageFilePath = path.join(__dirname, 'server', 'supabase-storage.ts');
-  
+  console.log("Fixing supabase-storage.ts TypeScript issues...");
+
+  const supabaseStorageFilePath = path.join(
+    __dirname,
+    "server",
+    "supabase-storage.ts",
+  );
+
   if (!fs.existsSync(supabaseStorageFilePath)) {
-    console.warn('supabase-storage.ts not found. Skipping fix.');
+    console.warn("supabase-storage.ts not found. Skipping fix.");
     return;
   }
-  
-  let content = fs.readFileSync(supabaseStorageFilePath, 'utf8');
-  
+
+  let content = fs.readFileSync(supabaseStorageFilePath, "utf8");
+
   // Fix the SQL query that's causing type issues
   // Find the line with `eq(sections.type, type)` and fix it
   content = content.replace(
     /eq\(sections\.type, type\)/g,
-    'eq(sections.type, type as any)'
+    "eq(sections.type, type as any)",
   );
-  
+
   fs.writeFileSync(supabaseStorageFilePath, content);
-  console.log('Fixed supabase-storage.ts TypeScript issues');
+  console.log("Fixed supabase-storage.ts TypeScript issues");
 }
 
 // Run all the fixes
 function main() {
-  console.log('\x1b[36m=== Fixing TypeScript issues ===\x1b[0m');
-  
+  console.log("\x1b[36m=== Fixing TypeScript issues ===\x1b[0m");
+
   fixCaseStudyManagerTypes();
   fixStorageTypeIssues();
   fixSupabaseStorageTypeIssues();
-  
-  console.log('\x1b[32mAll TypeScript issues fixed successfully!\x1b[0m');
+
+  console.log("\x1b[32mAll TypeScript issues fixed successfully!\x1b[0m");
 }
 
 main();

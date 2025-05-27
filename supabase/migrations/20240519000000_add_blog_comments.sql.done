@@ -1,0 +1,44 @@
+-- Create blog_comments table
+create table public.blog_comments (
+  id uuid default uuid_generate_v4() primary key,
+  post_id uuid not null references public.posts(id) on delete cascade,
+  parent_id uuid references public.blog_comments(id) on delete cascade,
+  author_name text not null,
+  author_email text not null,
+  content text not null,
+  is_approved boolean default false,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- Create indexes
+create index idx_blog_comments_post_id on public.blog_comments(post_id);
+create index idx_blog_comments_parent_id on public.blog_comments(parent_id);
+create index idx_blog_comments_created_at on public.blog_comments(created_at);
+
+-- Enable RLS
+alter table public.blog_comments enable row level security;
+
+-- Create policies
+create policy "Blog comments are viewable by everyone."
+  on public.blog_comments for select
+  using (true);
+
+create policy "Users can create comments."
+  on public.blog_comments for insert
+  with check (true);
+
+create policy "Admins can update all comments."
+  on public.blog_comments for update
+  using (auth.role() = 'service_role');
+
+create policy "Admins can delete all comments."
+  on public.blog_comments for delete
+  using (auth.role() = 'service_role');
+
+-- Create a function to handle updated_at
+drop trigger if exists handle_blog_comments_updated_at on public.blog_comments;
+
+create trigger handle_blog_comments_updated_at
+before update on public.blog_comments
+for each row execute procedure public.handle_updated_at();

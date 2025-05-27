@@ -1,7 +1,14 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
+import typography from "@tailwindcss/typography";
 
-export default {
-  darkMode: ["class"],
+// Extend the Config type to include corePlugins
+interface TailwindConfig extends Config {
+  corePlugins?: Record<string, boolean | Record<string, boolean>>;
+}
+
+const config: TailwindConfig = {
+  darkMode: "class",
   content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
@@ -94,20 +101,16 @@ export default {
     },
   },
   plugins: [
-    require("tailwindcss-animate"), 
-    require("@tailwindcss/typography"),
-    function({ addUtilities }) {
-      const newUtilities = {
-        '.scrollbar-hide': {
-          /* Firefox */
-          'scrollbar-width': 'none',
-          /* Safari and Chrome */
-          '&::-webkit-scrollbar': {
-            display: 'none'
-          }
-        }
-      }
-      addUtilities(newUtilities);
-    }
+    animate,
+    typography,
+    // Custom scrollbar hide utility will be added via CSS
   ],
-} satisfies Config;
+  // Core plugins configuration
+  corePlugins: {
+    // Enable all core plugins by default
+    // You can disable specific plugins here if needed
+    // Example: container: false
+  },
+};
+
+export default config;

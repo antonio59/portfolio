@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,9 +15,27 @@ import { Switch } from "@/components/ui/switch";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Plus, Star } from "lucide-react";
 import type { Certification } from "@shared/schema";
 
@@ -34,7 +58,8 @@ type CertificationFormValues = z.infer<typeof certificationSchema>;
 export default function CertificationsManager() {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedCertification, setSelectedCertification] = useState<Certification | null>(null);
+  const [selectedCertification, setSelectedCertification] =
+    useState<Certification | null>(null);
   const [filter, setFilter] = useState("all");
   const { toast } = useToast();
 
@@ -44,11 +69,12 @@ export default function CertificationsManager() {
   });
 
   // Filter certifications based on the active tab
-  const filteredCertifications = filter === "all" 
-    ? certifications 
-    : filter === "featured" 
-      ? certifications.filter((c: Certification) => c.featured) 
-      : certifications.filter((c: Certification) => !c.featured);
+  const filteredCertifications =
+    filter === "all"
+      ? certifications
+      : filter === "featured"
+        ? certifications.filter((c: Certification) => c.featured)
+        : certifications.filter((c: Certification) => !c.featured);
 
   const addForm = useForm<CertificationFormValues>({
     resolver: zodResolver(certificationSchema),
@@ -88,16 +114,23 @@ export default function CertificationsManager() {
       // Format skills if it's a comma-separated string
       const formattedData = {
         ...data,
-        skills: typeof data.skills === 'string' 
-          ? data.skills.split(',').map(s => s.trim()) 
-          : data.skills,
+        skills:
+          typeof data.skills === "string"
+            ? data.skills.split(",").map((s) => s.trim())
+            : data.skills,
       };
-      
-      const response = await apiRequest("POST", "/api/admin/certifications", formattedData);
+
+      const response = await apiRequest(
+        "POST",
+        "/api/admin/certifications",
+        formattedData,
+      );
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/certifications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["/api/admin/certifications"],
+      });
       setIsAdding(false);
       addForm.reset();
       toast({
@@ -108,30 +141,38 @@ export default function CertificationsManager() {
     onError: (error) => {
       toast({
         title: "Error adding certification",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
-    }
+    },
   });
 
   // Edit certification mutation
   const editMutation = useMutation({
     mutationFn: async (data: CertificationFormValues) => {
       if (!selectedCertification) return null;
-      
+
       // Format skills if it's a comma-separated string
       const formattedData = {
         ...data,
-        skills: typeof data.skills === 'string' 
-          ? data.skills.split(',').map(s => s.trim()) 
-          : data.skills,
+        skills:
+          typeof data.skills === "string"
+            ? data.skills.split(",").map((s) => s.trim())
+            : data.skills,
       };
-      
-      const response = await apiRequest("PUT", `/api/admin/certifications/${selectedCertification.id}`, formattedData);
+
+      const response = await apiRequest(
+        "PUT",
+        `/api/admin/certifications/${selectedCertification.id}`,
+        formattedData,
+      );
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/certifications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["/api/admin/certifications"],
+      });
       setIsEditing(false);
       setSelectedCertification(null);
       editForm.reset();
@@ -143,20 +184,26 @@ export default function CertificationsManager() {
     onError: (error) => {
       toast({
         title: "Error updating certification",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
-    }
+    },
   });
 
   // Delete certification mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/admin/certifications/${id}`);
+      const response = await apiRequest(
+        "DELETE",
+        `/api/admin/certifications/${id}`,
+      );
       return response.ok;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/certifications"] });
+      queryClient.invalidateQueries({
+        queryKey: ["/api/admin/certifications"],
+      });
       toast({
         title: "Certification deleted",
         description: "The certification has been deleted successfully.",
@@ -165,10 +212,11 @@ export default function CertificationsManager() {
     onError: (error) => {
       toast({
         title: "Error deleting certification",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
-    }
+    },
   });
 
   const onSubmitAdd = (data: CertificationFormValues) => {
@@ -181,14 +229,14 @@ export default function CertificationsManager() {
 
   const handleEditCertification = (certification: Certification) => {
     setSelectedCertification(certification);
-    
+
     // Format skills for the form if it's JSON or array
-    const skills = Array.isArray(certification.skills) 
-      ? certification.skills 
-      : typeof certification.skills === 'string' 
-        ? JSON.parse(certification.skills) 
+    const skills = Array.isArray(certification.skills)
+      ? certification.skills
+      : typeof certification.skills === "string"
+        ? JSON.parse(certification.skills)
         : [];
-    
+
     // Set form values
     editForm.reset({
       title: certification.title,
@@ -202,7 +250,7 @@ export default function CertificationsManager() {
       featured: certification.featured || false,
       imageUrl: certification.imageUrl || "",
     });
-    
+
     setIsEditing(true);
   };
 
@@ -219,28 +267,32 @@ export default function CertificationsManager() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Certifications Management</h2>
         <Button onClick={() => setIsAdding(!isAdding)}>
-          {isAdding ? "Cancel" : <>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Certification
-          </>}
+          {isAdding ? (
+            "Cancel"
+          ) : (
+            <>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Certification
+            </>
+          )}
         </Button>
       </div>
 
       <div className="flex mb-6 space-x-2">
-        <Button 
-          variant={filter === "all" ? "default" : "outline"} 
+        <Button
+          variant={filter === "all" ? "default" : "outline"}
           onClick={() => setFilter("all")}
         >
           All
         </Button>
-        <Button 
-          variant={filter === "featured" ? "default" : "outline"} 
+        <Button
+          variant={filter === "featured" ? "default" : "outline"}
           onClick={() => setFilter("featured")}
         >
           Featured
         </Button>
-        <Button 
-          variant={filter === "regular" ? "default" : "outline"} 
+        <Button
+          variant={filter === "regular" ? "default" : "outline"}
           onClick={() => setFilter("regular")}
         >
           Regular
@@ -251,11 +303,16 @@ export default function CertificationsManager() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Add New Certification</CardTitle>
-            <CardDescription>Create a new certification in your portfolio</CardDescription>
+            <CardDescription>
+              Create a new certification in your portfolio
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...addForm}>
-              <form onSubmit={addForm.handleSubmit(onSubmitAdd)} className="space-y-4">
+              <form
+                onSubmit={addForm.handleSubmit(onSubmitAdd)}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={addForm.control}
@@ -270,7 +327,7 @@ export default function CertificationsManager() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={addForm.control}
                     name="issuer"
@@ -285,7 +342,7 @@ export default function CertificationsManager() {
                     )}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={addForm.control}
@@ -303,7 +360,7 @@ export default function CertificationsManager() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={addForm.control}
                     name="expiryDate"
@@ -311,7 +368,11 @@ export default function CertificationsManager() {
                       <FormItem>
                         <FormLabel>Expiry Date (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="June 2026" {...field} value={field.value || ""} />
+                          <Input
+                            placeholder="June 2026"
+                            {...field}
+                            value={field.value || ""}
+                          />
                         </FormControl>
                         <FormDescription>
                           When the certification expires (if applicable)
@@ -321,7 +382,7 @@ export default function CertificationsManager() {
                     )}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={addForm.control}
@@ -330,13 +391,17 @@ export default function CertificationsManager() {
                       <FormItem>
                         <FormLabel>Credential ID (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="ABC-123456" {...field} value={field.value || ""} />
+                          <Input
+                            placeholder="ABC-123456"
+                            {...field}
+                            value={field.value || ""}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={addForm.control}
                     name="credentialURL"
@@ -344,7 +409,11 @@ export default function CertificationsManager() {
                       <FormItem>
                         <FormLabel>Credential URL (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://verify.example.com/abc123" {...field} value={field.value || ""} />
+                          <Input
+                            placeholder="https://verify.example.com/abc123"
+                            {...field}
+                            value={field.value || ""}
+                          />
                         </FormControl>
                         <FormDescription>
                           Link to verify the certification
@@ -354,7 +423,7 @@ export default function CertificationsManager() {
                     )}
                   />
                 </div>
-                
+
                 <FormField
                   control={addForm.control}
                   name="description"
@@ -362,17 +431,17 @@ export default function CertificationsManager() {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Describe the certification..." 
-                          className="min-h-[100px]" 
-                          {...field} 
+                        <Textarea
+                          placeholder="Describe the certification..."
+                          className="min-h-[100px]"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={addForm.control}
                   name="skills"
@@ -380,21 +449,30 @@ export default function CertificationsManager() {
                     <FormItem>
                       <FormLabel>Skills</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Project Management, Risk Assessment, etc. (comma separated)" 
-                          {...field} 
-                          value={Array.isArray(field.value) ? field.value.join(", ") : field.value || ""}
-                          onChange={e => field.onChange(e.target.value.split(",").map(s => s.trim()))}
+                        <Input
+                          placeholder="Project Management, Risk Assessment, etc. (comma separated)"
+                          {...field}
+                          value={
+                            Array.isArray(field.value)
+                              ? field.value.join(", ")
+                              : field.value || ""
+                          }
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value.split(",").map((s) => s.trim()),
+                            )
+                          }
                         />
                       </FormControl>
                       <FormDescription>
-                        Enter skills related to this certification separated by commas
+                        Enter skills related to this certification separated by
+                        commas
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={addForm.control}
                   name="imageUrl"
@@ -402,7 +480,11 @@ export default function CertificationsManager() {
                     <FormItem>
                       <FormLabel>Image URL (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} value={field.value || ""} />
+                        <Input
+                          placeholder="https://example.com/image.jpg"
+                          {...field}
+                          value={field.value || ""}
+                        />
                       </FormControl>
                       <FormDescription>
                         URL to the certification badge or logo
@@ -411,7 +493,7 @@ export default function CertificationsManager() {
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="flex items-center space-x-2">
                   <FormField
                     control={addForm.control}
@@ -427,14 +509,15 @@ export default function CertificationsManager() {
                         <div className="space-y-1 leading-none">
                           <FormLabel>Featured Certification</FormLabel>
                           <FormDescription>
-                            Featured certifications appear prominently in the certification section
+                            Featured certifications appear prominently in the
+                            certification section
                           </FormDescription>
                         </div>
                       </FormItem>
                     )}
                   />
                 </div>
-                
+
                 <div className="flex justify-end">
                   <Button type="submit" disabled={addMutation.isPending}>
                     {addMutation.isPending ? "Adding..." : "Add Certification"}
@@ -454,7 +537,10 @@ export default function CertificationsManager() {
           </CardHeader>
           <CardContent>
             <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onSubmitEdit)} className="space-y-4">
+              <form
+                onSubmit={editForm.handleSubmit(onSubmitEdit)}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={editForm.control}
@@ -469,7 +555,7 @@ export default function CertificationsManager() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={editForm.control}
                     name="issuer"
@@ -484,7 +570,7 @@ export default function CertificationsManager() {
                     )}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={editForm.control}
@@ -502,7 +588,7 @@ export default function CertificationsManager() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={editForm.control}
                     name="expiryDate"
@@ -510,7 +596,11 @@ export default function CertificationsManager() {
                       <FormItem>
                         <FormLabel>Expiry Date (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="June 2026" {...field} value={field.value || ""} />
+                          <Input
+                            placeholder="June 2026"
+                            {...field}
+                            value={field.value || ""}
+                          />
                         </FormControl>
                         <FormDescription>
                           When the certification expires (if applicable)
@@ -520,7 +610,7 @@ export default function CertificationsManager() {
                     )}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={editForm.control}
@@ -529,13 +619,17 @@ export default function CertificationsManager() {
                       <FormItem>
                         <FormLabel>Credential ID (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="ABC-123456" {...field} value={field.value || ""} />
+                          <Input
+                            placeholder="ABC-123456"
+                            {...field}
+                            value={field.value || ""}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={editForm.control}
                     name="credentialURL"
@@ -543,7 +637,11 @@ export default function CertificationsManager() {
                       <FormItem>
                         <FormLabel>Credential URL (Optional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="https://verify.example.com/abc123" {...field} value={field.value || ""} />
+                          <Input
+                            placeholder="https://verify.example.com/abc123"
+                            {...field}
+                            value={field.value || ""}
+                          />
                         </FormControl>
                         <FormDescription>
                           Link to verify the certification
@@ -553,7 +651,7 @@ export default function CertificationsManager() {
                     )}
                   />
                 </div>
-                
+
                 <FormField
                   control={editForm.control}
                   name="description"
@@ -561,17 +659,17 @@ export default function CertificationsManager() {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Describe the certification..." 
-                          className="min-h-[100px]" 
-                          {...field} 
+                        <Textarea
+                          placeholder="Describe the certification..."
+                          className="min-h-[100px]"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={editForm.control}
                   name="skills"
@@ -579,21 +677,30 @@ export default function CertificationsManager() {
                     <FormItem>
                       <FormLabel>Skills</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Project Management, Risk Assessment, etc. (comma separated)" 
-                          {...field} 
-                          value={Array.isArray(field.value) ? field.value.join(", ") : field.value || ""}
-                          onChange={e => field.onChange(e.target.value.split(",").map(s => s.trim()))}
+                        <Input
+                          placeholder="Project Management, Risk Assessment, etc. (comma separated)"
+                          {...field}
+                          value={
+                            Array.isArray(field.value)
+                              ? field.value.join(", ")
+                              : field.value || ""
+                          }
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value.split(",").map((s) => s.trim()),
+                            )
+                          }
                         />
                       </FormControl>
                       <FormDescription>
-                        Enter skills related to this certification separated by commas
+                        Enter skills related to this certification separated by
+                        commas
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={editForm.control}
                   name="imageUrl"
@@ -601,7 +708,11 @@ export default function CertificationsManager() {
                     <FormItem>
                       <FormLabel>Image URL (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://example.com/image.jpg" {...field} value={field.value || ""} />
+                        <Input
+                          placeholder="https://example.com/image.jpg"
+                          {...field}
+                          value={field.value || ""}
+                        />
                       </FormControl>
                       <FormDescription>
                         URL to the certification badge or logo
@@ -610,7 +721,7 @@ export default function CertificationsManager() {
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="flex items-center space-x-2">
                   <FormField
                     control={editForm.control}
@@ -626,23 +737,29 @@ export default function CertificationsManager() {
                         <div className="space-y-1 leading-none">
                           <FormLabel>Featured Certification</FormLabel>
                           <FormDescription>
-                            Featured certifications appear prominently in the certification section
+                            Featured certifications appear prominently in the
+                            certification section
                           </FormDescription>
                         </div>
                       </FormItem>
                     )}
                   />
                 </div>
-                
+
                 <div className="flex justify-between">
-                  <Button variant="outline" onClick={() => {
-                    setIsEditing(false);
-                    setSelectedCertification(null);
-                  }}>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setSelectedCertification(null);
+                    }}
+                  >
                     Cancel
                   </Button>
                   <Button type="submit" disabled={editMutation.isPending}>
-                    {editMutation.isPending ? "Updating..." : "Update Certification"}
+                    {editMutation.isPending
+                      ? "Updating..."
+                      : "Update Certification"}
                   </Button>
                 </div>
               </form>
@@ -662,33 +779,43 @@ export default function CertificationsManager() {
               <div className="flex flex-col md:flex-row">
                 {certification.imageUrl && (
                   <div className="w-full md:w-1/4 min-h-[150px] bg-gray-100">
-                    <img 
-                      src={certification.imageUrl} 
-                      alt={certification.title} 
+                    <img
+                      src={certification.imageUrl}
+                      alt={certification.title}
                       className="w-full h-full object-contain p-2"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://placehold.co/600x400?text=No+Image';
+                        (e.target as HTMLImageElement).src =
+                          "https://placehold.co/600x400?text=No+Image";
                       }}
                     />
                   </div>
                 )}
-                
+
                 <div className="flex-1 p-4">
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="flex items-center">
-                        <h3 className="text-lg font-semibold">{certification.title}</h3>
+                        <h3 className="text-lg font-semibold">
+                          {certification.title}
+                        </h3>
                         {certification.featured && (
                           <Star className="ml-2 h-4 w-4 text-amber-500" />
                         )}
                       </div>
                       <p className="text-sm text-gray-500 mb-2">
-                        {certification.issuer} • Issued: {certification.issueDate}
-                        {certification.expiryDate && <span> • Expires: {certification.expiryDate}</span>}
+                        {certification.issuer} • Issued:{" "}
+                        {certification.issueDate}
+                        {certification.expiryDate && (
+                          <span> • Expires: {certification.expiryDate}</span>
+                        )}
                       </p>
                     </div>
                     <div className="flex space-x-2">
-                      <Button variant="ghost" size="sm" onClick={() => handleEditCertification(certification)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditCertification(certification)}
+                      >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <AlertDialog>
@@ -701,12 +828,18 @@ export default function CertificationsManager() {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
-                              This will permanently delete this certification. This action cannot be undone.
+                              This will permanently delete this certification.
+                              This action cannot be undone.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction className="bg-red-500 hover:bg-red-600" onClick={() => handleDeleteCertification(certification)}>
+                            <AlertDialogAction
+                              className="bg-red-500 hover:bg-red-600"
+                              onClick={() =>
+                                handleDeleteCertification(certification)
+                              }
+                            >
                               Delete
                             </AlertDialogAction>
                           </AlertDialogFooter>
@@ -714,31 +847,36 @@ export default function CertificationsManager() {
                       </AlertDialog>
                     </div>
                   </div>
-                  
+
                   <p className="text-sm mt-2">{certification.description}</p>
-                  
+
                   {certification.credentialID && (
                     <p className="text-sm mt-2">
-                      <span className="font-semibold">Credential ID:</span> {certification.credentialID}
+                      <span className="font-semibold">Credential ID:</span>{" "}
+                      {certification.credentialID}
                     </p>
                   )}
-                  
-                  {Array.isArray(certification.skills) && certification.skills.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {certification.skills.map((skill, i) => (
-                        <span key={i} className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  
+
+                  {Array.isArray(certification.skills) &&
+                    certification.skills.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-1">
+                        {certification.skills.map((skill, i) => (
+                          <span
+                            key={i}
+                            className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
                   {certification.credentialURL && (
                     <div className="mt-3">
-                      <a 
-                        href={certification.credentialURL} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                      <a
+                        href={certification.credentialURL}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="text-blue-500 hover:underline text-sm"
                       >
                         Verify Credential

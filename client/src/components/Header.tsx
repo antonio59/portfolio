@@ -7,9 +7,12 @@ interface HeaderProps {
   toggleMobileMenu: () => void;
 }
 
-export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderProps) {
+export default function Header({
+  isMobileMenuOpen,
+  toggleMobileMenu,
+}: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
-  
+
   // Handle scroll event to change header style
   useEffect(() => {
     const handleScroll = () => {
@@ -20,14 +23,14 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
         setScrolled(false);
       }
     };
-    
+
     window.addEventListener("scroll", handleScroll);
-    
+
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
-  
+
   // Navigation links
   const navLinks = [
     { name: "Projects", href: "#projects" },
@@ -36,35 +39,30 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
     { name: "Certifications", href: "#certifications" },
     { name: "Contact", href: "#contact" },
   ];
-  
+
   // Additional links (using internal links for blog)
-  const additionalLinks = [
-    { name: "Blog", href: "/blog" }
-  ];
-  
+  const additionalLinks = [{ name: "Blog", href: "/blog" }];
+
   return (
-    <header 
+    <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled 
-          ? "py-3 bg-white/95 backdrop-blur-sm shadow-sm" 
+        scrolled
+          ? "py-3 bg-white/95 backdrop-blur-sm shadow-sm"
           : "py-5 bg-transparent"
       }`}
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
         {/* Logo */}
-        <a 
-          href="#home" 
-          className="text-2xl font-bold text-textColor"
-        >
+        <a href="#home" className="text-2xl font-bold text-textColor">
           {scrolled ? "JS." : "John Smith"}
         </a>
-        
+
         {/* Desktop Navigation */}
         <nav className="hidden md:block">
           <ul className="flex space-x-10">
             {navLinks.map((link, index) => (
               <li key={index}>
-                <a 
+                <a
                   href={link.href}
                   className="text-gray-600 hover:text-accentColor transition-colors duration-300"
                 >
@@ -74,7 +72,7 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
             ))}
             {additionalLinks.map((link, index) => (
               <li key={`additional-${index}`}>
-                <Link 
+                <Link
                   href={link.href}
                   className="text-gray-600 hover:text-accentColor transition-colors duration-300"
                 >
@@ -84,7 +82,7 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
             ))}
           </ul>
         </nav>
-        
+
         {/* Mobile Menu Button */}
         <button
           className="md:hidden text-gray-700 focus:outline-none z-20"
@@ -92,12 +90,18 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
           aria-label="Toggle menu"
         >
           <div className="relative w-6 h-6">
-            <div className={`absolute w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'rotate-45 top-3' : 'top-1'}`}></div>
-            <div className={`absolute w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'opacity-0' : 'opacity-100'} top-3`}></div>
-            <div className={`absolute w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${isMobileMenuOpen ? '-rotate-45 top-3' : 'top-5'}`}></div>
+            <div
+              className={`absolute w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${isMobileMenuOpen ? "rotate-45 top-3" : "top-1"}`}
+            ></div>
+            <div
+              className={`absolute w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${isMobileMenuOpen ? "opacity-0" : "opacity-100"} top-3`}
+            ></div>
+            <div
+              className={`absolute w-6 h-0.5 bg-current transform transition-all duration-300 ease-in-out ${isMobileMenuOpen ? "-rotate-45 top-3" : "top-5"}`}
+            ></div>
           </div>
         </button>
-        
+
         {/* Mobile Menu */}
         <AnimatePresence>
           {isMobileMenuOpen && (
@@ -112,13 +116,13 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
                 <nav>
                   <ul className="space-y-8">
                     {navLinks.map((link, index) => (
-                      <motion.li 
+                      <motion.li
                         key={index}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.1 }}
                       >
-                        <a 
+                        <a
                           href={link.href}
                           className="text-2xl font-medium text-gray-700 hover:text-accentColor transition-colors duration-300"
                           onClick={toggleMobileMenu}
@@ -128,13 +132,13 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
                       </motion.li>
                     ))}
                     {additionalLinks.map((link, index) => (
-                      <motion.li 
+                      <motion.li
                         key={`additional-mobile-${index}`}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: (navLinks.length + index) * 0.1 }}
                       >
-                        <Link 
+                        <Link
                           href={link.href}
                           className="text-2xl font-medium text-gray-700 hover:text-accentColor transition-colors duration-300"
                           onClick={toggleMobileMenu}
@@ -145,11 +149,11 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
                     ))}
                   </ul>
                 </nav>
-                
+
                 <div className="mt-auto pt-8 border-t border-gray-200">
                   <p className="text-gray-600 mb-4">Get in touch</p>
-                  <a 
-                    href="mailto:contact@example.com" 
+                  <a
+                    href="mailto:contact@example.com"
                     className="text-accentColor hover:text-highlightColor transition-colors duration-300"
                   >
                     contact@example.com
@@ -159,7 +163,7 @@ export default function Header({ isMobileMenuOpen, toggleMobileMenu }: HeaderPro
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         {/* Mobile Menu Overlay */}
         <AnimatePresence>
           {isMobileMenuOpen && (

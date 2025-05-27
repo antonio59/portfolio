@@ -1,10 +1,11 @@
-import { useState } from 'react';
-import { apiRequest } from '@/lib/queryClient';
-import { useMutation } from '@tanstack/react-query';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import { apiRequest } from "@/lib/queryClient";
+import { logger } from "@/lib/logger";
+import { useMutation } from "@tanstack/react-query";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "@/hooks/use-toast";
 
 import {
   Form,
@@ -13,16 +14,23 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff, Lock } from 'lucide-react';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Eye, EyeOff, Lock } from "lucide-react";
 
 // Login form schema
 const loginSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -34,50 +42,54 @@ interface LoginFormProps {
 export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
-  
+
   // Form setup
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: '',
-      password: '',
+      username: "",
+      password: "",
     },
   });
-  
+
   // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (data: LoginFormValues) => {
-      const response = await apiRequest('POST', '/api/login', data);
+      const response = await apiRequest("POST", "/api/login", data);
       return await response.json();
     },
     onSuccess: (data) => {
-      console.log("Login success:", data);
+      logger.info("Login success:", data);
       toast({
-        title: 'Login successful',
-        description: 'Welcome to the admin dashboard!',
+        title: "Login successful",
+        description: "Welcome to the admin dashboard!",
       });
       onLoginSuccess();
     },
-    onError: (error: any) => {
-      console.error("Login error:", error);
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
+      logger.error("Login error:", errorMessage);
       toast({
-        title: 'Login failed',
-        description: error.message || 'Invalid username or password',
-        variant: 'destructive',
+        title: "Login failed",
+        description: errorMessage,
+        variant: "destructive",
       });
     },
   });
-  
+
   // Handle form submission
   function onSubmit(data: LoginFormValues) {
     loginMutation.mutate(data);
   }
-  
+
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
       <Card className="w-[400px]">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Admin Login</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">
+            Admin Login
+          </CardTitle>
           <CardDescription className="text-center">
             Enter your credentials to access the dashboard
           </CardDescription>
@@ -102,7 +114,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="password"
@@ -139,7 +151,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
                   </FormItem>
                 )}
               />
-              
+
               <Button
                 type="submit"
                 className="w-full"

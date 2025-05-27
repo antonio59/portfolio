@@ -1,0 +1,283 @@
+// User interface for authentication
+export interface User {
+  id: number;
+  username: string;
+  password: string;
+  created_at: Date;
+}
+
+export interface InsertUser {
+  username: string;
+  password: string;
+}
+
+// Section type
+export type SectionType = 
+  | 'hero' 
+  | 'about' 
+  | 'professionalProject' 
+  | 'personalProject' 
+  | 'experience'
+  | 'contact'
+  | 'certification'
+  | 'featuredProject'
+  | 'blog';
+
+// Content sections interface
+export interface Section {
+  id: number;
+  type: SectionType;
+  title: string;
+  subtitle: string | null;
+  content: Record<string, unknown>;
+  updated_at: Date;
+}
+
+export interface InsertSection {
+  type: SectionType;
+  title: string;
+  subtitle?: string;
+  content: Record<string, unknown>;
+}
+
+// Project interfaces
+export interface Project {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  technologies: string[];
+  year?: string;
+  icon?: string;
+  githubLink?: string;
+  externalLink?: string;
+  challenges?: string[];
+  outcomes?: string[];
+  role?: string;
+  featured: boolean;
+  featuredOrder?: number;
+  imageUrl?: string;
+  updatedAt: Date;
+}
+
+export interface InsertProject {
+  title: string;
+  description: string;
+  category: string;
+  technologies: string[];
+  year?: string;
+  icon?: string;
+  githubLink?: string;
+  externalLink?: string;
+  challenges?: string[];
+  outcomes?: string[];
+  role?: string;
+  featured?: boolean;
+  featuredOrder?: number;
+  imageUrl?: string;
+}
+
+// Experience interfaces
+export interface Experience {
+  id: number;
+  company: string;
+  role: string;
+  period: string;
+  description: string[];
+  achievements: string[];
+  methodologies: string[];
+  order: number;
+  updatedAt: Date;
+}
+
+export interface InsertExperience {
+  company: string;
+  role: string;
+  period: string;
+  description: string[];
+  achievements: string[];
+  methodologies: string[];
+  order: number;
+}
+
+// Certification interfaces
+export interface Certification {
+  id: number;
+  title: string;
+  issuer: string;
+  issueDate: string;
+  expiryDate?: string;
+  credentialID?: string;
+  credentialURL?: string;
+  description?: string;
+  skills?: string[];
+  featured: boolean;
+  imageUrl?: string;
+  updatedAt: Date;
+}
+
+export interface InsertCertification {
+  title: string;
+  issuer: string;
+  issueDate: string;
+  expiryDate?: string;
+  credentialID?: string;
+  credentialURL?: string;
+  description?: string;
+  skills?: string[];
+  featured?: boolean;
+  imageUrl?: string;
+}
+
+// Blog category interfaces
+export interface BlogCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  createdAt: Date;
+}
+
+export interface InsertBlogCategory {
+  name: string;
+  slug: string;
+  description?: string;
+}
+
+// Blog post status type
+export type BlogPostStatus = 'draft' | 'published';
+
+// Blog post interfaces
+export interface BlogPost {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  categoryId?: number | null;
+  featuredImage?: string;
+  tags: string[];
+  publishDate: Date;
+  status: BlogPostStatus;
+  userId: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface InsertBlogPost {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  categoryId?: number | null;
+  featuredImage?: string;
+  tags?: string[];
+  status?: BlogPostStatus;
+  userId: number;
+  publishDate?: Date | string;
+}
+
+// Blog subscription interface
+export interface BlogSubscription {
+  id: number;
+  email: string;
+  name?: string;
+  isActive: boolean;
+  confirmed: boolean;
+  token?: string;
+  tokenExpires?: Date;
+  subscribedAt: Date;
+  confirmedAt?: Date;
+  unsubscribedAt?: Date;
+  updatedAt: Date;
+}
+
+export interface InsertBlogSubscription {
+  email: string;
+  name?: string;
+  isActive?: boolean;
+  confirmed?: boolean;
+  token?: string;
+  tokenExpires?: Date;
+}
+
+// Case Study Details interface
+export interface CaseStudyDetail {
+  id: number;
+  blogPostId: number;
+  client: string;
+  role?: string;
+  duration?: string;
+  technologies: string[];
+  problem: string;
+  solution: string;
+  results: string;
+  challenges?: string[];
+  learnings?: string[];
+  testimonial?: {
+    author: string;
+    role: string;
+    company: string;
+    content: string;
+  };
+  metrics?: Array<{
+    name: string;
+    value: string;
+    description?: string;
+  }>;
+  gallery?: Array<{
+    url: string;
+    alt: string;
+    caption?: string;
+  }>;
+  featured: boolean;
+  featuredOrder?: number;
+  relatedPosts?: number[];
+  externalLinks?: Array<{
+    title: string;
+    url: string;
+    description?: string;
+  }>;
+  seoKeywords?: string[];
+  seoDescription?: string;
+  updatedAt: Date;
+}
+
+export interface InsertCaseStudyDetail {
+  blogPostId: number;
+  client: string;
+  role?: string;
+  duration?: string;
+  technologies: string[];
+  problem: string;
+  solution: string;
+  results: string;
+  challenges?: string[];
+  learnings?: string[];
+  testimonial?: {
+    author: string;
+    role: string;
+    company: string;
+    content: string;
+  };
+  metrics?: Array<{
+    name: string;
+    value: string;
+    description?: string;
+  }>;
+  gallery?: Array<{
+    url: string;
+    alt: string;
+    caption?: string;
+  }>;
+  featured?: boolean;
+  featuredOrder?: number;
+  relatedPosts?: number[];
+  externalLinks?: Array<{
+    title: string;
+    url: string;
+    description?: string;
+  }>;
+  seoKeywords?: string[];
+  seoDescription?: string;
+}

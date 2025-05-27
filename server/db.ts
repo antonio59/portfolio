@@ -1,51 +1,65 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import * as schema from '../shared/schema';
+import postgres from "postgres";
+import { logger } from "./utils/logger";
 
 // Initialize the database connection
 let client: ReturnType<typeof postgres> | null = null;
-let db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 export async function initializeDatabase() {
   try {
     // Check if DATABASE_URL environment variable is set
     if (!process.env.DATABASE_URL) {
-      console.warn("DATABASE_URL not found. Using in-memory storage.");
+      logger.warn("DATABASE_URL not found. Using in-memory storage.");
       return null;
     }
-    
-    console.log("Initializing PostgreSQL connection...");
-    
-    // Create the connection
-    client = postgres(process.env.DATABASE_URL, { 
+
+    logger.info("Initializing PostgreSQL connection...");
+
+    // Create the connection with proper typing for postgres options
+    const connectionOptions = {
       max: 10,
-      prepare: false
-    });
-    
-    // Initialize Drizzle ORM
-    db = drizzle(client, { schema });
-    
-    console.log("PostgreSQL connection established successfully.");
-    
-    return db;
+      prepare: false,
+      ...(process.env.NODE_ENV === "production"
+        ? { ssl: { rejectUnauthorized: false } }
+        : {}),
+    } as const;
+
+    client = postgres(process.env.DATABASE_URL, connectionOptions);
+
+    // Test the connection
+    await client`SELECT 1`;
+
+    logger.info("PostgreSQL connection established successfully");
+    return client;
   } catch (error) {
-    console.error("Failed to initialize database connection:", error);
+    logger.error(
+      "Failed to initialize database connection",
+      error instanceof Error ? error : String(error),
+    );
     return null;
   }
 }
 
 export function getDb() {
-  if (!db) {
-    throw new Error("Database has not been initialized. Call initializeDatabase() first.");
+  if (!client) {
+    throw new Error(
+      "Database has not been initialized. Call initializeDatabase() first.",
+    );
   }
-  return db;
+  return client;
 }
 
 export async function closeDatabase() {
   if (client) {
-    await client.end();
-    client = null;
-    db = null;
-    console.log("Database connection closed.");
+    try {
+      await client.end();
+      logger.info("Database connection closed");
+    } catch (error) {
+      logger.error(
+        "Error closing database connection",
+        error instanceof Error ? error : String(error),
+      );
+    } finally {
+      client = null;
+    }
   }
 }

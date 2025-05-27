@@ -1,15 +1,22 @@
-import fs from 'fs';
-import path from 'path';
-import { execSync } from 'child_process';
-import { fileURLToPath } from 'url';
+const fs = require("fs");
+const path = require("path");
+const { fileURLToPath } = require("url");
+
+// Logger object with allowed console methods
+const logger = {
+  info: (...args) => console.info(...args),
+  warn: (...args) => console.warn(...args),
+  error: (...args) => console.error(...args),
+  debug: (...args) => console.debug(...args),
+};
 
 // Get current directory (ESM equivalent of __dirname)
 const __filename = fileURLToPath(import.meta.url);
 const rootDir = path.dirname(__filename);
 
 function createNetlifyConfig() {
-  console.log('Creating Netlify configuration...');
-  
+  logger.info("Creating Netlify configuration...");
+
   const netlifyConfig = `[build]
   command = "npm run build"
   publish = "client/dist"
@@ -28,49 +35,54 @@ function createNetlifyConfig() {
   status = 200
 `;
 
-  fs.writeFileSync(path.join(rootDir, 'netlify.toml'), netlifyConfig);
-  console.log('Created netlify.toml');
+  const configPath = path.join(rootDir, "netlify.toml");
+  fs.writeFileSync(configPath, netlifyConfig);
+  logger.info(`Created ${path.relative(rootDir, configPath)}`);
 }
 
 function createNetlifyEnvFile() {
-  console.log('Creating Netlify environment file...');
-  
+  logger.info("Creating Netlify environment file...");
+
   // Check if DATABASE_URL is set
   if (!process.env.DATABASE_URL) {
-    console.warn('\x1b[33mWARNING: DATABASE_URL environment variable is not set.\x1b[0m');
-    console.log('You will need to set it in Netlify environment variables.');
+    logger.warn("WARNING: DATABASE_URL environment variable is not set.");
+    logger.info("You will need to set it in Netlify environment variables.");
   }
-  
+
   const envContent = `DATABASE_URL=${process.env.DATABASE_URL || "paste_your_supabase_url_here"}
 
 # Add any other environment variables here
 `;
 
-  fs.writeFileSync(path.join(rootDir, '.env.production'), envContent);
-  console.log('Created .env.production (template for Netlify environment variables)');
+  const envPath = path.join(rootDir, ".env.production");
+  fs.writeFileSync(envPath, envContent);
+  logger.info(
+    `Created ${path.relative(rootDir, envPath)} (template for Netlify environment variables)`,
+  );
 }
 
 function updateBuildScripts() {
-  console.log('Updating build scripts...');
-  
-  const packageJsonPath = path.join(rootDir, 'package.json');
-  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-  
+  logger.info("Updating build scripts...");
+
+  const packageJsonPath = path.join(rootDir, "package.json");
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+
   // Add or update necessary scripts
   packageJson.scripts = {
     ...packageJson.scripts,
-    "build": "vite build",
+    build: "vite build",
     "build:netlify": "vite build && npm run build:functions",
-    "build:functions": "mkdir -p api && cp -r server/* api/ && cp shared/* api/"
+    "build:functions":
+      "mkdir -p api && cp -r server/* api/ && cp shared/* api/",
   };
-  
+
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-  console.log('Updated package.json build scripts');
+  logger.info("Updated package.json build scripts");
 }
 
 function createNetlifyReadme() {
-  console.log('Creating Netlify deployment guide...');
-  
+  logger.info("Creating Netlify deployment guide...");
+
   const readmeContent = `# Netlify Deployment Guide
 
 ## Prerequisites
@@ -122,31 +134,34 @@ After deployment, use the Netlify dashboard to:
 - Manage environment variables
 `;
 
-  fs.writeFileSync(path.join(rootDir, 'NETLIFY_GUIDE.md'), readmeContent);
-  console.log('Created NETLIFY_GUIDE.md');
+  const guidePath = path.join(rootDir, "NETLIFY_GUIDE.md");
+  fs.writeFileSync(guidePath, readmeContent);
+  logger.info(`Created ${path.relative(rootDir, guidePath)}`);
 }
 
 function main() {
-  console.log('\x1b[36m=== Preparing project for Netlify deployment ===\x1b[0m');
-  
+  logger.info("=== Preparing project for Netlify deployment ===");
+
   // Create Netlify config file
   createNetlifyConfig();
-  
+
   // Create environment file template
   createNetlifyEnvFile();
-  
+
   // Update package.json scripts
   updateBuildScripts();
-  
+
   // Create Netlify deployment guide
   createNetlifyReadme();
-  
-  console.log('\n\x1b[32mSetup completed successfully!\x1b[0m');
-  console.log('\x1b[33mNext steps:\x1b[0m');
-  console.log('1. Ensure DATABASE_URL is set in your environment');
-  console.log('2. Run \x1b[36mnode migrate-to-supabase.js\x1b[0m to migrate data to Supabase');
-  console.log('3. Follow the instructions in NETLIFY_GUIDE.md for deployment');
-  console.log('\n\x1b[36mHappy deploying! 🚀\x1b[0m');
+
+  logger.info("\n✅ Setup completed successfully!");
+  logger.info("\nNext steps:");
+  logger.info("1. Ensure DATABASE_URL is set in your environment");
+  logger.info(
+    '2. Run "node migrate-to-supabase.js" to migrate data to Supabase',
+  );
+  logger.info("3. Follow the instructions in NETLIFY_GUIDE.md for deployment");
+  logger.info("\nHappy deploying! 🚀");
 }
 
 // Run the main function

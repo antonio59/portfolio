@@ -1,8 +1,8 @@
 // Script to add blog posts to the database
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { storage } from './server/storage.ts';
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import { storage } from "./server/storage.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,7 +13,8 @@ async function createBlogPost() {
     const post = await storage.createBlogPost({
       title: "Building a Self-Hosted Home Automation System with Node.js",
       slug: "self-hosted-home-automation",
-      excerpt: "A complete guide to creating your own smart home system without relying on third-party services.",
+      excerpt:
+        "A complete guide to creating your own smart home system without relying on third-party services.",
       content: `<p>When I first started exploring home automation, I was drawn to the convenience of smart home products but concerned about privacy, reliability, and vendor lock-in. After trying several commercial solutions, I decided to build my own system that would run entirely on my local network.</p>
       
       <h2>Why Self-Host Your Home Automation?</h2>
@@ -41,20 +42,22 @@ async function createBlogPost() {
         <li>A React-based dashboard for monitoring and control</li>
       </ul>`,
       categoryId: 1,
-      featuredImage: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+      featuredImage:
+        "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
       tags: ["IoT", "Home Automation", "Node.js", "Self-Hosted"],
       publishDate: new Date("2025-05-01"),
       status: "published",
-      userId: 1
+      userId: 1,
     });
-    
-    console.log('Blog post created:', post);
-    
+
+    console.log("Blog post created:", post);
+
     // Create another blog post
     const post2 = await storage.createBlogPost({
       title: "How I Built a Portfolio Site with React and TypeScript",
       slug: "portfolio-react-typescript",
-      excerpt: "A deep dive into the architecture and design decisions behind my personal portfolio website.",
+      excerpt:
+        "A deep dive into the architecture and design decisions behind my personal portfolio website.",
       content: `<p>After years of having a basic portfolio website, I decided it was time for a complete overhaul. As a developer who works with React daily, I wanted to create something that would showcase both my design sensibilities and technical capabilities.</p>
       
       <h2>Design Philosophy</h2>
@@ -81,19 +84,21 @@ async function createBlogPost() {
       
       <p>TypeScript was particularly valuable as it helped me catch errors early and made refactoring much safer.</p>`,
       categoryId: 2,
-      featuredImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80",
+      featuredImage:
+        "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80",
       tags: ["React", "TypeScript", "Portfolio", "Web Development"],
       publishDate: new Date("2025-04-15"),
       status: "published",
-      userId: 1
+      userId: 1,
     });
-    
-    console.log('Blog post 2 created:', post2);
+
+    console.log("Blog post 2 created:", post2);
 
     const post3 = await storage.createBlogPost({
       title: "Migrating from AWS to a Self-Hosted Solution: A Case Study",
       slug: "aws-to-self-hosted",
-      excerpt: "How I reduced costs and increased control by moving my projects from AWS to a self-hosted environment.",
+      excerpt:
+        "How I reduced costs and increased control by moving my projects from AWS to a self-hosted environment.",
       content: `<p>After several years of running my projects on AWS, I started to notice my monthly bills creeping up. While AWS provides excellent services, for my personal projects the costs were becoming difficult to justify. This led me to explore self-hosting alternatives.</p>
       
       <h2>The AWS Setup</h2>
@@ -125,17 +130,17 @@ async function createBlogPost() {
       
       <p>This reduced my monthly infrastructure costs to approximately $45 total.</p>`,
       categoryId: 3,
-      featuredImage: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1472&q=80",
+      featuredImage:
+        "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1472&q=80",
       tags: ["AWS", "Self-Hosted", "DevOps", "Cost Optimization"],
       publishDate: new Date("2025-04-01"),
       status: "published",
-      userId: 1
+      userId: 1,
     });
-    
-    console.log('Blog post 3 created:', post3);
-    
+
+    console.log("Blog post 3 created:", post3);
   } catch (error) {
-    console.error('Error creating blog posts:', error);
+    console.error("Error creating blog posts:", error);
   }
 }
 

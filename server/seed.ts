@@ -1,29 +1,30 @@
 import { storage } from "./storage";
-import { 
-  InsertSection, 
-  InsertProject, 
+import {
+  InsertSection,
+  InsertProject,
   InsertExperience,
   InsertCertification,
   InsertBlogCategory,
   InsertBlogPost,
-  sectionTypeEnum
 } from "@shared/schema";
+import { logger } from "./utils/logger";
 
 // Sample data for seeding the database
 export async function seedDatabase() {
-  console.log("Seeding database with sample data...");
-  
+  logger.info("Seeding database with sample data...");
+
   try {
     // Create a user if none exists
     const adminUser = await storage.getUserByUsername("admin");
     if (!adminUser) {
       await storage.createUser({
         username: "admin",
-        password: "$2b$10$A8BmrHuaXlpxuv1YuPEJ6.gJsZHqkfYQr3UDH1.D.qt3kNyc1TaLW" // password123
+        password:
+          "$2b$10$A8BmrHuaXlpxuv1YuPEJ6.gJsZHqkfYQr3UDH1.D.qt3kNyc1TaLW", // password123
       });
-      console.log("Created admin user");
+      logger.info("Created admin user");
     }
-    
+
     // Seed sections
     const existingSections = await storage.getAllSections();
     if (existingSections.length === 0) {
@@ -33,11 +34,12 @@ export async function seedDatabase() {
           title: "Antonio Smith",
           subtitle: "Project Manager & App Developer",
           content: {
-            description: "Experienced project manager with a passion for building innovative applications and self-hosted solutions.",
+            description:
+              "Experienced project manager with a passion for building innovative applications and self-hosted solutions.",
             ctaText: "View My Work",
             ctaLink: "#projects",
-            backgroundImage: "/images/hero-bg.jpg"
-          }
+            backgroundImage: "/images/hero-bg.jpg",
+          },
         },
         {
           type: "about",
@@ -45,9 +47,16 @@ export async function seedDatabase() {
           subtitle: "My Background & Expertise",
           content: {
             bio: "I'm a project manager with 8+ years of experience in technology and product development. I specialize in leading cross-functional teams to deliver complex projects on time and within budget. In my free time, I develop applications and explore self-hosted alternatives to popular SaaS products.",
-            skills: ["Project Management", "Agile Methodologies", "Web Development", "Mobile App Development", "Self-Hosted Solutions", "DevOps"],
-            image: "/images/profile.jpg"
-          }
+            skills: [
+              "Project Management",
+              "Agile Methodologies",
+              "Web Development",
+              "Mobile App Development",
+              "Self-Hosted Solutions",
+              "DevOps",
+            ],
+            image: "/images/profile.jpg",
+          },
         },
         {
           type: "contact",
@@ -58,75 +67,81 @@ export async function seedDatabase() {
             linkedin: "https://linkedin.com/in/antoniosmith",
             github: "https://github.com/antoniosmith",
             twitter: "https://twitter.com/antoniosmith",
-            location: "San Francisco, CA"
-          }
-        }
+            location: "San Francisco, CA",
+          },
+        },
       ];
-      
+
       for (const section of sectionSamples) {
         await storage.createSection(section);
       }
-      
-      console.log("Seeded sections data");
+
+      logger.info("Seeded sections data");
     }
-    
+
     // Seed projects
     const existingProjects = await storage.getAllProjects();
     if (existingProjects.length === 0) {
       const projectSamples: InsertProject[] = [
         {
           title: "Enterprise Resource Planning System",
-          description: "Led the implementation of an ERP system for a manufacturing company with 500+ employees. Coordinated cross-functional teams and ensured successful integration with existing systems.",
+          description:
+            "Led the implementation of an ERP system for a manufacturing company with 500+ employees. Coordinated cross-functional teams and ensured successful integration with existing systems.",
           technologies: [
             { name: "SAP" },
             { name: "SQL Server" },
-            { name: "Power BI" }
+            { name: "Power BI" },
           ],
-          imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
+          imageUrl:
+            "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
           category: "professional",
           featured: true,
           year: "2022",
-          externalLink: "#"
+          externalLink: "#",
         },
         {
           title: "Healthcare Mobile Application",
-          description: "Managed the development of a patient-centric mobile application for a healthcare provider. The app improved patient engagement and streamlined appointment scheduling.",
+          description:
+            "Managed the development of a patient-centric mobile application for a healthcare provider. The app improved patient engagement and streamlined appointment scheduling.",
           technologies: [
             { name: "React Native" },
             { name: "Node.js" },
-            { name: "MongoDB" }
+            { name: "MongoDB" },
           ],
-          imageUrl: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
+          imageUrl:
+            "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
           category: "professional",
           featured: true,
           year: "2021",
-          externalLink: "#"
+          externalLink: "#",
         },
         {
           title: "Home Media Server",
-          description: "Designed and implemented a personal media server using Jellyfin, running on a custom-built NAS system for storing and streaming media content throughout my home.",
+          description:
+            "Designed and implemented a personal media server using Jellyfin, running on a custom-built NAS system for storing and streaming media content throughout my home.",
           technologies: [
             { name: "Docker" },
             { name: "Jellyfin" },
             { name: "Linux" },
-            { name: "nginx" }
+            { name: "nginx" },
           ],
-          imageUrl: "https://images.unsplash.com/photo-1593152167544-085d3b9c4938?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2374&q=80",
+          imageUrl:
+            "https://images.unsplash.com/photo-1593152167544-085d3b9c4938?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2374&q=80",
           category: "personal",
           featured: false,
           year: "2022",
           externalLink: "#",
-          githubLink: "https://github.com/example/media-server"
-        }
+          githubLink: "https://github.com/example/media-server",
+        },
       ];
-      
+
       for (const project of projectSamples) {
         await storage.createProject(project);
       }
-      
-      console.log("Seeded projects data");
+
+      logger.info("Seeded projects data");
     }
-    
+
     // Seed experiences
     const existingExperiences = await storage.getAllExperiences();
     if (existingExperiences.length === 0) {
@@ -135,39 +150,41 @@ export async function seedDatabase() {
           company: "Tech Innovations Inc.",
           role: "Senior Project Manager",
           period: "Jun 2020 - Present",
-          description: "Leading cross-functional teams to deliver enterprise software solutions.",
+          description:
+            "Leading cross-functional teams to deliver enterprise software solutions.",
           achievements: [
             "Manage project lifecycle from initiation to deployment",
             "Coordinate with stakeholders to gather and clarify requirements",
             "Lead Agile ceremonies and ensure sprint goals are met",
-            "Mitigate risks and resolve issues that impact project timelines"
+            "Mitigate risks and resolve issues that impact project timelines",
           ],
           methodologies: ["Agile", "Scrum", "Kanban", "JIRA"],
-          order: 1
+          order: 1,
         },
         {
           company: "Global Solutions Ltd.",
           role: "Project Manager",
           period: "Mar 2018 - May 2020",
-          description: "Managed digital transformation projects for clients in finance and healthcare.",
+          description:
+            "Managed digital transformation projects for clients in finance and healthcare.",
           achievements: [
             "Oversaw implementation of CRM systems for enterprise clients",
             "Coordinated development teams across multiple time zones",
             "Developed project plans and tracked milestones using JIRA",
-            "Prepared and presented status reports to executive stakeholders"
+            "Prepared and presented status reports to executive stakeholders",
           ],
           methodologies: ["Waterfall", "Agile", "MS Project", "Confluence"],
-          order: 2
-        }
+          order: 2,
+        },
       ];
-      
+
       for (const experience of experienceSamples) {
         await storage.createExperience(experience);
       }
-      
-      console.log("Seeded experiences data");
+
+      logger.info("Seeded experiences data");
     }
-    
+
     // Seed certifications
     const existingCertifications = await storage.getAllCertifications();
     if (existingCertifications.length === 0) {
@@ -179,10 +196,17 @@ export async function seedDatabase() {
           expiryDate: "2025-03-15",
           credentialID: "PMP-123456",
           credentialURL: "https://www.pmi.org/certifications/verify",
-          description: "Globally recognized project management certification demonstrating knowledge of project management processes and methodologies.",
-          skills: ["Project Management", "Risk Management", "Stakeholder Engagement", "Leadership"],
+          description:
+            "Globally recognized project management certification demonstrating knowledge of project management processes and methodologies.",
+          skills: [
+            "Project Management",
+            "Risk Management",
+            "Stakeholder Engagement",
+            "Leadership",
+          ],
           featured: true,
-          imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/PMI_logo.svg/1200px-PMI_logo.svg.png"
+          imageUrl:
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/PMI_logo.svg/1200px-PMI_logo.svg.png",
         },
         {
           title: "Certified ScrumMaster (CSM)",
@@ -190,21 +214,24 @@ export async function seedDatabase() {
           issueDate: "2018-06-10",
           expiryDate: "2024-06-10",
           credentialID: "CSM-789012",
-          credentialURL: "https://www.scrumalliance.org/community/profile/certification-validation",
-          description: "Certification validating expertise in Scrum methodology for Agile project management.",
+          credentialURL:
+            "https://www.scrumalliance.org/community/profile/certification-validation",
+          description:
+            "Certification validating expertise in Scrum methodology for Agile project management.",
           skills: ["Agile", "Scrum", "Sprint Planning", "Retrospectives"],
           featured: true,
-          imageUrl: "https://www.scrumalliance.org/ScrumRedesignDEVSite/media/ScrumAllianceMedia/Member%20Logos/SA-CSM-Logo.png"
-        }
+          imageUrl:
+            "https://www.scrumalliance.org/ScrumRedesignDEVSite/media/ScrumAllianceMedia/Member%20Logos/SA-CSM-Logo.png",
+        },
       ];
-      
+
       for (const certification of certificationSamples) {
         await storage.createCertification(certification);
       }
-      
-      console.log("Seeded certifications data");
+
+      logger.info("Seeded certifications data");
     }
-    
+
     // Seed blog categories
     const existingCategories = await storage.getAllBlogCategories();
     if (existingCategories.length === 0) {
@@ -212,46 +239,49 @@ export async function seedDatabase() {
         {
           name: "Self-Hosted Solutions",
           slug: "self-hosted",
-          description: "Projects and guides for hosting your own applications"
+          description: "Projects and guides for hosting your own applications",
         },
         {
           name: "Web Development",
           slug: "web-dev",
-          description: "All about building great websites and web applications"
+          description: "All about building great websites and web applications",
         },
         {
           name: "DevOps",
           slug: "devops",
-          description: "Streamlining development and operations"
+          description: "Streamlining development and operations",
         },
         {
           name: "Project Management",
           slug: "project-management",
-          description: "Tips and insights on managing projects effectively"
-        }
+          description: "Tips and insights on managing projects effectively",
+        },
       ];
-      
+
       for (const category of categorySamples) {
         await storage.createBlogCategory(category);
       }
-      
-      console.log("Seeded blog categories data");
+
+      logger.info("Seeded blog categories data");
     }
-    
+
     // Seed blog posts
     const existingPosts = await storage.getAllBlogPosts();
     if (existingPosts.length === 0) {
       // Get the category IDs
-      const selfHostedCategory = await storage.getBlogCategoryBySlug("self-hosted");
+      const selfHostedCategory =
+        await storage.getBlogCategoryBySlug("self-hosted");
       const webDevCategory = await storage.getBlogCategoryBySlug("web-dev");
       const devOpsCategory = await storage.getBlogCategoryBySlug("devops");
-      const pmCategory = await storage.getBlogCategoryBySlug("project-management");
-      
+      const pmCategory =
+        await storage.getBlogCategoryBySlug("project-management");
+
       const blogPostSamples: InsertBlogPost[] = [
         {
           title: "Building a Self-Hosted Home Automation System with Node.js",
           slug: "self-hosted-home-automation",
-          excerpt: "A complete guide to creating your own smart home system without relying on third-party services.",
+          excerpt:
+            "A complete guide to creating your own smart home system without relying on third-party services.",
           content: `<p>When I first started exploring home automation, I was drawn to the convenience of smart home products but concerned about privacy, reliability, and vendor lock-in. After trying several commercial solutions, I decided to build my own system that would run entirely on my local network.</p>
           
           <h2>Why Self-Host Your Home Automation?</h2>
@@ -291,16 +321,18 @@ export async function seedDatabase() {
           
           <p>Once installed, Home Assistant provides a solid foundation with support for thousands of integrations. I added Z-Wave and Zigbee controllers to communicate with various smart devices around my home.</p>`,
           categoryId: selfHostedCategory?.id ?? null,
-          featuredImage: "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
+          featuredImage:
+            "https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80",
           tags: ["IoT", "Home Automation", "Node.js", "Self-Hosted"],
           publishDate: new Date(),
           status: "published",
-          userId: 1
+          userId: 1,
         },
         {
           title: "How I Built a Portfolio Site with React and TypeScript",
           slug: "portfolio-react-typescript",
-          excerpt: "A deep dive into the architecture and design decisions behind my personal portfolio website.",
+          excerpt:
+            "A deep dive into the architecture and design decisions behind my personal portfolio website.",
           content: `<p>After years of having a basic portfolio website, I decided it was time for a complete overhaul. As a developer who works with React daily, I wanted to create something that would showcase both my design sensibilities and technical capabilities.</p>
           
           <h2>Design Philosophy</h2>
@@ -352,16 +384,18 @@ export async function seedDatabase() {
           
           <p>The result is a Lighthouse score of 98+ across all categories.</p>`,
           categoryId: webDevCategory?.id ?? null,
-          featuredImage: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80",
+          featuredImage:
+            "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80",
           tags: ["React", "TypeScript", "Portfolio", "Web Development"],
           publishDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
           status: "published",
-          userId: 1
+          userId: 1,
         },
         {
           title: "Setting Up a CI/CD Pipeline with GitHub Actions",
           slug: "cicd-github-actions",
-          excerpt: "A step-by-step guide to automating your deployment process using GitHub Actions.",
+          excerpt:
+            "A step-by-step guide to automating your deployment process using GitHub Actions.",
           content: `<p>Continuous Integration and Continuous Deployment (CI/CD) has become an essential practice in modern software development. It automates the process of testing, building, and deploying applications, reducing manual errors and saving valuable time.</p>
           
           <h2>Why GitHub Actions?</h2>
@@ -432,16 +466,18 @@ jobs:
           
           <p>These secrets can then be accessed in your workflow files using <code>$SECRET_NAME</code> syntax.</p>`,
           categoryId: devOpsCategory?.id ?? null,
-          featuredImage: "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1488&q=80",
+          featuredImage:
+            "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1488&q=80",
           tags: ["DevOps", "CI/CD", "GitHub", "Automation"],
           publishDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000), // 14 days ago
           status: "published",
-          userId: 1
+          userId: 1,
         },
         {
           title: "5 Critical Project Management Metrics You Should Be Tracking",
           slug: "critical-project-management-metrics",
-          excerpt: "Discover the key metrics that can help you better understand project health and team performance.",
+          excerpt:
+            "Discover the key metrics that can help you better understand project health and team performance.",
           content: `<p>In the world of project management, what gets measured gets managed. Tracking the right metrics can provide valuable insights into your project's health, team performance, and potential risks. Here are five critical metrics every project manager should monitor.</p>
           
           <h2>1. Sprint Burndown</h2>
@@ -505,25 +541,26 @@ jobs:
           
           <p>Can help identify issues before they impact productivity or lead to turnover. Happy teams are productive teams!</p>`,
           categoryId: pmCategory?.id ?? null,
-          featuredImage: "https://images.unsplash.com/photo-1572177812156-58036aae439c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
+          featuredImage:
+            "https://images.unsplash.com/photo-1572177812156-58036aae439c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2070&q=80",
           tags: ["Project Management", "Metrics", "Agile", "Team Performance"],
           publishDate: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000), // 21 days ago
           status: "published",
-          userId: 1
-        }
+          userId: 1,
+        },
       ];
-      
+
       for (const post of blogPostSamples) {
         await storage.createBlogPost(post);
       }
-      
-      console.log("Seeded blog posts data");
+
+      logger.info("Seeded blog posts data");
     }
-    
-    console.log("Database seeding completed successfully!");
+
+    logger.info("Database seeding completed successfully!");
     return { success: true };
   } catch (error) {
-    console.error("Error seeding database:", error);
-    return { success: false, error };
+    logger.error("Error seeding database:", error);
+    throw error;
   }
 }

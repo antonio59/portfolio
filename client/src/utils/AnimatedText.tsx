@@ -16,8 +16,8 @@ const containerVariants = {
 
 // Animation variants for each word
 const wordVariants = {
-  hidden: { 
-    opacity: 0, 
+  hidden: {
+    opacity: 0,
     y: 20,
   },
   visible: {
@@ -31,7 +31,10 @@ const wordVariants = {
   },
 };
 
-export default function AnimatedText({ words, className = "" }: AnimatedTextProps) {
+export default function AnimatedText({
+  words,
+  className = "",
+}: AnimatedTextProps) {
   return (
     <motion.div
       className={`overflow-hidden inline-block ${className}`}

@@ -1,0 +1,31 @@
+# For detailed descriptions, refer to the configuration reference:
+# https://supabase.com/docs/reference/cli/supabase-config
+
+project_id = "oygtyuqlubxfiuteznij"
+
+[api]
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+
+[studio]
+port = 54323
+api_url = "http://localhost:54321"
+
+[inbucket]
+port = 54324
+
+[storage]
+file_size_limit = 50
+
+[auth]
+enable_signup = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = []
+jwt_expiry = 3600
+
+[functions]
+[functions.verify_jwt]
+enabled = true

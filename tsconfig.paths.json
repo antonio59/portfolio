@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./client/src/*"],
+      "@/lib/*": ["./client/lib/*"],
+      "@/hooks/*": ["./client/hooks/*"],
+      "@/contexts/*": ["./client/contexts/*"],
+      "@/components/*": ["./client/components/*"],
+      "@shared/*": ["./shared/*"]
+    }
+  }
+}

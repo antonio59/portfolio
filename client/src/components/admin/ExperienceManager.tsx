@@ -1,16 +1,40 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, Plus, MoveUp, MoveDown } from "lucide-react";
 import type { Experience } from "@shared/schema";
 
@@ -19,7 +43,9 @@ const experienceSchema = z.object({
   company: z.string().min(2, "Company name must be at least 2 characters"),
   role: z.string().min(2, "Role must be at least 2 characters"),
   period: z.string(),
-  description: z.array(z.string()).min(1, "At least one description point is required"),
+  description: z
+    .array(z.string())
+    .min(1, "At least one description point is required"),
   achievements: z.array(z.string()).optional().default([]),
   methodologies: z.array(z.string()).optional().default([]),
   order: z.number().int().optional(),
@@ -30,7 +56,8 @@ type ExperienceFormValues = z.infer<typeof experienceSchema>;
 export default function ExperienceManager() {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedExperience, setSelectedExperience] = useState<Experience | null>(null);
+  const [selectedExperience, setSelectedExperience] =
+    useState<Experience | null>(null);
   const { toast } = useToast();
 
   // Fetch experiences
@@ -70,18 +97,24 @@ export default function ExperienceManager() {
       // Ensure arrays are properly formatted
       const formattedData = {
         ...data,
-        description: Array.isArray(data.description) 
+        description: Array.isArray(data.description)
           ? data.description
           : [data.description as unknown as string],
-        achievements: typeof data.achievements === 'string' 
-          ? data.achievements.split(',').map(a => a.trim()) 
-          : data.achievements,
-        methodologies: typeof data.methodologies === 'string'
-          ? data.methodologies.split(',').map(m => m.trim())
-          : data.methodologies,
+        achievements:
+          typeof data.achievements === "string"
+            ? data.achievements.split(",").map((a) => a.trim())
+            : data.achievements,
+        methodologies:
+          typeof data.methodologies === "string"
+            ? data.methodologies.split(",").map((m) => m.trim())
+            : data.methodologies,
       };
-      
-      const response = await apiRequest("POST", "/api/admin/experiences", formattedData);
+
+      const response = await apiRequest(
+        "POST",
+        "/api/admin/experiences",
+        formattedData,
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -104,32 +137,39 @@ export default function ExperienceManager() {
     onError: (error) => {
       toast({
         title: "Error adding experience",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
-    }
+    },
   });
 
   // Edit experience mutation
   const editMutation = useMutation({
     mutationFn: async (data: ExperienceFormValues) => {
       if (!selectedExperience) return null;
-      
+
       // Ensure arrays are properly formatted
       const formattedData = {
         ...data,
-        description: Array.isArray(data.description) 
-          ? data.description 
+        description: Array.isArray(data.description)
+          ? data.description
           : [data.description as unknown as string],
-        achievements: typeof data.achievements === 'string' 
-          ? data.achievements.split(',').map(a => a.trim()) 
-          : data.achievements,
-        methodologies: typeof data.methodologies === 'string'
-          ? data.methodologies.split(',').map(m => m.trim())
-          : data.methodologies,
+        achievements:
+          typeof data.achievements === "string"
+            ? data.achievements.split(",").map((a) => a.trim())
+            : data.achievements,
+        methodologies:
+          typeof data.methodologies === "string"
+            ? data.methodologies.split(",").map((m) => m.trim())
+            : data.methodologies,
       };
-      
-      const response = await apiRequest("PUT", `/api/admin/experiences/${selectedExperience.id}`, formattedData);
+
+      const response = await apiRequest(
+        "PUT",
+        `/api/admin/experiences/${selectedExperience.id}`,
+        formattedData,
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -145,16 +185,20 @@ export default function ExperienceManager() {
     onError: (error) => {
       toast({
         title: "Error updating experience",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
-    }
+    },
   });
 
   // Delete experience mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("DELETE", `/api/admin/experiences/${id}`);
+      const response = await apiRequest(
+        "DELETE",
+        `/api/admin/experiences/${id}`,
+      );
       return response.ok;
     },
     onSuccess: () => {
@@ -167,16 +211,27 @@ export default function ExperienceManager() {
     onError: (error) => {
       toast({
         title: "Error deleting experience",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
-    }
+    },
   });
-  
+
   // Reorder experience mutation (move up or down)
   const reorderMutation = useMutation({
-    mutationFn: async ({ id, direction }: { id: number; direction: 'up' | 'down' }) => {
-      const response = await apiRequest("PUT", `/api/admin/experiences/${id}/reorder`, { direction });
+    mutationFn: async ({
+      id,
+      direction,
+    }: {
+      id: number;
+      direction: "up" | "down";
+    }) => {
+      const response = await apiRequest(
+        "PUT",
+        `/api/admin/experiences/${id}/reorder`,
+        { direction },
+      );
       return response.json();
     },
     onSuccess: () => {
@@ -189,10 +244,11 @@ export default function ExperienceManager() {
     onError: (error) => {
       toast({
         title: "Error reordering experience",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        description:
+          error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive",
       });
-    }
+    },
   });
 
   const onSubmitAdd = (data: ExperienceFormValues) => {
@@ -205,26 +261,26 @@ export default function ExperienceManager() {
 
   const handleEditExperience = (experience: Experience) => {
     setSelectedExperience(experience);
-    
+
     // Parse JSON strings if needed
-    const description = Array.isArray(experience.description) 
-      ? experience.description 
-      : typeof experience.description === 'string' 
+    const description = Array.isArray(experience.description)
+      ? experience.description
+      : typeof experience.description === "string"
         ? JSON.parse(experience.description)
         : [experience.description];
-        
-    const achievements = Array.isArray(experience.achievements) 
-      ? experience.achievements 
-      : experience.achievements 
+
+    const achievements = Array.isArray(experience.achievements)
+      ? experience.achievements
+      : experience.achievements
         ? JSON.parse(experience.achievements)
         : [];
-        
-    const methodologies = Array.isArray(experience.methodologies) 
-      ? experience.methodologies 
-      : experience.methodologies 
+
+    const methodologies = Array.isArray(experience.methodologies)
+      ? experience.methodologies
+      : experience.methodologies
         ? JSON.parse(experience.methodologies)
         : [];
-    
+
     // Set form values
     editForm.reset({
       company: experience.company,
@@ -235,15 +291,18 @@ export default function ExperienceManager() {
       methodologies,
       order: experience.order || 1,
     });
-    
+
     setIsEditing(true);
   };
 
   const handleDeleteExperience = (experience: Experience) => {
     deleteMutation.mutate(experience.id);
   };
-  
-  const handleMoveExperience = (experience: Experience, direction: 'up' | 'down') => {
+
+  const handleMoveExperience = (
+    experience: Experience,
+    direction: "up" | "down",
+  ) => {
     reorderMutation.mutate({ id: experience.id, direction });
   };
 
@@ -257,10 +316,10 @@ export default function ExperienceManager() {
   const removeDescriptionField = (formHook: any, index: number) => {
     const currentDescriptions = formHook.getValues("description") || [];
     if (currentDescriptions.length <= 1) return; // Don't remove the last one
-    
+
     formHook.setValue(
-      "description", 
-      currentDescriptions.filter((_: any, i: number) => i !== index)
+      "description",
+      currentDescriptions.filter((_: any, i: number) => i !== index),
     );
   };
 
@@ -269,19 +328,25 @@ export default function ExperienceManager() {
   }
 
   // Sort experiences by order
-  const sortedExperiences = [...experiences].sort((a: Experience, b: Experience) => {
-    return (a.order || 999) - (b.order || 999);
-  });
+  const sortedExperiences = [...experiences].sort(
+    (a: Experience, b: Experience) => {
+      return (a.order || 999) - (b.order || 999);
+    },
+  );
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Experience Management</h2>
         <Button onClick={() => setIsAdding(!isAdding)}>
-          {isAdding ? "Cancel" : <>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Experience
-          </>}
+          {isAdding ? (
+            "Cancel"
+          ) : (
+            <>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Experience
+            </>
+          )}
         </Button>
       </div>
 
@@ -289,11 +354,16 @@ export default function ExperienceManager() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Add New Experience</CardTitle>
-            <CardDescription>Create a new work or project experience entry</CardDescription>
+            <CardDescription>
+              Create a new work or project experience entry
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...addForm}>
-              <form onSubmit={addForm.handleSubmit(onSubmitAdd)} className="space-y-4">
+              <form
+                onSubmit={addForm.handleSubmit(onSubmitAdd)}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={addForm.control}
@@ -308,7 +378,7 @@ export default function ExperienceManager() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={addForm.control}
                     name="role"
@@ -323,7 +393,7 @@ export default function ExperienceManager() {
                     )}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={addForm.control}
@@ -341,7 +411,7 @@ export default function ExperienceManager() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={addForm.control}
                     name="order"
@@ -349,35 +419,38 @@ export default function ExperienceManager() {
                       <FormItem>
                         <FormLabel>Display Order</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="1" 
-                            {...field} 
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                          <Input
+                            type="number"
+                            placeholder="1"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value) || 1)
+                            }
                           />
                         </FormControl>
                         <FormDescription>
-                          Order in which experience appears (lower number = higher position)
+                          Order in which experience appears (lower number =
+                          higher position)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <FormLabel>Description Points</FormLabel>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       size="sm"
                       onClick={() => addDescriptionField(addForm)}
                     >
                       Add Point
                     </Button>
                   </div>
-                  
+
                   {addForm.watch("description")?.map((_, index) => (
                     <div key={index} className="flex items-center gap-2 mb-2">
                       <FormField
@@ -386,16 +459,19 @@ export default function ExperienceManager() {
                         render={({ field }) => (
                           <FormItem className="flex-1">
                             <FormControl>
-                              <Input placeholder={`Description point ${index + 1}`} {...field} />
+                              <Input
+                                placeholder={`Description point ${index + 1}`}
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
+
+                      <Button
+                        type="button"
+                        variant="ghost"
                         size="sm"
                         onClick={() => removeDescriptionField(addForm, index)}
                         disabled={addForm.watch("description")?.length <= 1}
@@ -405,7 +481,7 @@ export default function ExperienceManager() {
                     </div>
                   ))}
                 </div>
-                
+
                 <FormField
                   control={addForm.control}
                   name="achievements"
@@ -413,12 +489,20 @@ export default function ExperienceManager() {
                     <FormItem>
                       <FormLabel>Key Achievements</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Achievement 1, Achievement 2, etc. (comma separated)" 
-                          className="min-h-[80px]" 
-                          {...field} 
-                          value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                          onChange={e => field.onChange(e.target.value.split(",").map(a => a.trim()))}
+                        <Textarea
+                          placeholder="Achievement 1, Achievement 2, etc. (comma separated)"
+                          className="min-h-[80px]"
+                          {...field}
+                          value={
+                            Array.isArray(field.value)
+                              ? field.value.join(", ")
+                              : field.value
+                          }
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value.split(",").map((a) => a.trim()),
+                            )
+                          }
                         />
                       </FormControl>
                       <FormDescription>
@@ -428,7 +512,7 @@ export default function ExperienceManager() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={addForm.control}
                   name="methodologies"
@@ -436,12 +520,20 @@ export default function ExperienceManager() {
                     <FormItem>
                       <FormLabel>Methodologies & Tools</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Agile, Scrum, Kanban, etc. (comma separated)" 
-                          className="min-h-[80px]" 
-                          {...field} 
-                          value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                          onChange={e => field.onChange(e.target.value.split(",").map(m => m.trim()))}
+                        <Textarea
+                          placeholder="Agile, Scrum, Kanban, etc. (comma separated)"
+                          className="min-h-[80px]"
+                          {...field}
+                          value={
+                            Array.isArray(field.value)
+                              ? field.value.join(", ")
+                              : field.value
+                          }
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value.split(",").map((m) => m.trim()),
+                            )
+                          }
                         />
                       </FormControl>
                       <FormDescription>
@@ -451,7 +543,7 @@ export default function ExperienceManager() {
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="flex justify-end">
                   <Button type="submit" disabled={addMutation.isPending}>
                     {addMutation.isPending ? "Adding..." : "Add Experience"}
@@ -471,7 +563,10 @@ export default function ExperienceManager() {
           </CardHeader>
           <CardContent>
             <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onSubmitEdit)} className="space-y-4">
+              <form
+                onSubmit={editForm.handleSubmit(onSubmitEdit)}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={editForm.control}
@@ -486,7 +581,7 @@ export default function ExperienceManager() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={editForm.control}
                     name="role"
@@ -501,7 +596,7 @@ export default function ExperienceManager() {
                     )}
                   />
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={editForm.control}
@@ -519,7 +614,7 @@ export default function ExperienceManager() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={editForm.control}
                     name="order"
@@ -527,35 +622,38 @@ export default function ExperienceManager() {
                       <FormItem>
                         <FormLabel>Display Order</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="1" 
-                            {...field} 
-                            onChange={(e) => field.onChange(parseInt(e.target.value) || 1)}
+                          <Input
+                            type="number"
+                            placeholder="1"
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value) || 1)
+                            }
                           />
                         </FormControl>
                         <FormDescription>
-                          Order in which experience appears (lower number = higher position)
+                          Order in which experience appears (lower number =
+                          higher position)
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <FormLabel>Description Points</FormLabel>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
+                    <Button
+                      type="button"
+                      variant="outline"
                       size="sm"
                       onClick={() => addDescriptionField(editForm)}
                     >
                       Add Point
                     </Button>
                   </div>
-                  
+
                   {editForm.watch("description")?.map((_, index) => (
                     <div key={index} className="flex items-center gap-2 mb-2">
                       <FormField
@@ -564,16 +662,19 @@ export default function ExperienceManager() {
                         render={({ field }) => (
                           <FormItem className="flex-1">
                             <FormControl>
-                              <Input placeholder={`Description point ${index + 1}`} {...field} />
+                              <Input
+                                placeholder={`Description point ${index + 1}`}
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
-                      <Button 
-                        type="button" 
-                        variant="ghost" 
+
+                      <Button
+                        type="button"
+                        variant="ghost"
                         size="sm"
                         onClick={() => removeDescriptionField(editForm, index)}
                         disabled={editForm.watch("description")?.length <= 1}
@@ -583,7 +684,7 @@ export default function ExperienceManager() {
                     </div>
                   ))}
                 </div>
-                
+
                 <FormField
                   control={editForm.control}
                   name="achievements"
@@ -591,12 +692,20 @@ export default function ExperienceManager() {
                     <FormItem>
                       <FormLabel>Key Achievements</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Achievement 1, Achievement 2, etc. (comma separated)" 
-                          className="min-h-[80px]" 
-                          {...field} 
-                          value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                          onChange={e => field.onChange(e.target.value.split(",").map(a => a.trim()))}
+                        <Textarea
+                          placeholder="Achievement 1, Achievement 2, etc. (comma separated)"
+                          className="min-h-[80px]"
+                          {...field}
+                          value={
+                            Array.isArray(field.value)
+                              ? field.value.join(", ")
+                              : field.value
+                          }
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value.split(",").map((a) => a.trim()),
+                            )
+                          }
                         />
                       </FormControl>
                       <FormDescription>
@@ -606,7 +715,7 @@ export default function ExperienceManager() {
                     </FormItem>
                   )}
                 />
-                
+
                 <FormField
                   control={editForm.control}
                   name="methodologies"
@@ -614,12 +723,20 @@ export default function ExperienceManager() {
                     <FormItem>
                       <FormLabel>Methodologies & Tools</FormLabel>
                       <FormControl>
-                        <Textarea 
-                          placeholder="Agile, Scrum, Kanban, etc. (comma separated)" 
-                          className="min-h-[80px]" 
-                          {...field} 
-                          value={Array.isArray(field.value) ? field.value.join(", ") : field.value}
-                          onChange={e => field.onChange(e.target.value.split(",").map(m => m.trim()))}
+                        <Textarea
+                          placeholder="Agile, Scrum, Kanban, etc. (comma separated)"
+                          className="min-h-[80px]"
+                          {...field}
+                          value={
+                            Array.isArray(field.value)
+                              ? field.value.join(", ")
+                              : field.value
+                          }
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value.split(",").map((m) => m.trim()),
+                            )
+                          }
                         />
                       </FormControl>
                       <FormDescription>
@@ -629,16 +746,21 @@ export default function ExperienceManager() {
                     </FormItem>
                   )}
                 />
-                
+
                 <div className="flex justify-between">
-                  <Button variant="outline" onClick={() => {
-                    setIsEditing(false);
-                    setSelectedExperience(null);
-                  }}>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setSelectedExperience(null);
+                    }}
+                  >
                     Cancel
                   </Button>
                   <Button type="submit" disabled={editMutation.isPending}>
-                    {editMutation.isPending ? "Updating..." : "Update Experience"}
+                    {editMutation.isPending
+                      ? "Updating..."
+                      : "Update Experience"}
                   </Button>
                 </div>
               </form>
@@ -659,29 +781,37 @@ export default function ExperienceManager() {
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center">
-                      <h3 className="text-lg font-semibold">{experience.role}</h3>
+                      <h3 className="text-lg font-semibold">
+                        {experience.role}
+                      </h3>
                       <span className="text-sm ml-2 text-gray-500">at</span>
                       <h4 className="text-lg ml-2">{experience.company}</h4>
                     </div>
-                    <p className="text-sm text-gray-500 mb-2">{experience.period}</p>
+                    <p className="text-sm text-gray-500 mb-2">
+                      {experience.period}
+                    </p>
                   </div>
                   <div className="flex items-center space-x-1">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleMoveExperience(experience, 'up')}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleMoveExperience(experience, "up")}
                       disabled={experience.order === 1}
                     >
                       <MoveUp className="h-4 w-4" />
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleMoveExperience(experience, 'down')}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleMoveExperience(experience, "down")}
                     >
                       <MoveDown className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleEditExperience(experience)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditExperience(experience)}
+                    >
                       <Pencil className="h-4 w-4" />
                     </Button>
                     <AlertDialog>
@@ -694,12 +824,16 @@ export default function ExperienceManager() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
-                            This will permanently delete this experience. This action cannot be undone.
+                            This will permanently delete this experience. This
+                            action cannot be undone.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction className="bg-red-500 hover:bg-red-600" onClick={() => handleDeleteExperience(experience)}>
+                          <AlertDialogAction
+                            className="bg-red-500 hover:bg-red-600"
+                            onClick={() => handleDeleteExperience(experience)}
+                          >
                             Delete
                           </AlertDialogAction>
                         </AlertDialogFooter>
@@ -707,7 +841,7 @@ export default function ExperienceManager() {
                     </AlertDialog>
                   </div>
                 </div>
-                
+
                 <div className="mt-4">
                   <h5 className="text-sm font-semibold mb-2">Description</h5>
                   <ul className="list-disc list-inside space-y-1 text-sm ml-2">
@@ -720,30 +854,39 @@ export default function ExperienceManager() {
                     )}
                   </ul>
                 </div>
-                
-                {(Array.isArray(experience.achievements) && experience.achievements.length > 0) && (
-                  <div className="mt-4">
-                    <h5 className="text-sm font-semibold mb-2">Key Achievements</h5>
-                    <ul className="list-disc list-inside space-y-1 text-sm ml-2">
-                      {experience.achievements.map((achievement, i) => (
-                        <li key={i}>{achievement}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {(Array.isArray(experience.methodologies) && experience.methodologies.length > 0) && (
-                  <div className="mt-4">
-                    <h5 className="text-sm font-semibold mb-2">Methodologies & Tools</h5>
-                    <div className="flex flex-wrap gap-1">
-                      {experience.methodologies.map((methodology, i) => (
-                        <span key={i} className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
-                          {methodology}
-                        </span>
-                      ))}
+
+                {Array.isArray(experience.achievements) &&
+                  experience.achievements.length > 0 && (
+                    <div className="mt-4">
+                      <h5 className="text-sm font-semibold mb-2">
+                        Key Achievements
+                      </h5>
+                      <ul className="list-disc list-inside space-y-1 text-sm ml-2">
+                        {experience.achievements.map((achievement, i) => (
+                          <li key={i}>{achievement}</li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                {Array.isArray(experience.methodologies) &&
+                  experience.methodologies.length > 0 && (
+                    <div className="mt-4">
+                      <h5 className="text-sm font-semibold mb-2">
+                        Methodologies & Tools
+                      </h5>
+                      <div className="flex flex-wrap gap-1">
+                        {experience.methodologies.map((methodology, i) => (
+                          <span
+                            key={i}
+                            className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded"
+                          >
+                            {methodology}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
               </div>
             </Card>
           ))
