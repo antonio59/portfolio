@@ -15,44 +15,12 @@ export default function Certifications() {
     staleTime: 5 * 60 * 1000,
   });
 
-  if (process.env.NODE_ENV === "development") {
-    logger.info("Certifications Query Status:", { status, fetchStatus });
-    logger.info("Certifications data:", certifications);
-    if (error) {
-      logger.error("Error fetching certifications:", error);
-    }
-  }
 
-  // Make a direct fetch to debug
-  useEffect(() => {
-    const debugFetch = async () => {
-      if (process.env.NODE_ENV !== "development") return;
-
-      try {
-        logger.info("Attempting direct fetch of certifications...");
-        const response = await fetch("/api/certifications");
-        logger.info("Direct fetch status:", response.status);
-        const data = await response.json();
-        logger.info("Direct fetch result:", data);
-      } catch (err) {
-        if (err instanceof Error) {
-          logger.error("Direct fetch error:", err);
-        } else {
-          logger.error("Direct fetch error:", String(err));
-        }
-      }
-    };
-
-    debugFetch();
-  }, []);
 
   // Get only featured certifications for display
   const featuredCertifications = certifications.filter(
-    (cert: Certification) => cert.featured,
+    (cert) => cert.name && cert.issuer
   );
-  if (process.env.NODE_ENV === "development") {
-    logger.info("Featured certifications:", featuredCertifications);
-  }
 
   if (isLoading) {
     return (
