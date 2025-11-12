@@ -12,15 +12,15 @@ export interface AdminUser {
 
 export const adminAuth = {
   /**
-   * Login as admin
+   * Login as admin using users collection
    */
   async login(email: string, password: string): Promise<AdminUser> {
     try {
-      const authData = await pb.admins.authWithPassword(email, password);
+      const authData = await pb.collection('users').authWithPassword(email, password);
       return {
-        id: authData.admin.id,
-        email: authData.admin.email,
-        avatar: authData.admin.avatar,
+        id: authData.record.id,
+        email: authData.record.email,
+        avatar: authData.record.avatar,
       };
     } catch (error) {
       console.error('Admin login failed:', error);
@@ -39,7 +39,7 @@ export const adminAuth = {
    * Check if currently logged in as admin
    */
   isAuthenticated(): boolean {
-    return pb.authStore.isValid && pb.authStore.model?.collectionName === undefined;
+    return pb.authStore.isValid && pb.authStore.model?.collectionName === 'users';
   },
 
   /**
@@ -63,7 +63,7 @@ export const adminAuth = {
    */
   async refresh(): Promise<void> {
     try {
-      await pb.collection('_admins').authRefresh();
+      await pb.collection('users').authRefresh();
     } catch (error) {
       console.error('Auth refresh failed:', error);
       this.logout();
