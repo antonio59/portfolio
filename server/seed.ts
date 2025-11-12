@@ -14,20 +14,27 @@ export async function seedDatabase() {
   logger.info("Seeding database with sample data...");
 
   try {
-    // Create a user if none exists
-    const adminUser = await storage.getUserByUsername("admin");
-    if (!adminUser) {
-      await storage.createUser({
-        username: "admin",
-        password:
-          "$2b$10$A8BmrHuaXlpxuv1YuPEJ6.gJsZHqkfYQr3UDH1.D.qt3kNyc1TaLW", // password123
-      });
-      logger.info("Created admin user");
+    // Create a user if none exists (skip if database already has users)
+    try {
+      const adminUser = await storage.getUserByUsername("admin");
+      if (!adminUser) {
+        await storage.createUser({
+          username: "admin",
+          email: "admin@example.com",
+          password:
+            "$2b$10$A8BmrHuaXlpxuv1YuPEJ6.gJsZHqkfYQr3UDH1.D.qt3kNyc1TaLW", // password123
+        });
+        logger.info("Created admin user");
+      }
+    } catch (error) {
+      // Skip user creation if there's an error (e.g., users already exist)
+      logger.info("Skipping user creation - users may already exist");
     }
 
-    // Seed sections
+    // Seed sections (skip if data already exists)
     const existingSections = await storage.getAllSections();
     if (existingSections.length === 0) {
+      logger.info("No sections found - seeding sections...");
       const sectionSamples: InsertSection[] = [
         {
           type: "hero",

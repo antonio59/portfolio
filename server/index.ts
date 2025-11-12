@@ -1,4 +1,11 @@
+// Load environment variables first
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import cors from "cors";
 import session from "express-session";
 import http from "http";
 
@@ -31,21 +38,64 @@ declare module "express-serve-static-core" {
 }
 
 const app = express();
+app.set('env', 'development'); // Ensure development mode
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable for development, configure for production
+  crossOriginEmbedderPolicy: false,
+}));
+
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://antoniosmith.com', 'https://www.antoniosmith.com'] 
+    : true,
+  credentials: true,
+}));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5, // Limit login attempts
+  message: "Too many login attempts, please try again later.",
+  skipSuccessfulRequests: true,
+});
+
+const testimonialLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // Limit testimonial submissions
+  message: "Too many testimonial submissions, please try again later.",
+});
+
+app.use('/api/', limiter);
+app.use('/api/login', authLimiter);
+app.use('/api/testimonials/submit', testimonialLimiter);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Run when app starts up to seed the database with sample data
+// Run when app starts up to initialize storage (seeding disabled since we have real data)
 async function initDatabase() {
   try {
-    logger.info("Seeding database with sample content...");
-    const result = await seedDatabase();
-
-    if (result.success) {
-      logger.info("Database seeding completed successfully");
-    } else {
-      const errorMessage = "error" in result ? result.error : "Unknown error";
-      logger.error("Error seeding database:", errorMessage);
-    }
+    // Initialize storage first
+    const { initializeStorage } = await import("./storage");
+    await initializeStorage();
+    logger.info("Database storage initialized");
+    
+    // Skip seeding - we have real data from Supabase migration
+    // Uncomment below if you need to seed a fresh database
+    // const result = await seedDatabase();
+    // if (result.success) {
+    //   logger.info("Database seeding completed successfully");
+    // }
   } catch (error) {
     logger.error("Error initializing database:", error);
   }
@@ -106,25 +156,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Handle 404
-app.use((_req: Request, res: Response) => {
-  res.status(404).json({ message: "Not Found" });
-});
-
 // Start the server
 const startServer = async (): Promise<http.Server> => {
   await registerRoutes(app);
 
-  // Error handling
-  app.use((err: AppError, _req: Request, res: Response) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-    res.status(status).json({ message });
-  });
-
-  // Importantly only setup vite in development and after
-  // the other routes are registered so that the vite middleware
-  // doesn't interfere with the other routes
+  // Importantly setup vite in development BEFORE 404 handler
+  // so that vite can serve the frontend files
   if (app.get("env") === "development") {
     // Create a mock server for Vite in development
     const mockServer = http.createServer();
@@ -133,9 +170,16 @@ const startServer = async (): Promise<http.Server> => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
+  // Error handling - must be last
+  app.use((err: AppError, _req: Request, res: Response) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    res.status(status).json({ message });
+  });
+
+  // ALWAYS serve the app on port 5001
   // this serves both the API and the client
-  const port = 5000;
+  const port = 5001;
 
   // Create the HTTP server with the Express app
   const httpServer = http.createServer(app as http.RequestListener);
@@ -149,9 +193,13 @@ const startServer = async (): Promise<http.Server> => {
 };
 
 // Start the server if this file is run directly
-if (require.main === module) {
+const isMain = import.meta.url === `file://${process.argv[1]}` || process.env.NODE_ENV !== 'test';
+if (isMain) {
   startServer().catch((error) => {
-    logger.error("Failed to start server:", error);
+    logger.error("Failed to start server:", error.message);
+    if (error.stack) {
+      console.error("Stack trace:", error.stack);
+    }
     process.exit(1);
   });
 }

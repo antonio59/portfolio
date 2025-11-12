@@ -105,27 +105,7 @@ export interface Certification {
   updated?: string;
 }
 
-export interface CurrentlyReading {
-  id: string;
-  title: string;
-  author?: string;
-  cover_url?: string;
-  goodreads_url?: string;
-  display_order?: number;
-  created?: string;
-  updated?: string;
-}
 
-export interface CurrentlyListening {
-  id: string;
-  artist: string;
-  album?: string;
-  cover_url?: string;
-  spotify_url?: string;
-  display_order?: number;
-  created?: string;
-  updated?: string;
-}
 
 // Helper functions
 export const getProfile = async (): Promise<Profile | null> => {
@@ -232,28 +212,6 @@ export const getCertifications = async (): Promise<Certification[]> => {
   }
 };
 
-export const getCurrentlyReading = async (): Promise<CurrentlyReading[]> => {
-  try {
-    return await pb.collection('currently_reading').getFullList<CurrentlyReading>({ 
-      sort: 'display_order',
-      $autoCancel: false 
-    });
-  } catch (error) {
-    console.error('Error fetching currently reading:', error);
-    return [];
-  }
-};
 
-export const getCurrentlyListening = async (): Promise<CurrentlyListening[]> => {
-  try {
-    return await pb.collection('currently_listening').getFullList<CurrentlyListening>({ 
-      sort: 'display_order',
-      $autoCancel: false 
-    });
-  } catch (error) {
-    console.error('Error fetching currently listening:', error);
-    return [];
-  }
-};
 
 export default pb;

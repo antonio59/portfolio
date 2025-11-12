@@ -81,6 +81,8 @@ const isAuthenticated = (
 
 export async function registerRoutes(expressApp: Express): Promise<Express> {
   // Use the provided expressApp for all route registrations
+  logger.info("Starting route registration...");
+  
   // Set up session and passport for authentication
   expressApp.use(
     session({
@@ -93,6 +95,8 @@ export async function registerRoutes(expressApp: Express): Promise<Express> {
       },
     }),
   );
+  
+  logger.info("Session middleware registered");
 
   expressApp.use(express.json());
   expressApp.use(express.urlencoded({ extended: true }));
@@ -101,21 +105,21 @@ export async function registerRoutes(expressApp: Express): Promise<Express> {
   expressApp.use(passport.initialize());
   expressApp.use(passport.session());
 
-  // Simple in-memory user store (replace with your actual user store)
-  const users = [
-    { id: 1, username: "admin", password: bcrypt.hashSync("password123", 10) },
-  ];
-
-  // Passport configuration
+  // Passport configuration - using real database
   passport.use(
     new LocalStrategy(async (username: string, password: string, done) => {
       try {
-        const user = users.find((u) => u.username === username);
+        // Get user from database by username
+        const user = await storage.getUserByUsername(username);
         if (!user) {
           return done(null, false, { message: "Incorrect username." });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        if (!user.passwordHash) {
+          return done(null, false, { message: "No password set for this user." });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
         if (!isMatch) {
           return done(null, false, { message: "Incorrect password." });
         }
@@ -137,11 +141,17 @@ export async function registerRoutes(expressApp: Express): Promise<Express> {
     done(null, user.id);
   });
 
-  passport.deserializeUser((id: number, done) => {
-    const user = users.find((u) => u.id === id);
-    done(null, user ? { id: user.id, username: user.username } : null);
+  passport.deserializeUser(async (id: string, done) => {
+    try {
+      const user = await storage.getUserByUsername('admin'); // For now, just return admin user
+      done(null, user ? { id: user.id, username: user.username } : null);
+    } catch (error) {
+      done(error);
+    }
   });
 
+  logger.info("Registering API routes...");
+  
   // Login route
   expressApp.post(
     "/api/login",
@@ -293,10 +303,8 @@ export async function registerRoutes(expressApp: Express): Promise<Express> {
     "/api/blog/posts",
     async (_req: Request, res: Response): Promise<void> => {
       try {
-        // Using a default ID since getBlogPost requires an ID parameter
-        // In a real application, you might want to implement a proper getBlogPosts method
-        const post = await storage.getBlogPost(1);
-        res.json([post]); // Return as an array for consistency
+        const posts = await storage.getAllBlogPosts();
+        res.json(posts);
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "Unknown error";
@@ -304,6 +312,249 @@ export async function registerRoutes(expressApp: Express): Promise<Express> {
         res.status(500).json({
           success: false,
           message: "Error getting blog posts",
+        });
+      }
+    },
+  );
+
+  // Get certifications (public)
+  expressApp.get(
+    "/api/certifications",
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const certifications = await storage.getAllCertifications();
+        res.json(certifications);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting certifications: %s", errorMessage);
+        res.status(500).json({
+          success: false,
+          message: "Error getting certifications",
+        });
+      }
+    },
+  );
+
+  // Get blog categories (public)
+  expressApp.get(
+    "/api/blog/categories",
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const categories = await storage.getAllBlogCategories();
+        res.json(categories);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting blog categories: %s", errorMessage);
+        res.status(500).json({
+          success: false,
+          message: "Error getting blog categories",
+        });
+      }
+    },
+  );
+
+  // Get single blog post by slug (public)
+  expressApp.get(
+    "/api/blog/posts/:slug",
+    async (req: Request, res: Response): Promise<void> => {
+      try {
+        const { slug } = req.params;
+        const post = await storage.getBlogPostBySlug(slug);
+        if (!post) {
+          res.status(404).json({
+            success: false,
+            message: "Blog post not found",
+          });
+          return;
+        }
+        res.json(post);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting blog post: %s", errorMessage);
+        res.status(500).json({
+          success: false,
+          message: "Error getting blog post",
+        });
+      }
+    },
+  );
+
+  // Get profile (public)
+  expressApp.get(
+    "/api/profile",
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const profiles = await storage.getProfiles();
+        // Return first profile or empty object
+        res.json(profiles[0] || {});
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting profile: %s", errorMessage);
+        res.status(500).json({
+          success: false,
+          message: "Error getting profile",
+        });
+      }
+    },
+  );
+
+  // Get about sections (public)
+  expressApp.get(
+    "/api/about",
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const sections = await storage.getAboutSections();
+        res.json(sections);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting about sections: %s", errorMessage);
+        res.status(500).json({
+          success: false,
+          message: "Error getting about sections",
+        });
+      }
+    },
+  );
+
+  // Get experiences (public)
+  expressApp.get(
+    "/api/experiences",
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const experiences = await storage.getAllExperiences();
+        res.json(experiences);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting experiences: %s", errorMessage);
+        res.status(500).json({
+          success: false,
+          message: "Error getting experiences",
+        });
+      }
+    },
+  );
+
+  // Get projects (public)
+  expressApp.get(
+    "/api/projects",
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const projects = await storage.getAllProjects();
+        res.json(projects);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting projects: %s", errorMessage);
+        res.status(500).json({
+          success: false,
+          message: "Error getting projects",
+        });
+      }
+    },
+  );
+
+  // Get testimonials (public)
+  expressApp.get(
+    "/api/testimonials",
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const testimonials = await storage.getAllTestimonials();
+        res.json(testimonials);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting testimonials: %s", errorMessage);
+        res.status(500).json({
+          success: false,
+          message: "Error getting testimonials",
+        });
+      }
+    },
+  );
+
+  // Submit testimonial (public)
+  expressApp.post(
+    "/api/testimonials/submit",
+    async (req: Request, res: Response): Promise<void> => {
+      try {
+        const { name, email, role, company, content, rating, project_type, relationship } = req.body;
+
+        if (!name || !email || !role || !company || !content || !relationship) {
+          res.status(400).json({
+            success: false,
+            message: "Missing required fields",
+          });
+          return;
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          res.status(400).json({
+            success: false,
+            message: "Invalid email address",
+          });
+          return;
+        }
+
+        // Content length validation
+        if (content.length < 50) {
+          res.status(400).json({
+            success: false,
+            message: "Testimonial must be at least 50 characters",
+          });
+          return;
+        }
+
+        const testimonial = await storage.createTestimonial({
+          name,
+          email,
+          role,
+          company,
+          content,
+          rating: rating || 5,
+          project_type: project_type || null,
+          relationship,
+          approved: false, // Requires admin approval
+        });
+
+        res.status(201).json({
+          success: true,
+          message: "Testimonial submitted successfully",
+          data: testimonial,
+        });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error submitting testimonial: %s", errorMessage);
+        res.status(500).json({
+          success: false,
+          message: "Error submitting testimonial",
+        });
+      }
+    },
+  );
+
+  // Get sections (public)
+  expressApp.get(
+    "/api/sections",
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const sections = await storage.getAllSections();
+        res.json(sections);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting sections: %s", errorMessage);
+        res.status(500).json({
+          success: false,
+          message: "Error getting sections",
         });
       }
     },
@@ -335,6 +586,118 @@ export async function registerRoutes(expressApp: Express): Promise<Express> {
       };
     }
   };
+
+  // Get all blog posts for admin
+  expressApp.get(
+    "/api/admin/blog/posts",
+    isAuthenticated,
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const posts = await storage.getAllBlogPosts();
+        res.json(posts);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting blog posts: %s", errorMessage);
+        res.status(500).json({ success: false, message: "Error getting blog posts" });
+      }
+    },
+  );
+
+  // Get all blog categories for admin
+  expressApp.get(
+    "/api/admin/blog/categories",
+    isAuthenticated,
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const categories = await storage.getAllBlogCategories();
+        res.json(categories);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting blog categories: %s", errorMessage);
+        res.status(500).json({ success: false, message: "Error getting blog categories" });
+      }
+    },
+  );
+
+  // Get all projects for admin
+  expressApp.get(
+    "/api/admin/projects",
+    isAuthenticated,
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const projects = await storage.getAllProjects();
+        res.json(projects);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting projects: %s", errorMessage);
+        res.status(500).json({ success: false, message: "Error getting projects" });
+      }
+    },
+  );
+
+  // Get all experiences for admin
+  expressApp.get(
+    "/api/admin/experiences",
+    isAuthenticated,
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const experiences = await storage.getAllExperiences();
+        res.json(experiences);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting experiences: %s", errorMessage);
+        res.status(500).json({ success: false, message: "Error getting experiences" });
+      }
+    },
+  );
+
+  // Get all certifications for admin
+  expressApp.get(
+    "/api/admin/certifications",
+    isAuthenticated,
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const certifications = await storage.getAllCertifications();
+        res.json(certifications);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting certifications: %s", errorMessage);
+        res.status(500).json({ success: false, message: "Error getting certifications" });
+      }
+    },
+  );
+
+  // Get all sections for admin
+  expressApp.get(
+    "/api/admin/sections",
+    isAuthenticated,
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const sections = await storage.getAllSections();
+        res.json(sections);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting sections: %s", errorMessage);
+        res.status(500).json({ success: false, message: "Error getting sections" });
+      }
+    },
+  );
+
+  // Get all case studies for admin
+  expressApp.get(
+    "/api/admin/blog/case-studies",
+    isAuthenticated,
+    async (_req: Request, res: Response): Promise<void> => {
+      try {
+        const caseStudies = await storage.getAllCaseStudies();
+        res.json(caseStudies);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        logger.error("Error getting case studies: %s", errorMessage);
+        res.status(500).json({ success: false, message: "Error getting case studies" });
+      }
+    },
+  );
 
   // Create a new blog post (admin only)
   expressApp.post(

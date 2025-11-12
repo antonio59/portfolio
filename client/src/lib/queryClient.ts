@@ -39,7 +39,7 @@ export async function apiRequest(
   const fullUrl = url.startsWith("/")
     ? typeof window !== "undefined"
       ? url
-      : `http://localhost:5000${url}`
+      : `http://localhost:5001${url}`
     : url;
 
   const res = await fetch(fullUrl, {
@@ -66,7 +66,7 @@ export const getQueryFn: <T>(options: {
     const fullUrl = url.startsWith("/")
       ? typeof window !== "undefined"
         ? url
-        : `http://localhost:5000${url}`
+        : `http://localhost:5001${url}`
       : url;
 
     const res = await fetch(fullUrl, {

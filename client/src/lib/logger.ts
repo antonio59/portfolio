@@ -12,7 +12,8 @@ const formatMessage = (message: Loggable): string => {
 };
 
 const log = (level: LogLevel, ...args: Loggable[]): void => {
-  if (process.env['NODE_ENV'] === "test") return;
+  // Check if we're in a test environment (only in Node.js)
+  if (typeof process !== "undefined" && process.env && process.env['NODE_ENV'] === "test") return;
 
   const timestamp = new Date().toISOString();
   const formattedArgs = args.map((arg) => formatMessage(arg)).join(" ");
@@ -30,7 +31,9 @@ const log = (level: LogLevel, ...args: Loggable[]): void => {
   }
 };
 
-const isDevelopment = process.env['NODE_ENV'] === 'development';
+// Use Vite's import.meta.env for browser compatibility
+const isDevelopment = typeof import.meta !== "undefined" && import.meta.env ? import.meta.env.DEV : 
+                      (typeof process !== "undefined" && process.env ? process.env['NODE_ENV'] === 'development' : true);
 
 export const logger = {
   info: (...args: Loggable[]): void => log("info", ...args),

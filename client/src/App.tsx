@@ -11,6 +11,7 @@ import ProfessionalProjectsGrid from "./components/ProfessionalProjectsGrid";
 import About from "./components/About";
 import Experience from "./components/Experience";
 import Certifications from "./components/Certifications";
+import Testimonials from "./components/Testimonials";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import CustomCursor from "./components/CustomCursor";
@@ -19,6 +20,7 @@ import LoginForm from "./components/admin/LoginForm";
 import NotFound from "./pages/not-found";
 import BlogPage from "./pages/blog-page";
 import BlogPostPage from "./pages/blog-post-page";
+import SubmitTestimonial from "./pages/submit-testimonial";
 import { useQuery } from "@tanstack/react-query";
 
 // Main portfolio homepage component
@@ -53,6 +55,7 @@ const PortfolioHome = () => {
         <ProjectsGrid />
         <Experience />
         <Certifications />
+        <Testimonials />
         <Contact />
       </main>
       <Footer />
@@ -114,6 +117,7 @@ function App() {
         <Route path="/" component={PortfolioHome} />
         <Route path="/blog" component={BlogPage} />
         <Route path="/blog/:slug" component={BlogPostPage} />
+        <Route path="/testimonial" component={SubmitTestimonial} />
         <Route path="/admin" component={AdminArea} />
         <Route component={NotFound} />
       </Switch>

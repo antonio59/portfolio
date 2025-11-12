@@ -848,7 +848,15 @@ export let storage: IStorage = new MemStorage();
 // Create a storage factory to decide which storage implementation to use
 export async function initializeStorage() {
   try {
-    // If a DATABASE_URL environment variable is available, use Supabase storage
+    // Check if we have DATABASE_URL for direct PostgreSQL connection
+    if (process.env["DATABASE_URL"]) {
+      logger.info("Using PostgreSQL storage with DATABASE_URL");
+      const { PostgresStorage } = await import("./pg-storage");
+      storage = new PostgresStorage(process.env["DATABASE_URL"]);
+      return storage;
+    }
+    
+    // Legacy: If a Supabase URL is available, use Supabase storage
     if (process.env["SUPABASE_URL"] && process.env["SUPABASE_KEY"]) {
       const { createClient } = await import("@supabase/supabase-js");
       const supabase = createClient(
