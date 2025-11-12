@@ -1,5 +1,5 @@
 [build]
-  command = "npx vite build"
+  command = "npm install --include=optional && npx vite build"
   publish = "dist/public"
   functions = "netlify/functions"
 
@@ -15,3 +15,4 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  NPM_FLAGS = "--include=optional"
