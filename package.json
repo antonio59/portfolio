@@ -155,6 +155,11 @@
     "winston": "^3.17.0"
   },
   "optionalDependencies": {
-    "bufferutil": "^4.0.9"
+    "bufferutil": "^4.0.9",
+    "@esbuild/linux-x64": "^0.25.4",
+    "@esbuild/darwin-arm64": "^0.25.4",
+    "@esbuild/darwin-x64": "^0.25.4",
+    "@rollup/rollup-linux-x64-gnu": "^4.24.0",
+    "@rollup/rollup-darwin-arm64": "^4.24.0"
   }
 }

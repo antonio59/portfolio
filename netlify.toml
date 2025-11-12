@@ -1,5 +1,5 @@
 [build]
-  command = "npm install --include=optional && npx vite build"
+  command = "npm install --include=optional && npx vite build --mode production"
   publish = "dist/public"
   functions = "netlify/functions"
 
