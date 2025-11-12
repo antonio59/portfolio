@@ -64,16 +64,18 @@ export default function BlogPost() {
     data: post = null,
     isLoading: postLoading,
     error: postError,
-  } = useQuery<BlogPost>({
-    queryKey: [`/api/blog/posts/${slug}`],
+  } = useQuery<BlogPost | null>({
+    queryKey: ["blog-post", slug],
+    queryFn: async () => {
+      if (!slug) return null;
+      const { getBlogPostBySlug } = await import("@/lib/pocketbase");
+      return getBlogPostBySlug(slug) as Promise<BlogPost>;
+    },
     enabled: !!slug,
   });
 
-  // Fetch the blog categories
-  const { data: categories = [] } = useQuery<BlogCategory[]>({
-    queryKey: ["/api/blog/categories"],
-    enabled: true,
-  });
+  // Categories not needed for now
+  const categories: BlogCategory[] = [];
 
   // Redirect to blog list if no slug is provided
   if (!slug && typeof window !== "undefined") {

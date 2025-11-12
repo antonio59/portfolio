@@ -50,16 +50,16 @@ export default function BlogList() {
     isLoading: postsLoading,
     error: postsError,
   } = useQuery<BlogPost[]>({
-    queryKey: ["/api/blog/posts"],
+    queryKey: ["blog-posts"],
+    queryFn: async () => {
+      const { getBlogPosts } = await import("@/lib/pocketbase");
+      return getBlogPosts();
+    },
     enabled: true,
   });
 
-  const { data: categories = [], isLoading: categoriesLoading } = useQuery<
-    BlogCategory[]
-  >({
-    queryKey: ["/api/blog/categories"],
-    enabled: true,
-  });
+  // Categories not needed for now - we can add them later if needed
+  const categories: BlogCategory[] = [];
 
   // Format date helper function
   const formatDate = (date: Date) => {
