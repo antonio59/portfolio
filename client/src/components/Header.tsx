@@ -31,10 +31,9 @@ export default function Header({
     };
   }, []);
 
-  // Navigation links (ordered: About, Experience, Projects, Contact, Writing)
+  // Navigation links (ordered: About, Projects, Contact, Writing)
   const navLinks = [
     { name: "About", href: "/#about" },
-    { name: "Experience", href: "/#experience" },
     { name: "Projects", href: "/projects" },
     { name: "Contact", href: "/#contact" },
   ];

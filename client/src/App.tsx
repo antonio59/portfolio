@@ -7,7 +7,7 @@ import Header from "./components/Header";
 import Hero from "./components/Hero";
 import FeaturedProjects from "./components/FeaturedProjects";
 import About from "./components/About";
-import Experience from "./components/Experience";
+import Resume from "./components/Resume";
 import Testimonials from "./components/Testimonials";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
@@ -55,8 +55,8 @@ const PortfolioHome = () => {
       <main>
         <Hero />
         <About />
-        <Experience />
         <FeaturedProjects />
+        <Resume />
         <Testimonials />
         <Contact />
       </main>
