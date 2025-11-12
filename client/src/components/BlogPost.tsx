@@ -192,7 +192,7 @@ export default function BlogPost() {
               <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mb-6">
                 <div className="flex items-center">
                   <User className="h-4 w-4 mr-1" />
-                  John Smith
+                  Antonio Smith
                 </div>
 
                 <div className="flex items-center">

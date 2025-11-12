@@ -8,7 +8,7 @@ export default function Footer() {
       <div className="container mx-auto px-6">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="mb-6 md:mb-0">
-            <h3 className="text-xl font-bold mb-1">John Smith</h3>
+            <h3 className="text-xl font-bold mb-1">Antonio Smith</h3>
             <p className="text-gray-400">Frontend Developer</p>
           </div>
 
@@ -100,7 +100,7 @@ export default function Footer() {
               </motion.a>
             </div>
             <p className="text-gray-500 text-sm">
-              © {currentYear} John Smith. All rights reserved.
+              © {currentYear} Antonio Smith. All rights reserved.
             </p>
           </div>
         </div>
@@ -122,7 +122,7 @@ export default function Footer() {
           </div>
 
           <div className="text-gray-500 text-sm">
-            <p>Designed & Built with ❤️ by John Smith</p>
+            <p>Designed & Built with ❤️ by Antonio Smith</p>
           </div>
         </div>
       </div>

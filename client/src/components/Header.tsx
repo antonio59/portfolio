@@ -31,17 +31,16 @@ export default function Header({
     };
   }, []);
 
-  // Navigation links
+  // Navigation links (ordered: About, Experience, Projects, Contact, Writing)
   const navLinks = [
-    { name: "Projects", href: "#projects" },
     { name: "About", href: "#about" },
     { name: "Experience", href: "#experience" },
-    { name: "Certifications", href: "#certifications" },
+    { name: "Projects", href: "#projects" },
     { name: "Contact", href: "#contact" },
   ];
 
-  // Additional links (using internal links for blog)
-  const additionalLinks = [{ name: "Blog", href: "/blog" }];
+  // Additional links (Writing instead of Blog)
+  const additionalLinks = [{ name: "Writing", href: "/blog" }];
 
   return (
     <header
@@ -52,10 +51,10 @@ export default function Header({
       }`}
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
-        {/* Logo */}
-        <a href="#home" className="text-2xl font-bold text-textColor">
-          {scrolled ? "JS." : "John Smith"}
-        </a>
+        {/* Logo - clicking name goes home */}
+        <Link href="/" className="text-2xl font-bold text-textColor hover:text-accentColor transition-colors cursor-pointer">
+          {scrolled ? "AS." : "Antonio Smith"}
+        </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:block">

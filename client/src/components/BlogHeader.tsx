@@ -31,17 +31,16 @@ export default function BlogHeader({
     };
   }, []);
 
-  // Navigation links - using full paths instead of hash links for the blog pages
+  // Navigation links - ordered: About, Experience, Projects, Contact, Writing
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Projects", href: "/#projects" },
     { name: "About", href: "/#about" },
     { name: "Experience", href: "/#experience" },
+    { name: "Projects", href: "/#projects" },
     { name: "Contact", href: "/#contact" },
   ];
 
   // Blog specific links
-  const blogLinks = [{ name: "Blog Home", href: "/blog" }];
+  const blogLinks = [{ name: "Writing", href: "/blog" }];
 
   return (
     <header
@@ -52,9 +51,9 @@ export default function BlogHeader({
       }`}
     >
       <div className="container mx-auto px-6 flex justify-between items-center">
-        {/* Logo */}
-        <Link href="/" className="text-2xl font-bold text-textColor">
-          {scrolled ? "JS." : "John Smith"}
+        {/* Logo - clicking name goes home */}
+        <Link href="/" className="text-2xl font-bold text-textColor hover:text-accentColor transition-colors cursor-pointer">
+          {scrolled ? "AS." : "Antonio Smith"}
         </Link>
 
         {/* Desktop Navigation */}

@@ -158,12 +158,11 @@ export default function BlogList() {
           {/* Blog Header - Substack style */}
           <div className="text-center mb-16 pt-8 md:pt-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              John's Coding Journal
+              Antonio's Writing
             </h1>
 
             <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-              Insights on self-hosted projects, development, and tech
-              explorations
+              Insights on projects, AI, and technology explorations
             </p>
 
             <div className="flex justify-center gap-4">
