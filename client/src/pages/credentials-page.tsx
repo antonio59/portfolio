@@ -21,6 +21,9 @@ interface Certification {
   issue_date: string;
   credential_url?: string;
   description?: string;
+  certificate_file?: string;
+  collectionId?: string;
+  collectionName?: string;
 }
 
 export default function CredentialsPage() {
@@ -124,36 +127,47 @@ export default function CredentialsPage() {
                       )}
 
                       <CardFooter className="mt-auto flex gap-2">
-                        {cert.credential_url && (
-                          <Button 
-                            variant="outline" 
-                            className="flex-1 group-hover:border-primary group-hover:text-primary transition-colors"
-                            asChild
-                          >
-                            <a
-                              href={cert.credential_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                        {/* PocketBase file or external URL */}
+                        {(cert.certificate_file || cert.credential_url) && (() => {
+                          // Build PocketBase file URL if certificate_file exists
+                          const fileUrl = cert.certificate_file 
+                            ? `https://pb.antoniosmith.xyz/api/files/${cert.collectionId}/${cert.id}/${cert.certificate_file}`
+                            : cert.credential_url;
+                          
+                          const isCredly = cert.credential_url?.includes('credly.com');
+                          const isPDF = fileUrl?.endsWith('.pdf') || cert.certificate_file?.endsWith('.pdf');
+                          
+                          return (
+                            <Button 
+                              variant="outline" 
+                              className="flex-1 group-hover:border-primary group-hover:text-primary transition-colors"
+                              asChild
                             >
-                              {cert.credential_url.includes('credly.com') ? (
-                                <>
-                                  <ExternalLink className="h-4 w-4 mr-2" />
-                                  View Badge
-                                </>
-                              ) : cert.credential_url.endsWith('.pdf') ? (
-                                <>
-                                  <Download className="h-4 w-4 mr-2" />
-                                  Download PDF
-                                </>
-                              ) : (
-                                <>
-                                  <ExternalLink className="h-4 w-4 mr-2" />
-                                  View Credential
-                                </>
-                              )}
-                            </a>
-                          </Button>
-                        )}
+                              <a
+                                href={fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                {isCredly ? (
+                                  <>
+                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                    View Badge
+                                  </>
+                                ) : isPDF ? (
+                                  <>
+                                    <Download className="h-4 w-4 mr-2" />
+                                    {cert.certificate_file ? 'Download PDF' : 'View PDF'}
+                                  </>
+                                ) : (
+                                  <>
+                                    <ExternalLink className="h-4 w-4 mr-2" />
+                                    View Credential
+                                  </>
+                                )}
+                              </a>
+                            </Button>
+                          );
+                        })()}
                       </CardFooter>
                     </Card>
                   </motion.div>

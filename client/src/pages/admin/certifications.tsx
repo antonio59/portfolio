@@ -36,6 +36,7 @@ export default function AdminCertifications() {
     credential_url: '',
     description: '',
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const { data: certifications = [], isLoading } = useQuery({
     queryKey: ['admin-certifications'],
@@ -47,10 +48,20 @@ export default function AdminCertifications() {
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
+      const formDataToSend = new FormData();
+      Object.entries(data).forEach(([key, value]) => {
+        if (value) formDataToSend.append(key, value);
+      });
+      
+      // Add file if selected
+      if (selectedFile) {
+        formDataToSend.append('certificate_file', selectedFile);
+      }
+      
       if (editingCert) {
-        return await pb.collection('certifications').update(editingCert.id, data);
+        return await pb.collection('certifications').update(editingCert.id, formDataToSend);
       } else {
-        return await pb.collection('certifications').create(data);
+        return await pb.collection('certifications').create(formDataToSend);
       }
     },
     onSuccess: () => {
@@ -71,6 +82,7 @@ export default function AdminCertifications() {
 
   const resetForm = () => {
     setFormData({ title: '', issuer: '', issue_date: '', credential_url: '', description: '' });
+    setSelectedFile(null);
     setEditingCert(null);
   };
 
@@ -114,8 +126,17 @@ export default function AdminCertifications() {
                   <Input type="month" value={formData.issue_date} onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
-                  <Label>Credential URL</Label>
-                  <Input type="url" value={formData.credential_url} onChange={(e) => setFormData({ ...formData, credential_url: e.target.value })} />
+                  <Label>Credential URL (Credly, external link, etc.)</Label>
+                  <Input type="url" value={formData.credential_url} onChange={(e) => setFormData({ ...formData, credential_url: e.target.value })} placeholder="https://www.credly.com/..." />
+                </div>
+                <div className="space-y-2">
+                  <Label>Or Upload Certificate (PDF/Image)</Label>
+                  <Input 
+                    type="file" 
+                    accept=".pdf,.jpg,.jpeg,.png,.webp"
+                    onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                  />
+                  <p className="text-xs text-muted-foreground">Max 10MB - PDF, JPG, PNG, WebP</p>
                 </div>
                 <div className="space-y-2">
                   <Label>Description</Label>

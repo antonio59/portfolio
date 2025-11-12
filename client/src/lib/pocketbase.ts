@@ -95,12 +95,15 @@ export interface Experience {
 
 export interface Certification {
   id: string;
-  name: string;
+  title: string;
+  name?: string; // Legacy field
   issuer?: string;
   issue_date?: string;
   expiry_date?: string;
   credential_id?: string;
   credential_url?: string;
+  description?: string;
+  certificate_file?: string;
   created?: string;
   updated?: string;
 }
