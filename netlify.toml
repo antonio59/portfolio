@@ -1,5 +1,5 @@
 [build]
-  command = "npx vite build --outDir dist/public"
+  command = "npx vite build"
   publish = "dist/public"
   functions = "netlify/functions"
 
@@ -15,4 +15,3 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  NPM_FLAGS = "--legacy-peer-deps"
