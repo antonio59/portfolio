@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Award, Download, ExternalLink, Calendar, Building } from "lucide-react";
+import { Award, Download, ExternalLink, Calendar } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -110,14 +110,9 @@ export default function CredentialsPage() {
                           </Badge>
                         </div>
                         
-                        <CardTitle className="group-hover:text-primary transition-colors">
+                        <CardTitle className="group-hover:text-primary transition-colors leading-snug">
                           {cert.title}
                         </CardTitle>
-                        
-                        <CardDescription className="flex items-center gap-2 mt-2">
-                          <Building className="h-4 w-4" />
-                          {cert.issuer}
-                        </CardDescription>
                       </CardHeader>
 
                       {cert.description && (
@@ -128,11 +123,11 @@ export default function CredentialsPage() {
                         </CardContent>
                       )}
 
-                      <CardFooter className="mt-auto">
+                      <CardFooter className="mt-auto flex gap-2">
                         {cert.credential_url && (
                           <Button 
                             variant="outline" 
-                            className="w-full group-hover:border-primary group-hover:text-primary transition-colors"
+                            className="flex-1 group-hover:border-primary group-hover:text-primary transition-colors"
                             asChild
                           >
                             <a
@@ -140,8 +135,22 @@ export default function CredentialsPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              View Credential
+                              {cert.credential_url.includes('credly.com') ? (
+                                <>
+                                  <ExternalLink className="h-4 w-4 mr-2" />
+                                  View Badge
+                                </>
+                              ) : cert.credential_url.endsWith('.pdf') ? (
+                                <>
+                                  <Download className="h-4 w-4 mr-2" />
+                                  Download PDF
+                                </>
+                              ) : (
+                                <>
+                                  <ExternalLink className="h-4 w-4 mr-2" />
+                                  View Credential
+                                </>
+                              )}
                             </a>
                           </Button>
                         )}

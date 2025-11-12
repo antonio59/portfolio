@@ -223,10 +223,7 @@ export default function About() {
                   {certifications.slice(0, 3).map((cert: any) => (
                     <div key={cert.id} className="flex items-start gap-2">
                       <span className="text-primary mt-1">•</span>
-                      <div>
-                        <p className="font-medium text-sm">{cert.title}</p>
-                        <p className="text-xs text-muted-foreground">{cert.issuer}</p>
-                      </div>
+                      <p className="font-medium text-sm leading-snug">{cert.title}</p>
                     </div>
                   ))}
                   {certifications.length > 3 && (
