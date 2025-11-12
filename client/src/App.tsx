@@ -5,9 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
-import ProjectShowcase from "./components/ProjectShowcase";
-import ProjectsGrid from "./components/ProjectsGrid";
-import ProfessionalProjectsGrid from "./components/ProfessionalProjectsGrid";
+import FeaturedProjects from "./components/FeaturedProjects";
 import About from "./components/About";
 import Experience from "./components/Experience";
 import Certifications from "./components/Certifications";
@@ -58,9 +56,7 @@ const PortfolioHome = () => {
         <Hero />
         <About />
         <Experience />
-        <ProjectShowcase />
-        <ProfessionalProjectsGrid />
-        <ProjectsGrid />
+        <FeaturedProjects />
         <Certifications />
         <Testimonials />
         <Contact />

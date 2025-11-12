@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import AdminLayout from '@/components/admin/AdminLayout';
 import RichTextEditor from '@/components/admin/RichTextEditor';
@@ -42,6 +43,7 @@ export default function AdminProjects() {
     project_url: '',
     github_url: '',
     technologies: '',
+    category: '',
     is_featured: false,
   });
 
@@ -126,6 +128,7 @@ export default function AdminProjects() {
       project_url: '',
       github_url: '',
       technologies: '',
+      category: '',
       is_featured: false,
     });
     setEditingProject(null);
@@ -140,6 +143,7 @@ export default function AdminProjects() {
       project_url: project.project_url || '',
       github_url: project.github_url || '',
       technologies: project.technologies || '',
+      category: (project as any).category || '',
       is_featured: project.is_featured || false,
     });
     setIsDialogOpen(true);
@@ -232,14 +236,35 @@ export default function AdminProjects() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="technologies">Technologies (comma-separated)</Label>
-                  <Input
-                    id="technologies"
-                    value={formData.technologies}
-                    onChange={(e) => setFormData({ ...formData, technologies: e.target.value })}
-                    placeholder="React, Node.js, PostgreSQL"
-                  />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="technologies">Technologies (comma-separated)</Label>
+                    <Input
+                      id="technologies"
+                      value={formData.technologies}
+                      onChange={(e) => setFormData({ ...formData, technologies: e.target.value })}
+                      placeholder="React, Node.js, PostgreSQL"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(value) => setFormData({ ...formData, category: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="web">Web</SelectItem>
+                        <SelectItem value="mobile">Mobile</SelectItem>
+                        <SelectItem value="ai">AI</SelectItem>
+                        <SelectItem value="tools">Tools</SelectItem>
+                        <SelectItem value="design">Design</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="flex items-center space-x-2 p-4 border rounded-lg">

@@ -1,23 +1,19 @@
-import BlogList from "@/components/BlogList";
-import BlogHeader from "@/components/BlogHeader";
+import BlogGrid from "@/components/BlogGrid";
+import Header from "@/components/Header";
 import { useState } from "react";
 import Footer from "@/components/Footer";
 
 export default function BlogPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
   return (
     <div className="min-h-screen flex flex-col">
-      <BlogHeader
+      <Header
         isMobileMenuOpen={isMobileMenuOpen}
-        toggleMobileMenu={toggleMobileMenu}
+        toggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       />
       <main className="flex-grow pt-20">
-        <BlogList />
+        <BlogGrid />
       </main>
       <Footer />
     </div>
