@@ -1,7 +1,19 @@
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
+import { getAboutSections, type AboutSection } from "../lib/pocketbase";
 
 export default function About() {
+  const { data: aboutSections = [] } = useQuery<AboutSection[]>({
+    queryKey: ["about-sections"],
+    queryFn: getAboutSections,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Get specific sections
+  const backgroundSection = aboutSections.find(s => s.section_type === 'background');
+  const drivesSection = aboutSections.find(s => s.section_type === 'what_drives_me');
+  const interestsSection = aboutSections.find(s => s.section_type === 'interests');
   // Professional Skills
   const professionalSkills = [
     "Project Management",
@@ -133,23 +145,25 @@ export default function About() {
               viewport={{ once: true }}
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-6 text-textColor">
-                About Me
+                {backgroundSection?.title || "About Me"}
               </h2>
-              <p className="text-gray-600 mb-6">
-                I'm an experienced Project and Programme Manager with over 10
-                years of professional experience in the technology sector. My
-                expertise lies in leading complex digital transformation
-                initiatives, healthcare system implementations, and financial
-                technology projects from inception to successful delivery.
-              </p>
-              <p className="text-gray-600 mb-6">
-                While my primary profession is project management, I'm also
-                passionate about software development. As a hobby, I build
-                mobile and web applications to solve everyday problems and
-                explore new technologies, combining my project management
-                expertise with hands-on technical skills to create efficient and
-                user-friendly solutions.
-              </p>
+              {backgroundSection?.content.split('\n\n').map((paragraph, idx) => (
+                <p key={idx} className="text-gray-600 mb-6">
+                  {paragraph}
+                </p>
+              ))}
+              {!backgroundSection && (
+                <>
+                  <p className="text-gray-600 mb-6">
+                    I'm an experienced Project and Programme Manager with over 10
+                    years of professional experience in the technology sector.
+                  </p>
+                  <p className="text-gray-600 mb-6">
+                    While my primary profession is project management, I'm also
+                    passionate about software development.
+                  </p>
+                </>
+              )}
             </motion.div>
 
             <motion.div

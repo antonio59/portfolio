@@ -1,7 +1,25 @@
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import AnimatedText from "../utils/AnimatedText";
+import { getProfile, type Profile } from "../lib/pocketbase";
 
 export default function Hero() {
+  const { data: profile } = useQuery<Profile | null>({
+    queryKey: ["profile"],
+    queryFn: getProfile,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Parse name into words for animation, fallback to default
+  const nameWords = profile?.full_name
+    ? profile.full_name.split(" ")
+    : ["John", "Smith"];
+  
+  const greeting = profile?.greeting || "Hello, my name is";
+  const tagline = profile?.tagline || "I build things for the web.";
+  const taglineWords = tagline.split(" ");
+  const bio = profile?.short_bio || "I'm a software developer specializing in building exceptional digital experiences. Currently, I'm focused on creating accessible, human-centered products that solve real-world problems.";
+
   return (
     <section className="min-h-screen flex items-center bg-primaryBg py-20">
       <div className="container mx-auto px-6">
@@ -12,19 +30,19 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="mb-4 text-accentColor text-lg font-medium"
           >
-            Hello, my name is
+            {greeting}
           </motion.div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-textColor mb-4">
             <AnimatedText
-              words={["John", "Smith"]}
+              words={nameWords}
               className="text-4xl sm:text-5xl md:text-6xl font-bold"
             />
           </h1>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-600 mb-6">
             <AnimatedText
-              words={["I", "build", "things", "for", "the", "web."]}
+              words={taglineWords}
               className="text-3xl sm:text-4xl md:text-5xl font-bold"
             />
           </h2>
@@ -35,9 +53,7 @@ export default function Hero() {
             transition={{ duration: 0.6, delay: 0.8 }}
             className="text-gray-600 text-lg mb-8 mx-auto"
           >
-            I'm a software developer specializing in building exceptional
-            digital experiences. Currently, I'm focused on creating accessible,
-            human-centered products that solve real-world problems.
+            {bio}
           </motion.p>
 
           <motion.div
