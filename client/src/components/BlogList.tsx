@@ -60,6 +60,7 @@ export default function BlogList() {
 
   // Categories not needed for now - we can add them later if needed
   const categories: BlogCategory[] = [];
+  const categoriesLoading = false; // No categories to load yet
 
   // Format date helper function
   const formatDate = (date: Date) => {
