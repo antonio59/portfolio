@@ -6,13 +6,12 @@ import { queryClient } from "./lib/queryClient";
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import FeaturedProjects from "./components/FeaturedProjects";
-import About from "./components/About";
-import Resume from "./components/Resume";
 import Testimonials from "./components/Testimonials";
-import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import CustomCursor from "./components/CustomCursor";
 import NotFound from "./pages/not-found";
+import AboutPage from "./pages/about-page";
+import ContactPage from "./pages/contact-page";
 import BlogPage from "./pages/blog-page";
 import BlogPostPage from "./pages/blog-post-page";
 import SubmitTestimonial from "./pages/submit-testimonial";
@@ -54,11 +53,8 @@ const PortfolioHome = () => {
       />
       <main>
         <Hero />
-        <About />
         <FeaturedProjects />
-        <Resume />
         <Testimonials />
-        <Contact />
       </main>
       <Footer />
     </>
@@ -72,6 +68,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Switch>
         <Route path="/" component={PortfolioHome} />
+        <Route path="/about" component={AboutPage} />
+        <Route path="/contact" component={ContactPage} />
         <Route path="/projects" component={ProjectsPage} />
         <Route path="/credentials" component={CredentialsPage} />
         <Route path="/blog" component={BlogPage} />
