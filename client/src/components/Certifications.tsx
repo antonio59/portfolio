@@ -1,36 +1,18 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import { logger } from "../lib/logger";
-
-interface Certification {
-  id: number;
-  title: string;
-  issuer: string;
-  issueDate: string;
-  expiryDate?: string | null;
-  credentialID?: string | null;
-  credentialURL?: string | null;
-  description: string;
-  skills: string[];
-  featured: boolean;
-  imageUrl?: string | null;
-}
+import { getCertifications, type Certification } from "@/lib/pocketbase";
 
 export default function Certifications() {
-  // Use React Query to fetch certifications with explicit debugging
+  // Use React Query to fetch certifications from PocketBase
   const {
     data: certifications = [],
     isLoading,
     error,
-    status,
-    fetchStatus,
   } = useQuery<Certification[]>({
-    queryKey: ["/api/certifications"],
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2, // Add retry attempts
-    refetchOnMount: true, // Force a refetch when the component mounts
+    queryKey: ["certifications"],
+    queryFn: getCertifications,
+    staleTime: 5 * 60 * 1000,
   });
 
   if (process.env.NODE_ENV === "development") {
