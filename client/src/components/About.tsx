@@ -18,7 +18,7 @@ export default function About() {
     queryKey: ["certifications-count"],
     queryFn: async () => {
       const records = await pb.collection("certifications").getFullList({
-        fields: "id,title,issuer",
+        fields: "id,name,title,issuer",
       });
       return records;
     },
@@ -223,7 +223,7 @@ export default function About() {
                   {certifications.slice(0, 3).map((cert: any) => (
                     <div key={cert.id} className="flex items-start gap-2">
                       <span className="text-primary mt-1">•</span>
-                      <p className="font-medium text-sm leading-snug">{cert.title}</p>
+                      <p className="font-medium text-sm leading-snug">{cert.name || cert.title}</p>
                     </div>
                   ))}
                   {certifications.length > 3 && (

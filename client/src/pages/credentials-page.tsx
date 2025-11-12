@@ -5,18 +5,20 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { Award, Download, ExternalLink, Calendar } from "lucide-react";
+import { Award, Download, ExternalLink, Calendar, X, Eye } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { pb } from "@/lib/pocketbase";
 
 interface Certification {
   id: string;
-  title: string;
+  name: string;
+  title?: string;
   issuer: string;
   issue_date: string;
   credential_url?: string;
@@ -28,6 +30,7 @@ interface Certification {
 
 export default function CredentialsPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [viewingCert, setViewingCert] = useState<{url: string, name: string} | null>(null);
 
   // Fetch certifications
   const { data: certifications = [], isLoading } = useQuery({
@@ -114,7 +117,7 @@ export default function CredentialsPage() {
                         </div>
                         
                         <CardTitle className="group-hover:text-primary transition-colors leading-snug">
-                          {cert.title}
+                          {cert.name || cert.title}
                         </CardTitle>
                       </CardHeader>
 
@@ -136,36 +139,40 @@ export default function CredentialsPage() {
                           
                           const isCredly = cert.credential_url?.includes('credly.com');
                           const isPDF = fileUrl?.endsWith('.pdf') || cert.certificate_file?.endsWith('.pdf');
+                          const isImage = /\.(jpg|jpeg|png|webp)$/i.test(fileUrl || '');
                           
                           return (
-                            <Button 
-                              variant="outline" 
-                              className="flex-1 group-hover:border-primary group-hover:text-primary transition-colors"
-                              asChild
-                            >
-                              <a
-                                href={fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                {isCredly ? (
-                                  <>
+                            <>
+                              {/* View button for PDFs and images */}
+                              {(isPDF || isImage) && cert.certificate_file && (
+                                <Button 
+                                  variant="default"
+                                  className="flex-1"
+                                  onClick={() => setViewingCert({ url: fileUrl!, name: cert.name || cert.title || 'Certificate' })}
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View
+                                </Button>
+                              )}
+                              
+                              {/* External link button */}
+                              {(isCredly || !cert.certificate_file) && (
+                                <Button 
+                                  variant={cert.certificate_file ? "outline" : "default"}
+                                  className="flex-1"
+                                  asChild
+                                >
+                                  <a
+                                    href={fileUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
                                     <ExternalLink className="h-4 w-4 mr-2" />
-                                    View Badge
-                                  </>
-                                ) : isPDF ? (
-                                  <>
-                                    <Download className="h-4 w-4 mr-2" />
-                                    {cert.certificate_file ? 'Download PDF' : 'View PDF'}
-                                  </>
-                                ) : (
-                                  <>
-                                    <ExternalLink className="h-4 w-4 mr-2" />
-                                    View Credential
-                                  </>
-                                )}
-                              </a>
-                            </Button>
+                                    {isCredly ? 'View Badge' : 'View Credential'}
+                                  </a>
+                                </Button>
+                              )}
+                            </>
                           );
                         })()}
                       </CardFooter>
@@ -221,6 +228,24 @@ export default function CredentialsPage() {
       </main>
 
       <Footer />
+
+      {/* Certificate Viewer Modal */}
+      <Dialog open={!!viewingCert} onOpenChange={() => setViewingCert(null)}>
+        <DialogContent className="max-w-5xl h-[90vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>{viewingCert?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 p-6 pt-2 h-full overflow-hidden">
+            {viewingCert && (
+              <iframe
+                src={viewingCert.url}
+                className="w-full h-full rounded-lg border"
+                title={viewingCert.name}
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
