@@ -8,7 +8,6 @@ import Hero from "./components/Hero";
 import FeaturedProjects from "./components/FeaturedProjects";
 import About from "./components/About";
 import Experience from "./components/Experience";
-import Certifications from "./components/Certifications";
 import Testimonials from "./components/Testimonials";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
@@ -18,6 +17,7 @@ import BlogPage from "./pages/blog-page";
 import BlogPostPage from "./pages/blog-post-page";
 import SubmitTestimonial from "./pages/submit-testimonial";
 import ProjectsPage from "./pages/projects-page";
+import CredentialsPage from "./pages/credentials-page";
 
 // New admin pages
 import AdminLogin from "./pages/admin/login";
@@ -57,7 +57,6 @@ const PortfolioHome = () => {
         <About />
         <Experience />
         <FeaturedProjects />
-        <Certifications />
         <Testimonials />
         <Contact />
       </main>
@@ -74,6 +73,7 @@ function App() {
       <Switch>
         <Route path="/" component={PortfolioHome} />
         <Route path="/projects" component={ProjectsPage} />
+        <Route path="/credentials" component={CredentialsPage} />
         <Route path="/blog" component={BlogPage} />
         <Route path="/blog/:slug" component={BlogPostPage} />
         <Route path="/testimonial" component={SubmitTestimonial} />

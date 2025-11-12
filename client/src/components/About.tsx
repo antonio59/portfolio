@@ -1,13 +1,27 @@
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink } from "lucide-react";
+import { Award, ArrowRight } from "lucide-react";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 import { getAboutSections, type AboutSection } from "../lib/pocketbase";
+import { pb } from "@/lib/pocketbase";
 
 export default function About() {
   const { data: aboutSections = [] } = useQuery<AboutSection[]>({
     queryKey: ["about-sections"],
     queryFn: getAboutSections,
     staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch certifications count
+  const { data: certifications = [] } = useQuery({
+    queryKey: ["certifications-count"],
+    queryFn: async () => {
+      const records = await pb.collection("certifications").getFullList({
+        fields: "id,title,issuer",
+      });
+      return records;
+    },
   });
 
   // Get specific sections
@@ -184,26 +198,77 @@ export default function About() {
           </motion.div>
         </div>
 
-        {/* Interests Section (if available) */}
-        {interestsSection && (
+        {/* Certifications & Interests Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Certifications Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             viewport={{ once: true }}
-            className="bg-card rounded-2xl p-8 shadow-lg border border-border"
+            className="bg-card rounded-2xl p-8 shadow-lg border border-border group hover:shadow-xl transition-all"
           >
-            <h3 className="text-2xl font-bold mb-4 text-card-foreground flex items-center gap-2">
-              <span className="text-primary">●</span>
-              {interestsSection.title}
-            </h3>
-            <div className="space-y-4 text-muted-foreground leading-relaxed">
-              {interestsSection.content.split('\n\n').map((paragraph, idx) => (
-                <p key={idx}>{paragraph}</p>
-              ))}
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Award className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold text-card-foreground">
+                Certifications
+              </h3>
             </div>
+            
+            {certifications.length > 0 ? (
+              <>
+                <div className="space-y-3 mb-6">
+                  {certifications.slice(0, 3).map((cert: any) => (
+                    <div key={cert.id} className="flex items-start gap-2">
+                      <span className="text-primary mt-1">•</span>
+                      <div>
+                        <p className="font-medium text-sm">{cert.title}</p>
+                        <p className="text-xs text-muted-foreground">{cert.issuer}</p>
+                      </div>
+                    </div>
+                  ))}
+                  {certifications.length > 3 && (
+                    <p className="text-sm text-muted-foreground">
+                      +{certifications.length - 3} more certifications
+                    </p>
+                  )}
+                </div>
+                
+                <Button variant="outline" className="w-full group-hover:border-primary group-hover:text-primary transition-colors" asChild>
+                  <Link href="/credentials" className="flex items-center justify-center gap-2">
+                    View All Credentials
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </Button>
+              </>
+            ) : (
+              <p className="text-muted-foreground">No certifications available yet.</p>
+            )}
           </motion.div>
-        )}
+
+          {/* Interests Section (if available) */}
+          {interestsSection && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="bg-card rounded-2xl p-8 shadow-lg border border-border"
+            >
+              <h3 className="text-2xl font-bold mb-4 text-card-foreground flex items-center gap-2">
+                <span className="text-primary">●</span>
+                {interestsSection.title}
+              </h3>
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                {interestsSection.content.split('\n\n').map((paragraph, idx) => (
+                  <p key={idx}>{paragraph}</p>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </div>
       </div>
     </section>
   );

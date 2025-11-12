@@ -99,6 +99,13 @@ export default function Footer() {
                 </svg>
               </motion.a>
             </div>
+            <div className="flex gap-4 text-sm text-gray-500 mb-2">
+              <a href="/projects" className="hover:text-accentColor transition-colors">Projects</a>
+              <span>•</span>
+              <a href="/credentials" className="hover:text-accentColor transition-colors">Credentials</a>
+              <span>•</span>
+              <a href="/blog" className="hover:text-accentColor transition-colors">Writing</a>
+            </div>
             <p className="text-gray-500 text-sm">
               © {currentYear} Antonio Smith. All rights reserved.
             </p>
