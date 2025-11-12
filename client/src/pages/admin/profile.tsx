@@ -33,7 +33,6 @@ export default function AdminProfile() {
     twitter_url: '',
     resume_url: '',
   });
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
 
   // Fetch profile
   const { data: profile, isLoading } = useQuery({
@@ -54,20 +53,10 @@ export default function AdminProfile() {
   // Save mutation
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const formDataToSend = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (value && key !== 'id') formDataToSend.append(key, value);
-      });
-      
-      // Add resume file if selected
-      if (resumeFile) {
-        formDataToSend.append('resume_file', resumeFile);
-      }
-      
       if (data.id) {
-        return await pb.collection('profiles').update(data.id, formDataToSend);
+        return await pb.collection('profiles').update(data.id, data);
       } else {
-        return await pb.collection('profiles').create(formDataToSend);
+        return await pb.collection('profiles').create(data);
       }
     },
     onSuccess: () => {
@@ -241,27 +230,18 @@ export default function AdminProfile() {
 
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold">Resume</h3>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="resume_file">Upload Resume (PDF)</Label>
-                    <Input
-                      id="resume_file"
-                      type="file"
-                      accept=".pdf"
-                      onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
-                    />
-                    <p className="text-xs text-muted-foreground">Max 10MB</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="resume_url">Or Resume URL</Label>
-                    <Input
-                      id="resume_url"
-                      type="url"
-                      value={formData.resume_url}
-                      onChange={(e) => setFormData({ ...formData, resume_url: e.target.value })}
-                      placeholder="https://..."
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="resume_url">Resume URL (Google Drive, Dropbox, etc.)</Label>
+                  <Input
+                    id="resume_url"
+                    type="url"
+                    value={formData.resume_url}
+                    onChange={(e) => setFormData({ ...formData, resume_url: e.target.value })}
+                    placeholder="https://drive.google.com/..."
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Share your resume from Google Drive or any other hosting service
+                  </p>
                 </div>
               </div>
 

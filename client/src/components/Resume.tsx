@@ -18,10 +18,8 @@ export default function Resume() {
     },
   });
 
-  // Build resume URL
-  const resumeUrl = (profile as any)?.resume_file
-    ? `https://pb.antoniosmith.xyz/api/files/${(profile as any).collectionId}/${(profile as any).id}/${(profile as any).resume_file}`
-    : (profile as any)?.resume_url;
+  // Get resume URL
+  const resumeUrl = (profile as any)?.resume_url;
 
   if (!resumeUrl) return null;
 
