@@ -119,6 +119,11 @@ export default function CredentialsPage() {
                         <CardTitle className="group-hover:text-primary transition-colors leading-snug">
                           {cert.name || cert.title}
                         </CardTitle>
+                        {cert.issuer && (
+                          <CardDescription className="mt-2 text-muted-foreground">
+                            {cert.issuer}
+                          </CardDescription>
+                        )}
                       </CardHeader>
 
                       {cert.description && (
@@ -231,16 +236,17 @@ export default function CredentialsPage() {
 
       {/* Certificate Viewer Modal */}
       <Dialog open={!!viewingCert} onOpenChange={() => setViewingCert(null)}>
-        <DialogContent className="max-w-5xl h-[90vh] p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle>{viewingCert?.name}</DialogTitle>
+        <DialogContent className="max-w-7xl h-[95vh] p-0 gap-0">
+          <DialogHeader className="px-6 py-4 border-b">
+            <DialogTitle className="text-xl">{viewingCert?.name}</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 p-6 pt-2 h-full overflow-hidden">
+          <div className="flex-1 overflow-hidden bg-muted/30" style={{ height: 'calc(95vh - 70px)' }}>
             {viewingCert && (
               <iframe
                 src={viewingCert.url}
-                className="w-full h-full rounded-lg border"
+                className="w-full h-full border-0"
                 title={viewingCert.name}
+                style={{ display: 'block' }}
               />
             )}
           </div>
