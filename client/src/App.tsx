@@ -19,6 +19,7 @@ import NotFound from "./pages/not-found";
 import BlogPage from "./pages/blog-page";
 import BlogPostPage from "./pages/blog-post-page";
 import SubmitTestimonial from "./pages/submit-testimonial";
+import ProjectsPage from "./pages/projects-page";
 
 // New admin pages
 import AdminLogin from "./pages/admin/login";
@@ -56,10 +57,10 @@ const PortfolioHome = () => {
       <main>
         <Hero />
         <About />
+        <Experience />
         <ProjectShowcase />
         <ProfessionalProjectsGrid />
         <ProjectsGrid />
-        <Experience />
         <Certifications />
         <Testimonials />
         <Contact />
@@ -76,6 +77,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Switch>
         <Route path="/" component={PortfolioHome} />
+        <Route path="/projects" component={ProjectsPage} />
         <Route path="/blog" component={BlogPage} />
         <Route path="/blog/:slug" component={BlogPostPage} />
         <Route path="/testimonial" component={SubmitTestimonial} />

@@ -33,10 +33,10 @@ export default function Header({
 
   // Navigation links (ordered: About, Experience, Projects, Contact, Writing)
   const navLinks = [
-    { name: "About", href: "#about" },
-    { name: "Experience", href: "#experience" },
-    { name: "Projects", href: "#projects" },
-    { name: "Contact", href: "#contact" },
+    { name: "About", href: "/#about" },
+    { name: "Experience", href: "/#experience" },
+    { name: "Projects", href: "/projects" },
+    { name: "Contact", href: "/#contact" },
   ];
 
   // Additional links (Writing instead of Blog)
@@ -61,12 +61,21 @@ export default function Header({
           <ul className="flex space-x-10">
             {navLinks.map((link, index) => (
               <li key={index}>
-                <a
-                  href={link.href}
-                  className="text-gray-600 hover:text-accentColor transition-colors duration-300"
-                >
-                  {link.name}
-                </a>
+                {link.href.startsWith('/') && !link.href.startsWith('/#') ? (
+                  <Link
+                    href={link.href}
+                    className="text-gray-600 hover:text-accentColor transition-colors duration-300"
+                  >
+                    {link.name}
+                  </Link>
+                ) : (
+                  <a
+                    href={link.href}
+                    className="text-gray-600 hover:text-accentColor transition-colors duration-300"
+                  >
+                    {link.name}
+                  </a>
+                )}
               </li>
             ))}
             {additionalLinks.map((link, index) => (
