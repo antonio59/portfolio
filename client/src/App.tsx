@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Route, Switch, useLocation } from "wouter";
+import { Route, Switch } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
@@ -15,13 +15,19 @@ import Testimonials from "./components/Testimonials";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import CustomCursor from "./components/CustomCursor";
-import AdminDashboard from "./components/admin/AdminDashboard";
-import LoginForm from "./components/admin/LoginForm";
 import NotFound from "./pages/not-found";
 import BlogPage from "./pages/blog-page";
 import BlogPostPage from "./pages/blog-post-page";
 import SubmitTestimonial from "./pages/submit-testimonial";
-import { useQuery } from "@tanstack/react-query";
+
+// New admin pages
+import AdminLogin from "./pages/admin/login";
+import AdminDashboard from "./pages/admin/dashboard";
+import AdminBlog from "./pages/admin/blog";
+import AdminProfile from "./pages/admin/profile";
+import AdminProjects from "./pages/admin/projects";
+import AdminExperiences from "./pages/admin/experiences";
+import AdminCertifications from "./pages/admin/certifications";
 
 // Main portfolio homepage component
 const PortfolioHome = () => {
@@ -63,52 +69,7 @@ const PortfolioHome = () => {
   );
 };
 
-// Admin area with authentication
-const AdminArea = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [, navigate] = useLocation();
 
-  // Check if user is already authenticated
-  const { data: sessionData, isLoading } = useQuery({
-    queryKey: ["/api/session"],
-  });
-
-  // Effect to handle session data changes
-  useEffect(() => {
-    if (
-      sessionData &&
-      typeof sessionData === "object" &&
-      "isAuthenticated" in sessionData
-    ) {
-      setIsAuthenticated(!!sessionData.isAuthenticated);
-    }
-  }, [sessionData]);
-
-  const handleLoginSuccess = () => {
-    setIsAuthenticated(true);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
-
-  return isAuthenticated ? (
-    <AdminDashboard />
-  ) : (
-    <LoginForm onLoginSuccess={handleLoginSuccess} />
-  );
-};
-
-const navigate = () => {
-  // Example usage of navigate
-   
-
-  console.info('Using navigate');
-};
 
 function App() {
   return (
@@ -118,7 +79,17 @@ function App() {
         <Route path="/blog" component={BlogPage} />
         <Route path="/blog/:slug" component={BlogPostPage} />
         <Route path="/testimonial" component={SubmitTestimonial} />
-        <Route path="/admin" component={AdminArea} />
+        
+        {/* Admin Routes */}
+        <Route path="/admin/login" component={AdminLogin} />
+        <Route path="/admin" component={AdminDashboard} />
+        <Route path="/admin/dashboard" component={AdminDashboard} />
+        <Route path="/admin/blog" component={AdminBlog} />
+        <Route path="/admin/profile" component={AdminProfile} />
+        <Route path="/admin/projects" component={AdminProjects} />
+        <Route path="/admin/experiences" component={AdminExperiences} />
+        <Route path="/admin/certifications" component={AdminCertifications} />
+        
         <Route component={NotFound} />
       </Switch>
       <Toaster />
