@@ -159,15 +159,25 @@ export default function AdminTestimonials() {
                       <TableCell>{formatDate(testimonial.created)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          {!testimonial.approved && (
+                          {!testimonial.approved ? (
                             <Button
-                              variant="outline"
+                              variant="default"
                               size="sm"
                               onClick={() => approveMutation.mutate(testimonial.id)}
                               disabled={approveMutation.isPending}
                             >
                               <Check className="h-4 w-4 mr-1" />
                               Approve
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => approveMutation.mutate(testimonial.id)}
+                              disabled={true}
+                            >
+                              <Check className="h-4 w-4 mr-1" />
+                              Approved
                             </Button>
                           )}
                           <Button
