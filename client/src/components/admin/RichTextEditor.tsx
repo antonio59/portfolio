@@ -22,7 +22,10 @@ interface RichTextEditorProps {
 export default function RichTextEditor({ content, onChange, placeholder = 'Start writing...' }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        // Disable the built-in link extension since we're adding our own
+        link: false,
+      }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {

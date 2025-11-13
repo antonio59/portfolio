@@ -30,7 +30,7 @@ export default function AdminCertifications() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCert, setEditingCert] = useState<Certification | null>(null);
   const [formData, setFormData] = useState({
-    title: '',
+    name: '',
     issuer: '',
     issue_date: '',
     credential_url: '',
@@ -81,15 +81,15 @@ export default function AdminCertifications() {
   });
 
   const resetForm = () => {
-    setFormData({ title: '', issuer: '', issue_date: '', credential_url: '', description: '' });
+    setFormData({ name: '', issuer: '', issue_date: '', credential_url: '', description: '' });
     setSelectedFile(null);
     setEditingCert(null);
   };
 
-  const openEditDialog = (cert: Certification) => {
+  const openEditDialog = (cert: any) => {
     setEditingCert(cert);
     setFormData({
-      title: cert.title,
+      name: cert.name || cert.title || '',
       issuer: cert.issuer,
       issue_date: cert.issue_date,
       credential_url: cert.credential_url || '',
@@ -115,7 +115,7 @@ export default function AdminCertifications() {
               <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate(formData); }} className="space-y-4">
                 <div className="space-y-2">
                   <Label>Title *</Label>
-                  <Input value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required />
+                  <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
                 </div>
                 <div className="space-y-2">
                   <Label>Issuer *</Label>
