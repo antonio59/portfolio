@@ -14,17 +14,17 @@ export default function AdminDashboard() {
   const { data: stats } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      const [blogPosts, projects, experiences, testimonials] = await Promise.all([
+      const [blogPosts, projects, certifications, testimonials] = await Promise.all([
         pb.collection('blog_posts').getList(1, 1),
         pb.collection('projects').getList(1, 1),
-        pb.collection('experiences').getList(1, 1),
+        pb.collection('certifications').getList(1, 1),
         pb.collection('testimonials').getList(1, 1),
       ]);
 
       return {
         blogPosts: blogPosts.totalItems,
         projects: projects.totalItems,
-        experiences: experiences.totalItems,
+        certifications: certifications.totalItems,
         testimonials: testimonials.totalItems,
       };
     },
@@ -46,10 +46,10 @@ export default function AdminDashboard() {
       color: 'text-green-500',
     },
     {
-      title: 'Experiences',
-      value: stats?.experiences || 0,
+      title: 'Certifications',
+      value: stats?.certifications || 0,
       icon: Award,
-      description: 'Work history',
+      description: 'Professional credentials',
       color: 'text-purple-500',
     },
     {

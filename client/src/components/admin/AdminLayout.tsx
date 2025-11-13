@@ -35,6 +35,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { href: '/admin/blog', icon: FileText, label: 'Blog Posts' },
     { href: '/admin/profile', icon: User, label: 'Profile' },
     { href: '/admin/projects', icon: Briefcase, label: 'Projects' },
+    { href: '/admin/testimonials', icon: MessageSquare, label: 'Testimonials' },
     { href: '/admin/certifications', icon: Award, label: 'Certifications' },
   ];
 
