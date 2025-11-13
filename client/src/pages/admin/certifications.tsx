@@ -48,24 +48,42 @@ export default function AdminCertifications() {
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const formDataToSend = new FormData();
-      
-      // Only append non-empty values
-      if (data.name) formDataToSend.append('name', data.name);
-      if (data.issuer) formDataToSend.append('issuer', data.issuer);
-      if (data.issue_date) formDataToSend.append('issue_date', data.issue_date);
-      if (data.credential_url) formDataToSend.append('credential_url', data.credential_url);
-      if (data.description) formDataToSend.append('description', data.description);
-      
-      // Add file if selected
-      if (selectedFile) {
-        formDataToSend.append('certificate_file', selectedFile);
+      // Convert yyyy-MM to full date (yyyy-MM-01) for PocketBase
+      let issueDate = data.issue_date;
+      if (issueDate && issueDate.length === 7) { // yyyy-MM format
+        issueDate = `${issueDate}-01`; // Add day
       }
       
-      if (editingCert) {
-        return await pb.collection('certifications').update(editingCert.id, formDataToSend);
+      const payload: any = {
+        name: data.name,
+        issuer: data.issuer,
+        issue_date: issueDate,
+      };
+      
+      // Add optional fields only if they have values
+      if (data.credential_url) payload.credential_url = data.credential_url;
+      if (data.description) payload.description = data.description;
+      
+      // If there's a file, use FormData, otherwise use JSON
+      if (selectedFile) {
+        const formDataToSend = new FormData();
+        Object.entries(payload).forEach(([key, value]) => {
+          if (value) formDataToSend.append(key, value as string);
+        });
+        formDataToSend.append('certificate_file', selectedFile);
+        
+        if (editingCert) {
+          return await pb.collection('certifications').update(editingCert.id, formDataToSend);
+        } else {
+          return await pb.collection('certifications').create(formDataToSend);
+        }
       } else {
-        return await pb.collection('certifications').create(formDataToSend);
+        // No file, use JSON
+        if (editingCert) {
+          return await pb.collection('certifications').update(editingCert.id, payload);
+        } else {
+          return await pb.collection('certifications').create(payload);
+        }
       }
     },
     onSuccess: () => {
