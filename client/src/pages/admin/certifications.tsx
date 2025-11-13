@@ -49,9 +49,13 @@ export default function AdminCertifications() {
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       const formDataToSend = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (value) formDataToSend.append(key, value);
-      });
+      
+      // Only append non-empty values
+      if (data.name) formDataToSend.append('name', data.name);
+      if (data.issuer) formDataToSend.append('issuer', data.issuer);
+      if (data.issue_date) formDataToSend.append('issue_date', data.issue_date);
+      if (data.credential_url) formDataToSend.append('credential_url', data.credential_url);
+      if (data.description) formDataToSend.append('description', data.description);
       
       // Add file if selected
       if (selectedFile) {
@@ -66,9 +70,18 @@ export default function AdminCertifications() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-certifications'] });
+      queryClient.invalidateQueries({ queryKey: ['certifications'] });
       setIsDialogOpen(false);
       resetForm();
-      toast({ title: 'Certification saved' });
+      toast({ title: 'Certification saved', description: 'Your certification has been saved successfully.' });
+    },
+    onError: (error: any) => {
+      console.error('Save error:', error);
+      toast({ 
+        title: 'Error saving certification', 
+        description: error?.message || 'Please check all required fields and try again.',
+        variant: 'destructive'
+      });
     },
   });
 
