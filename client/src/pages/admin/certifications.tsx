@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -88,10 +88,15 @@ export default function AdminCertifications() {
 
   const openEditDialog = (cert: any) => {
     setEditingCert(cert);
+    // Convert full datetime to yyyy-MM format
+    let issueDate = cert.issue_date;
+    if (issueDate && issueDate.includes('T')) {
+      issueDate = issueDate.split('T')[0].substring(0, 7); // Extract yyyy-MM
+    }
     setFormData({
       name: cert.name || cert.title || '',
       issuer: cert.issuer,
-      issue_date: cert.issue_date,
+      issue_date: issueDate,
       credential_url: cert.credential_url || '',
       description: cert.description || '',
     });
@@ -111,7 +116,12 @@ export default function AdminCertifications() {
               <Button><Plus className="mr-2 h-4 w-4" />New Certification</Button>
             </DialogTrigger>
             <DialogContent>
-              <DialogHeader><DialogTitle>{editingCert ? 'Edit' : 'Add'} Certification</DialogTitle></DialogHeader>
+              <DialogHeader>
+                <DialogTitle>{editingCert ? 'Edit' : 'Add'} Certification</DialogTitle>
+                <DialogDescription>
+                  Add your professional certifications and credentials.
+                </DialogDescription>
+              </DialogHeader>
               <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate(formData); }} className="space-y-4">
                 <div className="space-y-2">
                   <Label>Title *</Label>
