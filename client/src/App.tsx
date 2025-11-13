@@ -24,7 +24,6 @@ import AdminDashboard from "./pages/admin/dashboard";
 import AdminBlog from "./pages/admin/blog";
 import AdminProfile from "./pages/admin/profile";
 import AdminProjects from "./pages/admin/projects";
-import AdminExperiences from "./pages/admin/experiences";
 import AdminCertifications from "./pages/admin/certifications";
 
 // Main portfolio homepage component
@@ -83,7 +82,6 @@ function App() {
         <Route path="/admin/blog" component={AdminBlog} />
         <Route path="/admin/profile" component={AdminProfile} />
         <Route path="/admin/projects" component={AdminProjects} />
-        <Route path="/admin/experiences" component={AdminExperiences} />
         <Route path="/admin/certifications" component={AdminCertifications} />
         
         <Route component={NotFound} />
